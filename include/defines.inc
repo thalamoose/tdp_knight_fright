@@ -1,0 +1,3 @@
+
+
+MAX_OBJECTS EQU 16

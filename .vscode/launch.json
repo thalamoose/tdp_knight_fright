@@ -1,0 +1,168 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "Internal Simulator",
+            "remoteType": "zsim",
+            "zsim": {
+                "preset": "spectrum",
+                "memoryModel": "ZXNEXT"
+            },
+            "sjasmplus": [
+                {
+                    "path": "build/KnightFright.sld"
+                }
+            ],
+            "history": {
+                "reverseDebugInstructionCount": 1000000,
+                "spotCount": 10,
+                "codeCoverageEnabled": true
+            },
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+            ],
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "STACK_TOP",
+            //"load": "build/KnightFright.sna",
+            "load": "build/KnightFright.nex",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "CSpect",
+            "remoteType": "cspect",
+            "sjasmplus": [
+                {
+                    "path": "build/KnightFright.sld"
+                }
+            ],
+            "history": {
+                "reverseDebugInstructionCount": 1000000,
+                "spotCount": 10
+            },
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+            ],
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "STACK_TOP",
+            //"load": "build/KnightFright.sna",
+            "load": "build/KnightFright.nex",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "ZEsarUX",
+            "remoteType": "zrcp",
+            "sjasmplus": [
+                {
+                    "path": "build/KnightFright.sld"
+                }
+            ],
+            "history": {
+                "reverseDebugInstructionCount": 1000000,
+                "spotCount": 10,
+            },
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+            ],
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "STACK_TOP",
+            //"load": "build/KnightFright.sna",
+            "load": "build/KnightFright.nex",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "ZXNext",
+            "remoteType": "zxnext",
+            "zxnext": {
+                "serial": "/dev/tty.usbserial-AQ007PCD"
+            },
+            "sjasmplus": [
+                {
+                    "path": "build/KnightFright.sld"
+                }
+            ],
+            "history": {
+                "reverseDebugInstructionCount": 1000000,
+                "spotCount": 10
+            },
+            "startAutomatically": false,
+            "commandsAfterLaunch": [],
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "STACK_TOP",
+            //"load": "build/KnightFright.sna",
+            "load": "build/KnightFright.nex",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "MAME",
+            "remoteType": "mame",
+            "mame": {
+                "port": 12000
+            },
+            "sjasmplus": [
+                {
+                    "path": "build/KnightFright.sld"
+                }
+            ],
+            "startAutomatically": false,
+            "commandsAfterLaunch": [],
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "STACK_TOP",
+            "load": "build/KnightFright.sna",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "Unit Tests",
+            "unitTests": true,
+            "presentation": {
+                "hidden": true
+            },
+            "remoteType": "zsim",
+            "zsim": {
+                "Z80N": true,
+                "visualMemory": true,
+                "memoryModel": "ZXNEXT"
+            },
+            "sjasmplus": [
+                {
+                    "path": "build/KnightFright.sld"
+                }
+            ],
+            "startAutomatically": true,
+            "rootFolder": "${workspaceFolder}",
+            "load": "build/KnightFright.nex"
+        },
+
+        {
+            "type" : "debugpy",
+            "name" : "Python Debugger for current file",
+            "request" : "launch",
+            "program" : "${file}",
+            "console" : "integratedTerminal",
+            "args" : ["assets/kftiles.png","--tile","build/assets/kftiles.bin", "--palette=kftiles.pal"]
+        }
+
+    ]
+}
