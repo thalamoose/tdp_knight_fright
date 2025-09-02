@@ -85,7 +85,6 @@ def main(args):
 							outpixel=((raw_bytes[i]&0x0f)<<4)|(raw_bytes[i+1]&0x0f)
 							dst.append(outpixel)
 						outfile.write(bytes(dst))
-						print(dst)
 
 	if args.palette!=None:
 		palette_file = open(args.palette,"wb")

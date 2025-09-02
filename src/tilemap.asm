@@ -23,6 +23,20 @@ initialize_tilemap:
         ld de,SWAP_BANK_1
         ld bc,$2000
         ldir
+        ;
+        ; TEMPORARY FOR TESTING UNTIL TILEMAP PROPERLY SORTED
+        ;
+        ld hl,SWAP_BANK_0
+        ld de,SWAP_BANK_1+32
+        ld bc,$1fe0
+        ldir
+        ; 
+        ; END TESTING CODE
+        ;
+        ld hl,SWAP_BANK_1
+        ld bc,32
+        ld a,0
+        call fill_mem
 
         ;
         ; Copy tile palettes
@@ -42,6 +56,7 @@ initialize_tilemap:
         ld b,40
 .next_char
         ld (hl),a
+        ld (hl),0 ;; TEST CODEf
         inc hl
         ld (hl),e
         inc hl
@@ -54,6 +69,10 @@ initialize_tilemap:
         dec c
         jr nz,.next_lin
 
+        ld hl,test_tilemap_table
+        ld de,SWAP_BANK_0+$2000
+        ld a,1
+        call copy_tile_block
         ret
 
 update_tilemap:
@@ -75,3 +94,53 @@ update_tilemap:
         neg
         nextreg TILEMAP_OFFSET_Y,a
         ret
+
+; HL - Base of tile
+; DE - Target address in texture map
+;  A - Attribute
+copy_tile_block:
+        ld c,(hl)                       ; c=width,
+        inc hl
+        ld b,(hl)                       ; b=height
+        inc hl
+.next_line
+        push bc,de
+.next_char
+        ldi                             ; Copy character code
+        ld (de),a                       ; Set attribute
+        inc de
+        inc c                           ; Just checking to see if we
+        dec c                           ; Still have more to do (cannot modify A)
+        jr nz,.next_char
+        pop de,bc
+        add de,40*2
+        djnz .next_line
+        ret
+
+        align 16
+test_tilemap_table:
+        db 20,22
+
+        db  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  3,  4,  0,  0,  0,  0,  0,  0,  0,  0
+        db  0,  0,  0,  0,  0,  0,  0,  0, 25, 26, 27, 28,  0,  0,  0,  0,  0,  0,  0,  0
+        db  0,  0,  0,  0,  0,  0,  0,  0, 49, 50, 51, 52,  0,  0,  0,  0,  0,  0,  0,  0
+        db  0,  0,  0,  0,  0,  0, 13, 14, 19, 20,  5,  6,  3,  4,  0,  0,  0,  0,  0,  0
+        db  0,  0,  0,  0,  0,  0, 37, 38, 39, 40, 25, 26, 27, 28,  0,  0,  0,  0,  0,  0
+        db  0,  0,  0,  0,  0,  0, 61, 62, 63, 64, 49, 50, 51, 52,  0,  0,  0,  0,  0,  0
+        db  0,  0,  0,  0, 13, 14, 23, 24, 21, 22, 19, 20,  5,  6,  3,  4,  0,  0,  0,  0
+        db  0,  0,  0,  0, 37, 38, 39, 40, 37, 38, 39, 40, 25, 26, 27, 28,  0,  0,  0,  0
+        db  0,  0,  0,  0, 61, 62, 63, 64, 61, 62, 63, 64, 49, 50, 51, 52,  0,  0,  0,  0
+        db  0,  0, 13, 14, 23, 24, 21, 22, 23, 24, 21, 22, 19, 20,  5,  6,  3,  4,  0,  0
+        db  0,  0, 37, 38, 39, 40, 37, 38, 39, 40, 37, 38, 39, 40, 25, 26, 27, 28,  0,  0
+        db  0,  0, 61, 62, 63, 64, 61, 62, 63, 64, 61, 62, 63, 64, 49, 50, 51, 52,  0,  0
+        db 13, 14, 23, 24, 21, 22, 23, 24,  9, 10, 11, 12, 21, 22, 19, 20,  5,  6,  3,  4
+        db 37, 38, 39, 40, 37, 38, 39, 40, 25, 26, 27, 28, 37, 38, 39, 40, 25, 26, 27, 28
+        db 61, 62, 63, 64, 61, 62, 63, 64, 49, 50, 51, 52, 61, 62, 63, 64, 49, 50, 51, 52
+        db 85, 86, 21, 22, 23, 24, 21, 22, 19, 20,  5,  6, 11, 12,  9, 10,  7,  8, 75, 76
+        db  0, 29, 37, 38, 39, 40, 37, 38, 39, 40, 25, 26, 27, 28, 25, 26, 27, 28, 29,  0
+        db  0,  0, 61, 62, 63, 64, 61, 62, 63, 64, 49, 50, 51, 52, 49, 50, 51, 52,  0,  0
+        db  0,  0, 85, 86, 21, 22, 23, 24, 21, 22, 19, 20,  5,  6,  7,  8, 75, 76,  0,  0
+        db  0,  0,  0, 29, 37, 38, 39, 40, 37, 38, 39, 40, 25, 26, 27, 28, 29,  0,  0,  0
+        db  0,  0,  0,  0, 61, 62, 63, 64, 61, 62, 63, 64, 49, 50, 51, 52,  0,  0,  0,  0
+        db  0,  0,  0,  0, 85, 86, 21, 22, 23, 24, 21, 22, 19, 20, 75, 76,  0,  0,  0,  0
+        db  0,  0,  0,  0,  0, 29, 37, 38, 39, 40, 37, 38, 39, 40, 29,  0,  0,  0,  0,  0
