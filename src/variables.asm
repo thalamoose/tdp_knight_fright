@@ -15,3 +15,13 @@ tilemap_x:
         db 0
 tilemap_y:
         db 0
+joystick_buttons:
+        defw 0
+mouse_x:
+        defw 0
+mouse_y:
+        defw 0
+mouse_button:
+        defw 0
+key_press:
+        defb 0

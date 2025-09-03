@@ -39,8 +39,12 @@ restart_game:
         call show_title
         call initialize_game
 game_loop:
+        ld a,2
+        out (ULA_PORT),a
         call read_controllers
         call read_keyboard
+        ld a,3
+        out (ULA_PORT),a
         call update_user_input
         call update_objects
         call update_audio
