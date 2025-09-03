@@ -10,8 +10,7 @@ update_user_input:
         call print_str
         db "Mouse X:%c, Y:%c, BTN:%c\r\n"
         db "Joystick BTN:%c\r\n",0
-        ld a,(key_press)
-        and a
+        call get_key
         ret z
         call print_char
         ret

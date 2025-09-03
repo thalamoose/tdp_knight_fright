@@ -23,5 +23,7 @@ mouse_y:
         defw 0
 mouse_button:
         defw 0
+scancodes:
+        db 0,0,0,0,0,0,0,0
 key_press:
         defb 0

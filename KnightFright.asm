@@ -41,8 +41,8 @@ restart_game:
 game_loop:
         ld a,2
         out (ULA_PORT),a
-        call read_controllers
         call read_keyboard
+        call read_controllers
         ld a,3
         out (ULA_PORT),a
         call update_user_input

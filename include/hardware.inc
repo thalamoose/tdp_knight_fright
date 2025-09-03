@@ -60,9 +60,9 @@ MEM_PAGING_CONTROL_PORT	equ $7ffd
 
 
 JOYPAD_R_UP             equ 7
-JOYPAD_R_DOWN           equ 6
-JOYPAD_R_LEFT           equ 5
-JOYPAD_R_RIGHT          equ 4
+JOYPAD_R_LEFT           equ 6
+JOYPAD_R_RIGHT          equ 5
+JOYPAD_R_DOWN           equ 4
 JOYPAD_L_UP             equ 3
 JOYPAD_L_DOWN           equ 2
 JOYPAD_L_LEFT           equ 1

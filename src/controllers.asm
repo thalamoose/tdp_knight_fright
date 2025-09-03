@@ -1,6 +1,41 @@
-; Uses Kempston interface
+; Uses Kempston interface.
+; Simulate keyboard input as follows:
+; A - up
+; Z - down
+; L - left
+; P - right
+; SP - button
+; We can make this redefinable by having a table with port
+; and mask combinations.
 read_controllers:
         in a,(KEMPSTON_JOYSTICK_PORT)
+        ld b,a
+        ld a,(scancodes+1)              ; A
+        bit 0,a
+        jr nz,.no_up
+        set JOYPAD_L_UP,b
+.no_up:
+        ld a,(scancodes+0)              ; Z
+        bit 1,a
+        jr nz,.no_down
+        set JOYPAD_L_DOWN,b
+.no_down:
+        ld a,(scancodes+6)              ; L
+        bit 1,a
+        jr nz,.no_left
+        set JOYPAD_L_LEFT,b
+.no_left
+        ld a,(scancodes+5)              ; P
+        bit 0,a
+        jr nz,.no_right
+        set JOYPAD_L_RIGHT,b
+.no_right
+        ld a,(scancodes+7)              ; space
+        bit 0,a
+        jr nz,.no_fire
+        set JOYPAD_R_DOWN,b
+.no_fire
+        ld a,b
         ld (joystick_buttons),a
         ret
 read_mouse:
@@ -19,25 +54,33 @@ read_mouse:
         pop bc
         ret
 
-; ------------------------------------------------------------
-; read_keyboard  (Next-style: select row by loading B and doing IN A,(C))
-; Returns ASCII of first key pressed in key_press (0 if none)
-; Uses local labels, standard Z80 instructions
-; ------------------------------------------------------------
-
+; Reads from the keyboard matrix,
+; stores this in memory for quick key scan, 
 read_keyboard:
+        ld b,%11111110      ; Bit line to activate
+        ld c,$fe            ; ULA port
+        ld hl,scancodes
+.read_lp:
+        in a,(c)
+        ld (hl),a
+        inc hl
+        rlc b
+        jr c,.read_lp        ; we terminate as soon as the zero shifts in to carry
+        ret 
+
+; ------------------------------------------------------------
+; Takes previously read scancodes and turns it in to a keycode
+; ------------------------------------------------------------
+get_key:
     xor     a
     ld      (key_press),a       ; default = no key pressed
-    ld      c,$FE               ; low byte for IN (C)
     ld      d,0                 ; row index 0..7
-
-    ld      b,%01111111
-    ld      h,%00011111
+    ld      hl,scancodes
 .row_loop:
-    rlc     b
-    in      a,(c)               ; IN A,(C) -> hardware returns column bits for BC
+    ld      a,(hl)
+    inc     hl
     cpl                         ; invert (keyboard is active-low)
-    and     h                   ; mask columns 0..4
+    and     %000011111          ; mask columns 0..4
     jr      z,.no_key_in_row
 
     ; --- find lowest set bit -> column index in E ---
@@ -49,22 +92,18 @@ read_keyboard:
 
     ; --- offset = row*5 + column ---
     ld      a,d
-    sla     a
-    sla     a
-    add     a,d                ; a = row*5
     add     a,e                ; add column
     ld      hl,key_table
-    ld      e,a
-    ld      d,0
-    add     hl,de
+    add     hl,a
     ld      a,(hl)
     ld      (key_press),a
     ret
 
 .no_key_in_row:
-    inc     d
     ld      a,d
-    cp      8
+    add     5
+    ld      d,a
+    cp      8*5
     jr      nz,.row_loop
     ret
 
