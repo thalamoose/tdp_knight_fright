@@ -82,6 +82,7 @@ game_loop:
             SAVENEX OPEN "build/KnightFright.nex", main, STACK_TOP
             SAVENEX CORE 3, 1, 5
             SAVENEX CFG 7   ; Border color
-            SAVENEX AUTO
+            ;SAVENEX AUTO *** THIS DOESN'T WORK RIGHT! IT DOESN'T EXPORT THINGS CORRECTLY.
+            SAVENEX BANK 16,17,18,19,20,21,22
             SAVENEX CLOSE
         ENDIF
