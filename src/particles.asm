@@ -97,14 +97,14 @@ update_particle:
 		exx
 		ret
 .dead
-
+		exx
+restart_particle:
+		push bc,de,hl,ix,af
 		call remove_particle
 		ld (ix+PARTICLE.flags),0
 		ld (ix+PARTICLE.prev_page),0
-		exx
-		push bc,de,hl,ix
 		call debug_add_particle
-		pop ix,hl,de,bc
+		pop af,ix,hl,de,bc
         ret
 
 ; in: HL = start X, DE = start Y
@@ -222,6 +222,10 @@ render_particle:
 		pop hl		; X coordinate on screen (Flipped due to 320 mode, this would be Y in 256 mode)
 		pop bc		; Y coordinate on screen (Flipped due to 320 mode, this would be X in 256 mode)
 
+		ld a,h
+		or b
+		rlc a
+		jr c,.clipped_pop_0
 		ld a,c
 		rlca
 		rlca
@@ -267,8 +271,10 @@ render_particle:
 		pop hl
 .clipped_pop_1:
 		pop hl
+.clipped_pop_0:
 		ex af,af'
 		exx
+		call restart_particle
 		ret
 
 ; 6x6 is ~1500 cycles, ~110uS (  9 per ms)

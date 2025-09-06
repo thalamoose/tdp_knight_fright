@@ -35,5 +35,5 @@ key_press:
 random_seed:
         defw 0xc0de
 random_seed_2:
-        defb 0xf00d
+        defw 0xf00d
 

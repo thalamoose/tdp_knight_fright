@@ -1,4 +1,3 @@
-SPRITE_BANK     equ 5
 TILEMAP_PAGE    equ 10
 ULA_SHADOW_PAGE equ 14
 LAYER_2_PAGE    equ 16				; 8 pages at 256x256; 10 at 256x320

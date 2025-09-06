@@ -1,7 +1,7 @@
 
 
 MAX_OBJECTS 	equ 16			; MUST be power of 2
-MAX_PARTICLES	equ 256			; MUST be power of 2
+MAX_PARTICLES	equ 128			; MUST be power of 2
 
 GRAVITY 		equ 1 ; $40 		; About 0.5G
 
