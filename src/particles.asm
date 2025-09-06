@@ -225,12 +225,13 @@ render_particle:
 		ld a,h
 		or b
 		rlc a
-		jr c,.clipped_pop_0
-		ld a,c
-		rlca
-		rlca
-		rlca
-		and %00000111
+		jp c,.clipped_pop_0
+		ld de,bc
+		add de,de
+		add de,de
+		add de,de
+		ld a,d
+		and %00001111
 		add a,LAYER_2_PAGE
 		ld b,a				; Page number, save for below
 		; To figure out address within 8K page, take X coordinate and it with 7, then multiply by 256
@@ -290,7 +291,7 @@ render_particle:
 xor_particle:
 		cp LAYER_2_PAGE
 		jr c,xor_particle
-		cp LAYER_2_PAGE+8
+		cp LAYER_2_PAGE+10
 		jr nc,xor_particle
 		nextreg MMU_SLOT_6,a
 		inc a
