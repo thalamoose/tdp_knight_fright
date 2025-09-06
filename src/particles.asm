@@ -6,24 +6,6 @@
 ; by anding with %1111_1100.
 ; 
 
-I_TO_F MACRO r1,r2
-		rr r1
-		rr r2
-		ld r1,r2
-		ld r2,0
-		rr r2
-		ENDM
-
-; input register pair,
-; first register gets result
-F_TO_I MACRO r1,r2
-		rl r2
-		rl r1
-		ld r2,r1
-		ld r1,0
-		rl r1
-		ENDM
-
 ;           abcd-efgh
 ; aaaa-abcd.efgh-0000
 
@@ -130,10 +112,12 @@ add_particle:
 		ld (ix+PARTICLE.VY),d
 		ld (ix+PARTICLE.VY+1),c
 
+		ld de,hl
+		ld b,7
+		bsla de,b
+		ld (ix+PARTICLE.X),de
 		pop de
-		I_TO_F h,l
-		I_TO_F d,e
-        ld (ix+PARTICLE.X),hl
+		bsla de,b
         ld (ix+PARTICLE.Y),de
 		call get_random
 		ld (ix+PARTICLE.colour),a
@@ -197,20 +181,21 @@ render_particle:
 		call remove_particle
 		; Clip if needed, we do a rough clip to the entire viewport.
 		; For now, X = 0..320, so clipping region is 0..312 ,Y=0..247
-		ld hl,(ix+PARTICLE.X)
-		F_TO_I h,l
-		push hl
-		ld de,LAYER_2_HEIGHT-LAYER_2_BORDER
+		ld de,(ix+PARTICLE.X)
+		ld b,7
+		bsra de,b
+		push de
+		ld hl,LAYER_2_HEIGHT-LAYER_2_BORDER
 		and a
 		sbc hl,de
-		jp nc,.clipped_pop_1
-		ld hl,(ix+PARTICLE.Y)
-		F_TO_I h,l
-		push hl
-		ld de,LAYER_2_WIDTH-LAYER_2_BORDER
+		jp c,.clipped_pop_1
+		ld de,(ix+PARTICLE.Y)
+		bsra de,b
+		push de
+		ld hl,LAYER_2_WIDTH-LAYER_2_BORDER
 		and a
 		sbc hl,de
-		jp nc,.clipped_pop_2
+		jp c,.clipped_pop_2
 		ld a,(ix+PARTICLE.colour)
 		ld (ix+PARTICLE.prev_colour),a
 		;call get_random
@@ -255,14 +240,15 @@ render_particle:
 		push hl
 		ld a,(ix+PARTICLE.prev_page)
 		push af
-		ld bc,(ix+PARTICLE.Y)
-		F_TO_I b,c
-		ld b,c
-		;push bc
-		ld bc,(ix+PARTICLE.X)
-		F_TO_I b,c
-		ld b,c
-		push bc
+		ld de,(ix+PARTICLE.Y)
+		ld b,7
+		bsra de,b
+		ld d,e
+		push de
+		ld de,(ix+PARTICLE.X)
+		bsra de,b
+		ld d,e
+		push de
 		call print_str
 		db "x=%c, y=%c, page=%c, addr=%x\r\n",0
 		pop ix
