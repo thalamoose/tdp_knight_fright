@@ -83,6 +83,7 @@ game_loop:
             SAVENEX CORE 3, 1, 5
             SAVENEX CFG 7   ; Border color
             ;SAVENEX AUTO *** THIS DOESN'T WORK RIGHT! IT DOESN'T EXPORT THINGS CORRECTLY.
-            SAVENEX BANK 16,17,18,19,20,21,22
+            ;SAVENEX AUTO
+            SAVENEX BANK 5,2,0,1,3,4,6,16,17,18,19,20,21,22
             SAVENEX CLOSE
         ENDIF
