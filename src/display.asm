@@ -13,6 +13,15 @@ initialize_display:
         nextreg SPRITE_AND_LAYERS,%00001001             ; enable sprites, SUL
         nextreg DISPLAY_CONTROL_1,%11000000             ; Enable layer 2, ULA to shadow bank (bank 7, page 14,15)
 
+        nextreg LAYER_2_CONTROL, %00010000              ; Enable 320 mode for layer 2
+        ; Set clip to 4,4,314,252 to give us an 8 pixel border for clipping. We don't bother
+        ; clipping the actual shape as we're guaranteed any particle effects are below 8x8 in
+        ; size.
+
+        nextreg LAYER_2_CLIP,(4)>>1                     ; X1 (Y1 in 320 mode)
+        nextreg LAYER_2_CLIP,((319-4)>>1)               ; X2 (Y2 in 320 mode)
+        nextreg LAYER_2_CLIP,(4)                        ; Y1 (X1 in 320 mode)
+        nextreg LAYER_2_CLIP,(255-4)                    ; Y2 (X2 in 320 mode)
         ret
 
 ; black border area shows idle time

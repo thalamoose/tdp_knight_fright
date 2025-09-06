@@ -1,7 +1,11 @@
 render:
-        call update_tilemap
+        ;;call update_tilemap
         call convert_objects_to_sprites
+        ld a,6                                  ; Yellow
+        out (ULA_PORT),a
         call render_particles
+        ld a,7
+        out (ULA_PORT),a
         ret
 
 

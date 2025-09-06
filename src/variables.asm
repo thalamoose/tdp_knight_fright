@@ -33,5 +33,7 @@ key_press:
         defb 0
 
 random_seed:
-        defw 0xbeef
+        defw 0xc0de
+random_seed_2:
+        defb 0xf00d
 

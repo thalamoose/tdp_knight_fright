@@ -46,6 +46,7 @@ TILEMAP_CONTROL         equ $6b
 DEFAULT_TILEMAP_ATTR    equ $6c
 TILEMAP_BASE_ADDRESS    equ $6e
 TILEMAP_CHAR_ADDRESS    equ $6f
+LAYER_2_CONTROL			equ $70
 
 ULA_PORT                equ $fe
 KEMPSTON_JOYSTICK_PORT  equ $1f

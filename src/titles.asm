@@ -8,7 +8,7 @@ show_loading_splash:
 copy_splash_bitmap:
         ld d,SPLASH_PAGE
         ld e,LAYER_2_PAGE
-        ld b,5
+        ld b,(320*256)/8192
         ; Copy static background to layer 2
 .next_page
         ld a,d

@@ -50,12 +50,36 @@ initialize_game:
         ld (ix+OBJECT.anim_delay),0
         add ix,de
 
-        ld hl,0               ; xpos
-        ld de,0               ; ypos
-        ld b,  8                ; delta x  0.0625 (4.4 fixed format, signed)
-        ld c,  8                ; delta y  0.0625 (4.4 fixed format, signed)
-        call add_particle
+        ld b,128
+.make_lp
+        push bc
+        call debug_add_particle
+        pop bc
+        djnz .make_lp
+        ret
+debug_add_particle:
+        ld hl,160-16
+        call get_random
+        and 0x07
+        add l
+        ld l,a
+        ld de,64
+        call get_random
+        and 0x07
+        add e
+        ld e,a
 
+        call get_random
+        sra a
+        sra a
+        inc a
+        ld b,a
+        call get_random
+        sra a
+        sra a
+        inc a
+        ld c,a
+        call add_particle
         ret
 
 ; Initial memory map:

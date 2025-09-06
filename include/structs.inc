@@ -23,7 +23,7 @@ PARTICLE_ACTIVE equ 0
                 STRUCT PARTICLE
 X               WORD
 Y               WORD
-VX              
+VX              WORD
 VY              WORD
 prev_address    WORD
 prev_page       BYTE

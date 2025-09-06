@@ -92,16 +92,19 @@ update_particle:
         add hl,de
         ld (ix+PARTICLE.VY),hl
         ; Decrement life
-		inc (ix+PARTICLE.life)		;; DEBUG
 		dec (ix+PARTICLE.life)
 		jr z,.dead
 		exx
 		ret
 .dead
+
 		call remove_particle
 		ld (ix+PARTICLE.flags),0
 		ld (ix+PARTICLE.prev_page),0
 		exx
+		push bc,de,hl,ix
+		call debug_add_particle
+		pop ix,hl,de,bc
         ret
 
 ; in: HL = start X, DE = start Y
@@ -116,8 +119,8 @@ add_particle:
 		mul d,e
 		ld ix,particle_objects
 		add ix,de
+		call remove_particle
 		exx
-
 		push de
 		F_44_TO_79 b,d
 		ld (ix+PARTICLE.VX),d
@@ -140,9 +143,11 @@ add_particle:
 		inc a
 		ld (ix+PARTICLE.width),a
         ; Give it some initial velocity
+		call get_random
+		and %01111111
+		add 100
+        ld (ix+PARTICLE.life),a    ; frames of life - 5 seconds for testing
 		ld a,b
-
-        ld (ix+PARTICLE.life),250    ; frames of life - 5 seconds for testing
 		set PARTICLE_ACTIVE,(ix+PARTICLE.flags)
 		ld a,(particle_index)
 		inc a
@@ -158,14 +163,10 @@ remove_particle:
 		ld e,(ix+PARTICLE.prev_colour)
 		ld c,(ix+PARTICLE.width)
 		call xor_particle
+		ld (ix+PARTICLE.prev_page),0
 .no_restore:
 		ret
 
-
-; For now, we're using the 256 wide screen, but eventually, we'll switch to 320.
-; Either way, the math is pretty straight forward to calculate position. We don't
-; care about going off the end.
-; We go backward through the list. This allows us to override the oldest particles.
 
 render_particles:
 		ld ix,particle_objects
@@ -191,30 +192,20 @@ render_particles:
 render_particle:
 		exx
 		ex af,af'
-		;push ix
-		;ld bc,(ix+PARTICLE.Y)
-		;push bc
-		;ld bc,(ix+PARTICLE.Y)
-		;push bc
-		;call print_str
-		;db "Particle X:%x, y:%x\n\r",0
-		;pop ix
 
 		; Remove previous occurance.
 		call remove_particle
 		; Clip if needed, we do a rough clip to the entire viewport.
 		; For now, X = 0..320, so clipping region is 0..312 ,Y=0..247
-		ld hl,(ix+PARTICLE.Y)
+		ld hl,(ix+PARTICLE.X)
 		F_TO_I h,l
-		ld h,0 ;; *DEBUG* mask to 256, just for now, eventually, we'll properly clip
 		push hl
 		ld de,LAYER_2_HEIGHT-LAYER_2_BORDER
 		and a
 		sbc hl,de
 		jp nc,.clipped_pop_1
-		ld hl,(ix+PARTICLE.X)
+		ld hl,(ix+PARTICLE.Y)
 		F_TO_I h,l
-		ld h,0 ;; *DEBUG* mask to 256, just for now, eventually, we'll properly clip
 		push hl
 		ld de,LAYER_2_WIDTH-LAYER_2_BORDER
 		and a
@@ -222,25 +213,15 @@ render_particle:
 		jp nc,.clipped_pop_2
 		ld a,(ix+PARTICLE.colour)
 		ld (ix+PARTICLE.prev_colour),a
-		call get_random
-		ld (ix+PARTICLE.colour),a		; **DEBUG**
+		;call get_random
+		;ld (ix+PARTICLE.colour),a		; **DEBUG**
 		; Now calculate screen position
 		; Page in the correct bank. Each bank is 8KB, but we page it in to
 		; SWAP_BANK_0 and SWAP_BANK_1; this allows us to not have to worry
 		; about crossing a bank boundary when rendering.
-		pop hl		; X coordinate on screen
-		pop bc		; Y coordinate on screen
-		; assume coordinate is 128,128
-		; the page would be Y/64 (64 lines per page) - in this case, page 2.
-		; the offset would be (Y mod 64)*256, which would be $0. Add on X,
-		; this gets us to 0x0080. 
-		; Add base of paged space gives us address $D080.
-		; Summary:
-		; 128,128 goes to bank 2,address $d080
-		
+		pop hl		; X coordinate on screen (Flipped due to 320 mode, this would be Y in 256 mode)
+		pop bc		; Y coordinate on screen (Flipped due to 320 mode, this would be X in 256 mode)
 
-	; abcdefgh 00000000
-	;    abcde
 		ld a,c
 		rlca
 		rlca
@@ -248,7 +229,7 @@ render_particle:
 		and %00000111
 		add a,LAYER_2_PAGE
 		ld b,a				; Page number, save for below
-		; To figure out address within 8K page, take Y coordinate and it with 7, then multiply by 256
+		; To figure out address within 8K page, take X coordinate and it with 7, then multiply by 256
 		ld a,c
 		and %00011111
 		add a,SWAP_BANK_0>>8
@@ -260,6 +241,10 @@ render_particle:
 		ld (ix+PARTICLE.prev_page),a
 		ld (ix+PARTICLE.prev_address),hl
 		call xor_particle
+		ex af,af'
+		exx
+		ret
+.debug_info:
 		push ix
 		ld hl,(ix+PARTICLE.prev_address)
 		push hl
@@ -268,7 +253,7 @@ render_particle:
 		ld bc,(ix+PARTICLE.Y)
 		F_TO_I b,c
 		ld b,c
-		push bc
+		;push bc
 		ld bc,(ix+PARTICLE.X)
 		F_TO_I b,c
 		ld b,c
@@ -276,9 +261,8 @@ render_particle:
 		call print_str
 		db "x=%c, y=%c, page=%c, addr=%x\r\n",0
 		pop ix
-		ex af,af'
-		exx
 		ret
+
 .clipped_pop_2:
 		pop hl
 .clipped_pop_1:

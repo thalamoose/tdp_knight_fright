@@ -15,7 +15,7 @@ build/assets/kfsprites.bin: assets/kfsprites.png makefile
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
 
 build/assets/kfback.bin: assets/kfback.png makefile
-	$(SLICER) $< $@ --crop 32,24,256,192 --palette=$(@:.bin=.pal)
+	$(SLICER) $< $@ --palette=$(@:.bin=.pal)
 
 build/assets/kftiles.bin: assets/kftiles.png makefile
 	$(SLICER) $< $@ --tile --palette=$(@:.bin=.pal)

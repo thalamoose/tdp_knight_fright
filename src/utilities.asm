@@ -1,5 +1,6 @@
 
 check_reset:
+        xor a
         ret
 
 
@@ -76,11 +77,20 @@ get_random_16:
 ; new = (seed >> 1) ^ ( (seed & 1) ? 0xB8 : 0 )
 ; returns A=new
 get_random:
+        push bc
         ld   a,(random_seed) ; 7T
-        rr   a               ; 8T   ; shift right with carry into bit7 (but we prefer logical >>)
+        srl   a               ; 8T   ; shift right with carry into bit7 (but we prefer logical >>)
         jr   nc, .no_xor     ; 7T (taken or not impacts timing)
         xor  0B8h            ; 7T
 .no_xor:
         ld   (random_seed),a ; 7T
+        ld   a,(random_seed_2) ; 7T
+        srl   a               ; 8T   ; shift right with carry into bit7 (but we prefer logical >>)
+        jr   nc, .no_xor2     ; 7T (taken or not impacts timing)
+        xor  0B8h            ; 7T
+.no_xor2:
+        ld   (random_seed_2),a ; 7T
+        xor b
+        pop bc
         ret                  ;10T
 ; total roughly 39–48 T depending on branch timing — comfortably under 50T.
