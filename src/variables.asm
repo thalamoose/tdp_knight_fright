@@ -9,6 +9,10 @@ active_object_count:
 active_sprite_count:
         db 0
 
+particle_objects:
+        block PARTICLE.size*MAX_PARTICLES,0
+particle_index:
+        db 0
 ; This is referenced from the center of the screen.
 ; Signed byte
 tilemap_x:
@@ -27,3 +31,7 @@ scancodes:
         db 0,0,0,0,0,0,0,0
 key_press:
         defb 0
+
+random_seed:
+        defw 0xbeef
+

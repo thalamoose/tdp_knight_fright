@@ -1,6 +1,7 @@
 render:
         call update_tilemap
         call convert_objects_to_sprites
+        call render_particles
         ret
 
 

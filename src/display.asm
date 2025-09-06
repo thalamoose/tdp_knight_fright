@@ -1,6 +1,6 @@
 
 initialize_display:
-        nextreg LAYER_2_RAM_BANK, LAYER_2_PAGE
+        nextreg LAYER_2_RAM_BANK, LAYER_2_PAGE/2
         ld bc,LAYER_2_ACCESS                            ; Enable layer 2 bitmap
         ld a,2
         out (c),a

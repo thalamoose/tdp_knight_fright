@@ -39,15 +39,19 @@ restart_game:
         call show_title
         call initialize_game
 game_loop:
-        ld a,2
+        ld a,2                      ; Red
         out (ULA_PORT),a
         call read_keyboard
         call read_controllers
-        ld a,3
+        ld a,3                      ; Magenta
         out (ULA_PORT),a
         call update_user_input
+        ld a,4                      ; Green
+        out (ULA_PORT),a
         call update_objects
         call update_audio
+        ld a,5                      ; Cyan
+        out (ULA_PORT),a
         call wait_vsync
         call render
         call check_reset
@@ -65,6 +69,7 @@ game_loop:
         include "src/display.asm"
         include "src/tilemap.asm"
         include "src/sprites.asm"
+        include "src/particles.asm"
         include "src/audio.asm"
         include "src/filesystem.asm"
         include "src/print.asm"

@@ -16,3 +16,21 @@ anim_speed      BYTE
 anim_delay      BYTE
 size            BYTE
                 ENDS
+
+
+
+PARTICLE_ACTIVE equ 0
+                STRUCT PARTICLE
+X               WORD
+Y               WORD
+VX              
+VY              WORD
+prev_address    WORD
+prev_page       BYTE
+prev_colour     BYTE
+colour          BYTE
+width           BYTE
+flags           BYTE
+life            BYTE
+size            BYTE
+                ENDS

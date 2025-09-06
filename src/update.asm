@@ -1,4 +1,5 @@
 update_user_input:
+        ret
         ld a,(joystick_buttons)
         push af
         ld a,(mouse_button)

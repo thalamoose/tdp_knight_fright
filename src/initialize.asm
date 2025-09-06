@@ -16,6 +16,7 @@ again:
 initialize_game:
         call initialize_sprites
         call initialize_tilemap
+        call initialize_particles
         ; Just set up the first sprite for now.
         ld ix,animated_objects
         ld (ix+OBJECT.X),128
@@ -38,7 +39,7 @@ initialize_game:
         ld (ix+OBJECT.anim_speed),5
         ld (ix+OBJECT.anim_delay),0
         add ix,de
-.one_obj
+
         ld (ix+OBJECT.X),120
         ld (ix+OBJECT.Y),160
         ld (ix+OBJECT.frame_index),0
@@ -48,6 +49,12 @@ initialize_game:
         ld (ix+OBJECT.anim_speed),10
         ld (ix+OBJECT.anim_delay),0
         add ix,de
+
+        ld hl,0               ; xpos
+        ld de,0               ; ypos
+        ld b,  8                ; delta x  0.0625 (4.4 fixed format, signed)
+        ld c,  8                ; delta y  0.0625 (4.4 fixed format, signed)
+        call add_particle
 
         ret
 

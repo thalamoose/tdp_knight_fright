@@ -4,8 +4,6 @@ import PIL
 from PIL import Image
 
 def main(args):
-	print("Input filename=",args.input_file)
-	print("Output filename=",args.output_file)
 
 	try:
 		image = PIL.Image.open(args.input_file)

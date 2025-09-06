@@ -48,3 +48,39 @@ copy_palette:
         nextreg PALETTE_VALUE_9,a
         djnz .next_palette
         ret
+
+; 16-bit Galois LFSR using polynomial 0xB400
+; State in RNG_SEEDL (low), RNG_SEEDH (high)
+; Returns: HL = new 16-bit random value
+; Affected: AF
+get_random_16:
+        ld      hl,(random_seed)
+        ld      a,l
+        rra                        ; shift right through carry
+        ld      l,a
+        ld      a,h
+        rra
+        ld      h,a
+        jr      nc,.no_xor
+        ld      de,0xB400
+        xor     d                  ; h ^= 0xB4
+        ld      h,a
+        ld      a,l
+        xor     e                  ; l ^= 0x00
+        ld      l,a
+.no_xor:
+        ld      (random_seed),hl
+        ret
+
+; Galois LFSR: x^8 + x^6 + x^5 + x^4 + 1 (one common polynomial)
+; new = (seed >> 1) ^ ( (seed & 1) ? 0xB8 : 0 )
+; returns A=new
+get_random:
+        ld   a,(random_seed) ; 7T
+        rr   a               ; 8T   ; shift right with carry into bit7 (but we prefer logical >>)
+        jr   nc, .no_xor     ; 7T (taken or not impacts timing)
+        xor  0B8h            ; 7T
+.no_xor:
+        ld   (random_seed),a ; 7T
+        ret                  ;10T
+; total roughly 39–48 T depending on branch timing — comfortably under 50T.
