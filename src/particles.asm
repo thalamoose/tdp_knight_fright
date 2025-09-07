@@ -42,6 +42,7 @@ update_particles:
 		ld ix,particle_objects
 		ld de,PARTICLE.size
 		ld b,MAX_PARTICLES
+		ld h,0
 .update_loop
 		ld a,b
 		and 7
@@ -49,9 +50,12 @@ update_particles:
 		bit PARTICLE_ACTIVE,(ix+PARTICLE.flags)
 		jr z,.not_active
 		call update_particle
+		inc h
 .not_active
 		add ix,de
 		djnz .update_loop
+		ld a,h
+		ld (particles_active),a
 		ret
 
 update_particle:
@@ -101,6 +105,21 @@ add_particle:
 		mul d,e
 		ld ix,particle_objects
 		add ix,de
+		ld b,MAX_PARTICLES
+		ld de,PARTICLE.size
+.find_slot
+		bit PARTICLE_ACTIVE,(ix+PARTICLE.flags)
+		jr z,.found
+		add ix,de
+		inc a
+		cp MAX_PARTICLES
+		jr nz,.no_wrap
+		xor a
+		ld ix,particle_objects
+.no_wrap
+		djnz .find_slot
+		nop
+.found
 		call remove_particle
 		exx
 		push de
@@ -155,22 +174,27 @@ remove_particle:
 render_particles:
 		ld ix,particle_objects
 		ld b,MAX_PARTICLES
+		ld c,0
 		ld de,PARTICLE.size
 .render_loop:
 		bit PARTICLE_ACTIVE,(ix+PARTICLE.flags)
 		jr z,.not_active
 		call render_particle
+		inc c
 .not_active:
 		add ix,de
 		djnz .render_loop
+
+		ld a,7
+		out (ULA_PORT),a
+		push bc
+		call print_str
+		db "A:%d \n\r",0
+		ld a,0
+		ld (ULA_PORT),a
 		ret
 
 
-;*TODO*
-; *TODO*
-;	Set up another page to flip the particle sources in to.
-; Use the ULA workspace at $4000, make sure to page it back when
-; done.
 ; IX - particle, preserves all registers by using
 ; alternate set.
 render_particle:
@@ -184,15 +208,21 @@ render_particle:
 		ld de,(ix+PARTICLE.X)
 		ld b,7
 		bsra de,b
+		ld a,d
+		dec a
+		jr nc,.not_above
+		nop
+.not_above:
 		push de
-		ld hl,LAYER_2_HEIGHT-LAYER_2_BORDER
+		ld hl,PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1
 		and a
 		sbc hl,de
+
 		jp c,.clipped_pop_1
 		ld de,(ix+PARTICLE.Y)
 		bsra de,b
 		push de
-		ld hl,LAYER_2_WIDTH-LAYER_2_BORDER
+		ld hl,PARTICLE_LAYER_HEIGHT-PARTICLE_SAFE_AREA-1
 		and a
 		sbc hl,de
 		jp c,.clipped_pop_2
@@ -218,6 +248,10 @@ render_particle:
 		ld a,d
 		and %00001111
 		add a,LAYER_2_PAGE
+		cp 0x1f
+		jr nz,.nothit
+		nop
+.nothit
 		ld b,a				; Page number, save for below
 		; To figure out address within 8K page, take X coordinate and it with 7, then multiply by 256
 		ld a,c
@@ -260,8 +294,8 @@ render_particle:
 		pop hl
 .clipped_pop_0:
 		ex af,af'
+		ld (ix+PARTICLE.flags),0
 		exx
-		call restart_particle
 		ret
 
 ; 6x6 is ~1500 cycles, ~110uS (  9 per ms)

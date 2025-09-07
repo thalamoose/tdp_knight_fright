@@ -50,7 +50,8 @@ initialize_game:
         ld (ix+OBJECT.anim_delay),0
         add ix,de
 
-        ld b,128
+        ld a,(debug_max_particles)
+        ld b,a
 .make_lp
         push bc
         call debug_add_particle

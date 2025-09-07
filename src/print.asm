@@ -122,7 +122,9 @@ print_digits:
 digit_loop:
 		pop af
 		add a, '0'         ; convert to ASCII
+                push bc
 		call print_char
+                pop bc
 		djnz digit_loop
 		pop hl
 		pop bc

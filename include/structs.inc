@@ -30,7 +30,7 @@ prev_page       BYTE
 prev_colour     BYTE
 colour          BYTE
 width           BYTE
-flags           BYTE
 life            BYTE
+flags           BYTE
 size            BYTE
                 ENDS

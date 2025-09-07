@@ -52,7 +52,7 @@
             "type": "shell",
             "command": "mono", // For windows users: Remove 'mono' and add 'CSpect.exe' instead
             "args": [
-                "CSpect.exe", // For windows users: remove this entry
+                "CSpect/CSpect.exe", // For windows users: remove this entry
                 "-w4", // Window size
                 "-zxnext", // Use zxnext HW registers
                 "-mmc=./", // Enable RST 8, emulate SW card at director ./  (the trailing slash is important)

@@ -9,10 +9,15 @@ active_object_count:
 active_sprite_count:
         db 0
 
-particle_objects:
-        block PARTICLE.size*MAX_PARTICLES,0
 particle_index:
         db 0
+particles_active:
+        db 0
+debug_max_particles:
+        db 96
+        ALIGN 16
+particle_objects:
+        block PARTICLE.size*MAX_PARTICLES,0
 ; This is referenced from the center of the screen.
 ; Signed byte
 tilemap_x:

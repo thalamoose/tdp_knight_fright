@@ -24,16 +24,16 @@ load_initial_assets:
         incbin "build/assets/kfback.bin",$a000,$2000
         mmu 6,SPLASH_PAGE+6
         org SWAP_BANK_0
-        incbin "build/assets/kfback.bin",$c000,$2000
+        incbin "build/assets/kfback.bin",$6000,$2000
         mmu 6,SPLASH_PAGE+7
         org SWAP_BANK_0
-        incbin "build/assets/kfback.bin",$e000,$2000
+        incbin "build/assets/kfback.bin",$6000,$2000
         mmu 6,SPLASH_PAGE+8
         org SWAP_BANK_0
-        incbin "build/assets/kfback.bin",$10000,$2000
+        incbin "build/assets/kfback.bin",$6000,$2000
         mmu 6,SPLASH_PAGE+9
         org SWAP_BANK_0
-        incbin "build/assets/kfback.bin",$12000
+        incbin "build/assets/kfback.bin",$6000,$2000
         ;
         ; 16K in size
         

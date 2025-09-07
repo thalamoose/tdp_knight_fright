@@ -1,6 +1,6 @@
-SLICER = @python scripts/slicer.py
-MAPPER = @python scripts/charmapgen.py
-ASSEMBLER = @sjasmplus
+SLICER = python scripts/slicer.py
+MAPPER = python scripts/charmapgen.py
+ASSEMBLER = sjasmplus
 
 ASSETS= build/assets build/assets/kfsprites.bin build/assets/kfback.bin \
 		build/assets/kftiles.bin build/assets/shape_01.map build/assets/charset.bin \
@@ -38,3 +38,4 @@ clean:
 	del *.sld *.lst *.nex
 	del /s/q build
 
+.DELETE_ON_ERROR:
