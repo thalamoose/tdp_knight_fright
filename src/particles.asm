@@ -11,7 +11,9 @@
 
 ; Input, r1=4.4 format
 ; Output r1:r2=7.9 format, sign extended
-F_44_TO_79 MACRO r1,r2
+FIXED_POINT_BITS equ 6
+FIXED_POINT_SPEED_BITS equ 4
+F_4.4_TO_10.6 MACRO r1,r2
 		ld r2,r1
 		ld a,r1
 		rla
@@ -19,10 +21,6 @@ F_44_TO_79 MACRO r1,r2
 		ld r1,a
 		sla r2        ; shift low, old L7 -> carry
 		rl  r1        ; shift high with carry from L
-		sla r2
-		rl  r1
-		sla r2
-		rl  r1
 		ENDM
 initialize_particles:
 		;;;;
@@ -123,16 +121,17 @@ add_particle:
 		call remove_particle
 		exx
 		push de
-		F_44_TO_79 b,d
+
+		F_4.4_TO_10.6 b,d
 		ld (ix+PARTICLE.VX),d
 		ld (ix+PARTICLE.VX+1),b
 
-		F_44_TO_79 c,d
+		F_4.4_TO_10.6 c,d
 		ld (ix+PARTICLE.VY),d
 		ld (ix+PARTICLE.VY+1),c
 
 		ld de,hl
-		ld b,7
+		ld b,FIXED_POINT_BITS
 		bsla de,b
 		ld (ix+PARTICLE.X),de
 		pop de
@@ -206,11 +205,11 @@ render_particle:
 		; Clip if needed, we do a rough clip to the entire viewport.
 		; For now, X = 0..320, so clipping region is 0..312 ,Y=0..247
 		ld de,(ix+PARTICLE.X)
-		ld b,7
+		ld b,FIXED_POINT_BITS
 		bsra de,b
 		ld a,d
-		dec a
-		jr nc,.not_above
+		and a
+		jr z,.not_above
 		nop
 .not_above:
 		push de
@@ -248,10 +247,6 @@ render_particle:
 		ld a,d
 		and %00001111
 		add a,LAYER_2_PAGE
-		cp 0x1f
-		jr nz,.nothit
-		nop
-.nothit
 		ld b,a				; Page number, save for below
 		; To figure out address within 8K page, take X coordinate and it with 7, then multiply by 256
 		ld a,c
@@ -275,7 +270,7 @@ render_particle:
 		ld a,(ix+PARTICLE.prev_page)
 		push af
 		ld de,(ix+PARTICLE.Y)
-		ld b,7
+		ld b,FIXED_POINT_BITS
 		bsra de,b
 		ld d,e
 		push de
