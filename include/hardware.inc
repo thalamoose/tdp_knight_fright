@@ -1,4 +1,5 @@
 CLOCK_SEL               equ $07
+PERIPHERAL_3_CONTROL	equ $08
 LAYER_2_ACCESS          equ $123b
 LAYER_2_RAM_BANK        equ $12
 LAYER_2_SHADOW_BANK     equ $13

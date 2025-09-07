@@ -14,7 +14,7 @@ particle_index:
 particles_active:
         db 0
 debug_max_particles:
-        db 96
+        db 128
         ALIGN 16
 particle_objects:
         block PARTICLE.size*MAX_PARTICLES,0

@@ -1,7 +1,8 @@
 initialize_system:
 again:
 
-        nextreg CLOCK_SEL,$02                 ; 14Mhz
+        nextreg CLOCK_SEL,$03                 ; 28Mhz
+        nextreg PERIPHERAL_3_CONTROL,%01110000
         call configure_memory
         call clear_screen
         call print_str
@@ -50,37 +51,6 @@ initialize_game:
         ld (ix+OBJECT.anim_delay),0
         add ix,de
 
-        ld a,(debug_max_particles)
-        ld b,a
-.make_lp
-        push bc
-        call debug_add_particle
-        pop bc
-        djnz .make_lp
-        ret
-debug_add_particle:
-        ld hl,160-16
-        call get_random
-        and 0x07
-        add l
-        ld l,a
-        ld de,64
-        call get_random
-        and 0x07
-        add e
-        ld e,a
-
-        call get_random
-        sra a
-        sra a
-        inc a
-        ld b,a
-        call get_random
-        sra a
-        sra a
-        inc a
-        ld c,a
-        call add_particle
         ret
 
 ; Initial memory map:

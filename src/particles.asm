@@ -1,4 +1,4 @@
-; Particle coordinates are 16 bit, fixed point 9..7 format
+; Particle coordinates are 16 bit, fixed point 10..6 format
 ; Particles are rendered as square, currently xored with the
 ; current contents. However, in the future, we can or in the
 ; lower 2 bits, so it defines the colour, then we can use this
@@ -6,11 +6,10 @@
 ; by anding with %1111_1100.
 ; 
 
-;           abcd-efgh
-; aaaa-abcd.efgh-0000
-
-; Input, r1=4.4 format
-; Output r1:r2=7.9 format, sign extended
+;
+; Defining this to 1 causes it to XOR to the background
+; Defining it to 0 causes it to be written directly to the background, and zero'd when cleared.
+	DEFINE SLOW_PARTICLE 1
 FIXED_POINT_BITS equ 6
 FIXED_POINT_SPEED_BITS equ 4
 F_4.4_TO_10.6 MACRO r1,r2
@@ -36,6 +35,30 @@ initialize_particles:
 		djnz .init_loop
 		ret
 
+debug_add_particle:
+        ld hl,160-16
+        call get_random
+        and 0x07
+        add l
+        ld l,a
+        ld de,64
+        call get_random
+        and 0x07
+        add e
+        ld e,a
+
+        call get_random
+        sra a
+        sra a
+        inc a
+        ld b,a
+        call get_random
+        sra a
+        sra a
+        inc a
+        ld c,a
+        call add_particle
+        ret
 update_particles:
 		ld ix,particle_objects
 		ld de,PARTICLE.size
@@ -71,25 +94,17 @@ update_particle:
         ld (ix+PARTICLE.Y),hl
 
         ; VY += GRAVITY (downward)
-        ld hl,(ix+PARTICLE.VY)
-        ld de,GRAVITY
-        add hl,de
-        ld (ix+PARTICLE.VY),hl
+        add de,GRAVITY
+        ld (ix+PARTICLE.VY),de
         ; Decrement life
 		dec (ix+PARTICLE.life)
 		jr z,.dead
 		exx
 		ret
 .dead
+		ld (ix+PARTICLE.life),0
 		exx
-restart_particle:
-		push bc,de,hl,ix,af
-		call remove_particle
-		ld (ix+PARTICLE.flags),0
-		ld (ix+PARTICLE.prev_page),0
-		call debug_add_particle
-		pop af,ix,hl,de,bc
-        ret
+		ret
 
 ; in: HL = start X, DE = start Y
 ; B = delta x (signed) 4.4 format
@@ -164,6 +179,9 @@ remove_particle:
 		ld hl,(ix+PARTICLE.prev_address)
 		ld e,(ix+PARTICLE.prev_colour)
 		ld c,(ix+PARTICLE.width)
+	if SLOW_PARTICLE == 0
+		ld e,0
+	endif
 		call xor_particle
 		ld (ix+PARTICLE.prev_page),0
 .no_restore:
@@ -241,9 +259,8 @@ render_particle:
 		rlc a
 		jp c,.clipped_pop_0
 		ld de,bc
-		add de,de
-		add de,de
-		add de,de
+		ld b,3
+		bsla de,b
 		ld a,d
 		and %00001111
 		add a,LAYER_2_PAGE
@@ -303,25 +320,54 @@ render_particle:
 ; e - colour
 ; c - width
 ; a - mmu page
+
+DO_PARTICLE_PIXEL macro
+	if SLOW_PARTICLE != 0
+		ld a,(hl)
+		xor e
+	endif
+		ld (hl),a
+		inc hl
+	endm
+
 xor_particle:
-		cp LAYER_2_PAGE
-		jr c,xor_particle
-		cp LAYER_2_PAGE+10
-		jr nc,xor_particle
+		;jp xor_particle_iy
 		nextreg MMU_SLOT_6,a
 		inc a
 		nextreg MMU_SLOT_7,a
-		ld d,c
-.y_loop:
+		ld a,c					; Magenta
+		out (ULA_PORT),a
+		ld a,7
+		sub c
+		add a,a				; FOR 2 INSTRUCTIONS!!!!
+	if SLOW_PARTICLE != 0
+		add a,a			; FOR 4 INSTRUCTIONS!!!!
+	endif
+		ld (.y_loop+1),a			; I FEEL SO DIRTY! SELF MODIFYING CODE.
 		ld b,c
-.x_loop:
-		ld a,(hl)
-		xor e
-		ld (hl),a
-		inc hl
-		djnz .x_loop
-		sub hl,bc
-		inc h				; On to the next line, it's easy, as it's always 256 bytes
-		dec d
-		jr nz,.y_loop
+		ld c,l
+		ld a,e
+
+.y_loop:
+		jr .zero_pixel
+.seven_pixel:
+		DO_PARTICLE_PIXEL
+.six_pixel:
+		DO_PARTICLE_PIXEL
+.five_pixel:
+		DO_PARTICLE_PIXEL
+.four_pixel:
+		DO_PARTICLE_PIXEL
+.three_pixel:
+		DO_PARTICLE_PIXEL
+.two_pixel:
+		DO_PARTICLE_PIXEL
+.one_pixel:
+		DO_PARTICLE_PIXEL
+.zero_pixel:
+		ld l,c
+		inc h
+		djnz .y_loop
+		ld a,0
+		out (ULA_PORT),a
 		ret
