@@ -173,6 +173,7 @@ clear_screen:
 ; Bitmap    0  1  0 y4 y3  0  0  0 : y2 y1 y0 x4 x3 x2 x1 x0  
 ; Attr      0  1  0  1  1  0 y4 y3 : y2 y1 y0 x4 x3 x2 x1 x0  
 print_char:
+        push hl
         cp 13
         jr z,.cr
         cp 10
@@ -237,11 +238,13 @@ print_char:
 .not_eos
         ld (char_screen_y),a
 .same_line
+        pop hl
         ret
 .cr
         xor a
         jr .nextline
 .lf
+        pop hl
         ret
 
 char_screen_x:  

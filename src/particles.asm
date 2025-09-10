@@ -193,6 +193,8 @@ render_particles:
 		ld b,MAX_PARTICLES
 		ld c,0
 		ld de,PARTICLE.size
+		xor a
+		ld (particle_slot),a
 .render_loop:
 		bit PARTICLE_ACTIVE,(ix+PARTICLE.flags)
 		jr z,.not_active
@@ -202,12 +204,6 @@ render_particles:
 		add ix,de
 		djnz .render_loop
 
-		ld a,7
-		out (ULA_PORT),a
-		push bc
-		call print_str
-		db "A:%d \n\r",0
-		ld a,0
 		ld (ULA_PORT),a
 		ret
 
@@ -217,67 +213,102 @@ render_particles:
 render_particle:
 		exx
 		ex af,af'
-
+		ld a,6
+		out (ULA_PORT),a
 		; Remove previous occurance.
 		call remove_particle
-		; Clip if needed, we do a rough clip to the entire viewport.
-		; For now, X = 0..320, so clipping region is 0..312 ,Y=0..247
-		ld de,(ix+PARTICLE.X)
-		ld b,FIXED_POINT_BITS
-		bsra de,b
-		ld a,d
-		and a
-		jr z,.not_above
-		nop
-.not_above:
-		push de
-		ld hl,PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1
-		and a
-		sbc hl,de
-
-		jp c,.clipped_pop_1
-		ld de,(ix+PARTICLE.Y)
-		bsra de,b
-		push de
-		ld hl,PARTICLE_LAYER_HEIGHT-PARTICLE_SAFE_AREA-1
-		and a
-		sbc hl,de
-		jp c,.clipped_pop_2
+		ld a,6
+		out (ULA_PORT),a
 		ld a,(ix+PARTICLE.colour)
 		ld (ix+PARTICLE.prev_colour),a
+		; Clip if needed, we do a rough clip to the entire viewport.
+		; For now, X = 0..320, so clipping region is 0..312 ,Y=0..247
+		ld de,(ix+PARTICLE.Y)
+		ld b,FIXED_POINT_BITS
+		bsra de,b
+		ld a,e
+		cp (PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1)&$ff		; 7
+		jp c,.clipped											; 12
+		ld hl,de
+		ld de,(ix+PARTICLE.X)
+		bsra de,b
+		; here, HL = X coordinate
+		;       DE = Y coordinate
+
 		;call get_random
 		;ld (ix+PARTICLE.colour),a		; **DEBUG**
 		; Now calculate screen position
 		; Page in the correct bank. Each bank is 8KB, but we page it in to
 		; SWAP_BANK_0 and SWAP_BANK_1; this allows us to not have to worry
 		; about crossing a bank boundary when rendering.
-		pop hl		; X coordinate on screen (Flipped due to 320 mode, this would be Y in 256 mode)
-		pop bc		; Y coordinate on screen (Flipped due to 320 mode, this would be X in 256 mode)
+		ld a,d
+		sub (PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1)>>8
+		jr c,.not_clipped
+		ld a,e		
+		cp (PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1)&$ff
+		jr nc,.clipped
+		; Here, DE holds X coordinate, which has been clipped.
+.not_clipped:
+		; PIXELADDR = (x*256)+y (240x320 mode)
 
+		; Either x or y negative, then they're clipped.
 		ld a,h
-		or b
+		or d
 		rlc a
-		jp c,.clipped_pop_0
-		ld de,bc
-		ld b,3
-		bsla de,b
+		jr c,.clipped
+		;
+		; DE - x coordinate
+		; HL - y coordinate
+		; Figure out which 8K page we should be accessing
+		; We need to get bits 17:14 of the address, we extract this from bits 9:6 of the x-coordinate
+		;    y comes from bits ...._...._yyyy_yyyy 7..0 of hl mask 0000_0000_1111_1111
+		;    x comes from bits 12..0 of de mask 0001_1111_1111_1111
+		; page comes from bits  9..6 of de mask 0000_00xx_xx00_0000
+		; divide x by 32, this gives bank number.
+		; Final address 110x_xxxx_yyyy_yyyy
+		;				...4_3210_7654_3210
+		;				0000_xxxx
+		; Page:			...._8765
+		; 
+		; Page:
+		;				0000_deee_llll_llll
+		;     			...._0765
+		; Final address 110e_eeee_llll_llll
+		;				...4_3210_7654_3210
+		;	
+		; Figure out which page
+		ld bc,de
+		add de,de										; shift it up 2 bits, to move 9:6 to 11:8
+		add de,de										; and extract from there.
+		add de,de										; and extract from there.
 		ld a,d
 		and %00001111
 		add a,LAYER_2_PAGE
-		ld b,a				; Page number, save for below
-		; To figure out address within 8K page, take X coordinate and it with 7, then multiply by 256
-		ld a,c
+		ld de,bc
+		ld b,a											; B now holds 8K page to use
+		ld a,e
+		
 		and %00011111
-		add a,SWAP_BANK_0>>8
-		; L already contains the offset within the line
+		add SWAP_BANK_0>>8
+
 		ld h,a
-		ld a,b
-		ld e,(ix+PARTICLE.colour)
-		ld c,(ix+PARTICLE.width)
-		ld (ix+PARTICLE.prev_page),a
+		; Figure out the offset within the bank
+		ld a,b												; Bank
+		ld e,(ix+PARTICLE.colour)							; Colour
+		ld c,(ix+PARTICLE.width)							; Size
+		ld (ix+PARTICLE.prev_page),a						; Set up for restore
 		ld (ix+PARTICLE.prev_address),hl
 		call xor_particle
+		ld a,0
+		out (ULA_PORT),a
 		ex af,af'
+		exx
+		ret
+.clipped:
+		ld a,0
+		out (ULA_PORT),a
+		ex af,af'
+		ld (ix+PARTICLE.flags),0
 		exx
 		ret
 .debug_info:
@@ -300,53 +331,51 @@ render_particle:
 		pop ix
 		ret
 
-.clipped_pop_2:
-		pop hl
-.clipped_pop_1:
-		pop hl
-.clipped_pop_0:
-		ex af,af'
-		ld (ix+PARTICLE.flags),0
-		exx
-		ret
-
-; 6x6 is ~1500 cycles, ~110uS (  9 per ms)
-; 5x5 is ~1100 cycles, ~ 80uS ( 12 per ms)
-; 4x4 is  ~720 cycles, ~ 52uS ( 19 per ms)
-; 3x3 is  ~434 cycles, ~ 31uS ( 32 per ms)
-; 2x2 is  ~148 cycles, ~ 11uS ( 90 per ms)
-; 1x1 is   ~70 cycles, ~  5uS (200 per ms)
+; 6x6 is ~1159 cycles, ~ 82uS (  9 per ms)
+; 5x5 is ~ 862 cycles, ~ 61uS ( 12 per ms)
+; 4x4 is  ~613 cycles, ~ 44uS ( 19 per ms)
+; 3x3 is  ~412 cycles, ~ 29uS ( 32 per ms)
+; 2x2 is  ~259 cycles, ~ 18uS ( 90 per ms)
+; 1x1 is  ~154 cycles, ~ 11uS (200 per ms)
 ; hl - screen address
 ; e - colour
 ; c - width
 ; a - mmu page
 
 DO_PARTICLE_PIXEL macro
+	; SLOW PATH is 22 cycles
+	; FAST PATH is 11 cycles
 	if SLOW_PARTICLE != 0
-		ld a,(hl)
-		xor e
+		ld a,(hl)					; 7
+		xor e						; 4
 	endif
-		ld (hl),a
-		inc hl
+		ld (hl),a					; 7
+		inc l						; 4
 	endm
-
 xor_particle:
-		;jp xor_particle_iy
+		ld b,a
+		ld a,(particle_slot)
+		cp b
+		jr z,.same_slot
+		ld a,b
+		ld (particle_slot),a
 		nextreg MMU_SLOT_6,a
 		inc a
 		nextreg MMU_SLOT_7,a
-		ld a,c					; Magenta
+.same_slot
+		ld a,c
+		and 3
+		add 2
 		out (ULA_PORT),a
 		ld a,7
 		sub c
-		add a,a				; FOR 2 INSTRUCTIONS!!!!
+		add a,a						; FOR 2 INSTRUCTIONS!!!!
 	if SLOW_PARTICLE != 0
-		add a,a			; FOR 4 INSTRUCTIONS!!!!
+		add a,a						; FOR 4 INSTRUCTIONS!!!!
 	endif
 		ld (.y_loop+1),a			; I FEEL SO DIRTY! SELF MODIFYING CODE.
 		ld b,c
 		ld c,l
-		ld a,e
 
 .y_loop:
 		jr .zero_pixel
@@ -371,3 +400,5 @@ xor_particle:
 		ld a,0
 		out (ULA_PORT),a
 		ret
+
+
