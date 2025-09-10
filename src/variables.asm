@@ -18,6 +18,7 @@ debug_max_particles:
         ALIGN 16
 particle_slot:
         db 0
+        ALIGN 64
 particle_objects:
         block PARTICLE.size*MAX_PARTICLES,0
 ; This is referenced from the center of the screen.

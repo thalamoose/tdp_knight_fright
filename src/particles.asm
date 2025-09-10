@@ -64,7 +64,9 @@ update_particles:
 .update_loop
 		bit PARTICLE_ACTIVE,(ix+PARTICLE.flags)
 		jr z,.not_active
+		exx
 		call update_particle
+		exx
 		inc h
 .not_active
 		add ix,de
@@ -73,31 +75,54 @@ update_particles:
 		ld (particles_active),a
 		ret
 
+; IX is assumed to be on a 64 byte boundary.
+; 220 cycles per update. vs 257 on old method
 update_particle:
-		exx
         ; X += VX
-        ld hl,(ix+PARTICLE.X)
-        ld de,(ix+PARTICLE.VX)
-        add hl,de
-        ld (ix+PARTICLE.X),hl
+		ld de,ix
+		ld hl,de
+		ld c,(hl)				; Load VX
+		inc l
+		ld b,(hl)
+		inc l
+		ld e,(hl)				; Load X
+		inc l
+		ld d,(hl)
+        add de,bc				; X=X+VX
+		ld (hl),d				; Store X
+		dec l
+		ld (hl),e
+		inc l
+		inc l
 
         ; Y += VY
-        ld hl,(ix+PARTICLE.Y)
-        ld de,(ix+PARTICLE.VY)
-        add hl,de
-        ld (ix+PARTICLE.Y),hl
+		ld a,l					; Save offset to VY
+		ld c,(hl)				; Load VY
+		inc l
+		ld b,(hl)
+		inc l
+		ld e,(hl)				; Load Y
+		inc l
+		ld d,(hl)
+        add de,bc				; Y=Y+VY
+		ld (hl),d				; Store Y
+		dec l
+		ld (hl),e
+		inc l
+		inc l
 
-        ; VY += GRAVITY (downward)
-        add de,GRAVITY
-        ld (ix+PARTICLE.VY),de
+		add bc,GRAVITY
+		ld l,a					; Store back in VY
+		ld (hl),c
+		inc l
+		ld (hl),b
+		inc l
+		inc l
+		inc l
         ; Decrement life
-		dec (ix+PARTICLE.life)
-		jr z,.dead
-		exx
-		ret
-.dead
+		dec (hl)
+		ret nz					; If not dead, return
 		ld (ix+PARTICLE.life),0
-		exx
 		ret
 
 ; in: HL = start X, DE = start Y
@@ -180,8 +205,6 @@ remove_particle:
 
 
 render_particles:
-		ld a,3
-		out (ULA_PORT),a
 		ld ix,particle_objects
 		ld b,MAX_PARTICLES
 		ld c,0
@@ -196,8 +219,6 @@ render_particles:
 .not_active:
 		add ix,de
 		djnz .render_loop
-		ld a,6
-		out (ULA_PORT),a
 
 		ret
 
@@ -254,7 +275,6 @@ render_particle:
 		;    y comes from bits ...._...._yyyy_yyyy 7..0 of hl mask 0000_0000_1111_1111
 		;    x comes from bits 12..0 of de mask 0001_1111_1111_1111
 		; page comes from bits  9..6 of de mask 0000_00xx_xx00_0000
-		; divide x by 32, this gives bank number.
 		; Final address 110x_xxxx_yyyy_yyyy
 		;				...4_3210_7654_3210
 		;				0000_xxxx

@@ -21,16 +21,16 @@ size            BYTE
 
 PARTICLE_ACTIVE equ 0
                 STRUCT PARTICLE
+VX              WORD                    ; These have to be in a specific order to make the particle update fast.
 X               WORD
-Y               WORD
-VX              WORD
 VY              WORD
+Y               WORD
+life            BYTE
 prev_address    WORD
 prev_page       BYTE
 prev_colour     BYTE
 colour          BYTE
 width           BYTE
-life            BYTE
 flags           BYTE
 size            BYTE
                 ENDS
