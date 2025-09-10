@@ -7,9 +7,6 @@
 ; 
 
 ;
-; Defining this to 1 causes it to XOR to the background
-; Defining it to 0 causes it to be written directly to the background, and zero'd when cleared.
-	DEFINE SLOW_PARTICLE 1
 FIXED_POINT_BITS equ 6
 FIXED_POINT_SPEED_BITS equ 4
 F_4.4_TO_10.6 MACRO r1,r2
@@ -65,9 +62,6 @@ update_particles:
 		ld b,MAX_PARTICLES
 		ld h,0
 .update_loop
-		ld a,b
-		and 7
-		out (ULA_PORT),a
 		bit PARTICLE_ACTIVE,(ix+PARTICLE.flags)
 		jr z,.not_active
 		call update_particle
@@ -176,12 +170,9 @@ remove_particle:
 		ld a,(ix+PARTICLE.prev_page)
 		and a
 		jr z,.no_restore
-		ld hl,(ix+PARTICLE.prev_address)
-		ld e,(ix+PARTICLE.prev_colour)
+		ld de,(ix+PARTICLE.prev_address)
+		ld b,(ix+PARTICLE.prev_colour)
 		ld c,(ix+PARTICLE.width)
-	if SLOW_PARTICLE == 0
-		ld e,0
-	endif
 		call xor_particle
 		ld (ix+PARTICLE.prev_page),0
 .no_restore:
@@ -189,6 +180,8 @@ remove_particle:
 
 
 render_particles:
+		ld a,3
+		out (ULA_PORT),a
 		ld ix,particle_objects
 		ld b,MAX_PARTICLES
 		ld c,0
@@ -203,8 +196,9 @@ render_particles:
 .not_active:
 		add ix,de
 		djnz .render_loop
+		ld a,6
+		out (ULA_PORT),a
 
-		ld (ULA_PORT),a
 		ret
 
 
@@ -213,12 +207,8 @@ render_particles:
 render_particle:
 		exx
 		ex af,af'
-		ld a,6
-		out (ULA_PORT),a
 		; Remove previous occurance.
 		call remove_particle
-		ld a,6
-		out (ULA_PORT),a
 		ld a,(ix+PARTICLE.colour)
 		ld (ix+PARTICLE.prev_colour),a
 		; Clip if needed, we do a rough clip to the entire viewport.
@@ -278,9 +268,12 @@ render_particle:
 		;	
 		; Figure out which page
 		ld bc,de
-		add de,de										; shift it up 2 bits, to move 9:6 to 11:8
-		add de,de										; and extract from there.
-		add de,de										; and extract from there.
+		ex de,hl
+		ld a,d
+		add hl,hl										; shift it up 2 bits, to move 9:6 to 11:8
+		add hl,hl										; and extract from there.
+		add hl,hl										; and extract from there.
+		ex de,hl
 		ld a,d
 		and %00001111
 		add a,LAYER_2_PAGE
@@ -291,114 +284,108 @@ render_particle:
 		and %00011111
 		add SWAP_BANK_0>>8
 
-		ld h,a
+		ld d,a
+		ld e,l
 		; Figure out the offset within the bank
 		ld a,b												; Bank
-		ld e,(ix+PARTICLE.colour)							; Colour
+		ld b,(ix+PARTICLE.colour)							; Colour
 		ld c,(ix+PARTICLE.width)							; Size
 		ld (ix+PARTICLE.prev_page),a						; Set up for restore
-		ld (ix+PARTICLE.prev_address),hl
+		ld (ix+PARTICLE.prev_address),de
 		call xor_particle
-		ld a,0
-		out (ULA_PORT),a
 		ex af,af'
 		exx
 		ret
 .clipped:
-		ld a,0
-		out (ULA_PORT),a
 		ex af,af'
 		ld (ix+PARTICLE.flags),0
 		exx
 		ret
-.debug_info:
-		push ix
-		ld hl,(ix+PARTICLE.prev_address)
-		push hl
-		ld a,(ix+PARTICLE.prev_page)
-		push af
-		ld de,(ix+PARTICLE.Y)
-		ld b,FIXED_POINT_BITS
-		bsra de,b
-		ld d,e
-		push de
-		ld de,(ix+PARTICLE.X)
-		bsra de,b
-		ld d,e
-		push de
-		call print_str
-		db "x=%c, y=%c, page=%c, addr=%x\r\n",0
-		pop ix
-		ret
 
-; 6x6 is ~1159 cycles, ~ 82uS (  9 per ms)
-; 5x5 is ~ 862 cycles, ~ 61uS ( 12 per ms)
-; 4x4 is  ~613 cycles, ~ 44uS ( 19 per ms)
-; 3x3 is  ~412 cycles, ~ 29uS ( 32 per ms)
-; 2x2 is  ~259 cycles, ~ 18uS ( 90 per ms)
-; 1x1 is  ~154 cycles, ~ 11uS (200 per ms)
-; hl - screen address
-; e - colour
-; c - width
-; a - mmu page
+; 6x6 is ~ 818 cycles, ~ 82uS (  9 per ms)
+; 5x5 is ~ 572 cycles, ~ 61uS ( 12 per ms)
+; 4x4 is  ~370 cycles, ~ 44uS ( 19 per ms)
+; 3x3 is  ~212 cycles, ~ 29uS ( 32 per ms)
+; 2x2 is  ~ 98 cycles, ~ 18uS ( 90 per ms)
+; 1x1 is  ~ 28 cycles, ~ 11uS (200 per ms)
 
-DO_PARTICLE_PIXEL macro
-	; SLOW PATH is 22 cycles
-	; FAST PATH is 11 cycles
-	if SLOW_PARTICLE != 0
-		ld a,(hl)					; 7
-		xor e						; 4
-	endif
-		ld (hl),a					; 7
-		inc l						; 4
-	endm
+; Scary macro because there's no loops, only recursion
+; Row is 22*hpixels cycles
+DO_ROW MACRO hpixels
+		ld a,(de)					; 7
+		xor b						; 4
+		ld (de),a					; 7
+		IF hpixels > 1
+			inc e					; 4
+		ENDIF
+		IF hpixels > 1
+			DO_ROW hpixels-1
+		ENDIF
+	ENDM
+
+; (22*hpixels+8)*hpixels
+DO_PIXELS MACRO hpixels,vpixels
+	DO_ROW hpixels
+	IF vpixels > 1
+		ld e,c
+		inc d
+	ENDIF
+	IF vpixels > 1
+		DO_PIXELS hpixels,vpixels-1
+	ENDIF
+	ret
+	ENDM
+; INPUT:
+; a - mmu slot
+; c - Size (0..7) - 0 doesn't make sense
+; b - Colour
+; de - Address
+; 
+; h,l only available
 xor_particle:
-		ld b,a
+		ld l,a
 		ld a,(particle_slot)
-		cp b
+		cp l
 		jr z,.same_slot
-		ld a,b
+		ld a,l
 		ld (particle_slot),a
 		nextreg MMU_SLOT_6,a
 		inc a
 		nextreg MMU_SLOT_7,a
 .same_slot
 		ld a,c
-		and 3
-		add 2
-		out (ULA_PORT),a
-		ld a,7
-		sub c
-		add a,a						; FOR 2 INSTRUCTIONS!!!!
-	if SLOW_PARTICLE != 0
-		add a,a						; FOR 4 INSTRUCTIONS!!!!
-	endif
-		ld (.y_loop+1),a			; I FEEL SO DIRTY! SELF MODIFYING CODE.
-		ld b,c
-		ld c,l
-
-.y_loop:
-		jr .zero_pixel
-.seven_pixel:
-		DO_PARTICLE_PIXEL
-.six_pixel:
-		DO_PARTICLE_PIXEL
-.five_pixel:
-		DO_PARTICLE_PIXEL
-.four_pixel:
-		DO_PARTICLE_PIXEL
-.three_pixel:
-		DO_PARTICLE_PIXEL
-.two_pixel:
-		DO_PARTICLE_PIXEL
-.one_pixel:
-		DO_PARTICLE_PIXEL
-.zero_pixel:
+		add a
+		ld hl,.index_table
+		or l
+		ld l,a
+		ld c,(hl)
+		inc hl
+		ld h,(hl)
 		ld l,c
-		inc h
-		djnz .y_loop
-		ld a,0
-		out (ULA_PORT),a
-		ret
+		ld c,e
+		; on entry to the macro expanded routine:
+		; DE - Screen address
+		;  B - Colour
+		;  C - Copy of E
+		jp (hl)
+		ALIGN 16
+.index_table:
+		dw .zero_pixel,.one_pixel,.two_pixel,.three_pixel,.four_pixel,.five_pixel,.six_pixel,.seven_pixel
 
+.seven_pixel:
+		DO_PIXELS 7,7
+.six_pixel:
+		DO_PIXELS 6,6
+.five_pixel:
+		DO_PIXELS 5,5
+.four_pixel:
+		DO_PIXELS 4,4
+.three_pixel:
+		DO_PIXELS 3,3
+.two_pixel:
+		DO_PIXELS 2,2
+.one_pixel:
+		DO_PIXELS 1,1
+.zero_pixel:
+		ret
 
