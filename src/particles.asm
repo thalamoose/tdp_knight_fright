@@ -24,7 +24,7 @@ initialize_particles:
 		ld (particle_index),a
 		ld b,MAX_PARTICLES
 		ld ix,particle_objects
-		ld de,PARTICLE.size
+		ld de,PARTICLE
 .init_loop:
 		ld (ix+PARTICLE.flags),0				; Mark it inactive
 		ld (ix+PARTICLE.prev_page),0			; Mark it so it doesn't need restoring.
@@ -58,7 +58,7 @@ debug_add_particle:
         ret
 update_particles:
 		ld ix,particle_objects
-		ld de,PARTICLE.size
+		ld de,PARTICLE
 		ld b,MAX_PARTICLES
 		ld h,0
 .update_loop
@@ -133,12 +133,12 @@ add_particle:
 		exx
 		ld a,(particle_index)
 		ld e,a
-		ld d,PARTICLE.size
+		ld d,PARTICLE
 		mul d,e
 		ld ix,particle_objects
 		add ix,de
 		ld b,MAX_PARTICLES
-		ld de,PARTICLE.size
+		ld de,PARTICLE
 .find_slot
 		bit PARTICLE_ACTIVE,(ix+PARTICLE.flags)
 		jr z,.found
@@ -208,7 +208,7 @@ render_particles:
 		ld ix,particle_objects
 		ld b,MAX_PARTICLES
 		ld c,0
-		ld de,PARTICLE.size
+		ld de,PARTICLE
 		xor a
 		ld (particle_slot),a
 .render_loop:
@@ -357,7 +357,7 @@ DO_PIXELS MACRO hpixels,vpixels
 	ENDM
 ; INPUT:
 ; a - mmu slot
-; c - Size (0..7) - 0 doesn't make sense
+; c - Size (1..8) - 0 doesn't make sense and will result in 8.
 ; b - Colour
 ; de - Address
 ; 
@@ -374,12 +374,14 @@ xor_particle:
 		nextreg MMU_SLOT_7,a
 .same_slot
 		ld a,c
+		dec a
+		and 7
 		add a
 		ld hl,.index_table
 		or l
 		ld l,a
 		ld c,(hl)
-		inc hl
+		inc l
 		ld h,(hl)
 		ld l,c
 		ld c,e
@@ -390,8 +392,10 @@ xor_particle:
 		jp (hl)
 		ALIGN 16
 .index_table:
-		dw .zero_pixel,.one_pixel,.two_pixel,.three_pixel,.four_pixel,.five_pixel,.six_pixel,.seven_pixel
+		dw .one_pixel,.two_pixel,.three_pixel,.four_pixel,.five_pixel,.six_pixel,.seven_pixel,.eight_pixel
 
+.eight_pixel:
+		DO_PIXELS 8,8
 .seven_pixel:
 		DO_PIXELS 7,7
 .six_pixel:

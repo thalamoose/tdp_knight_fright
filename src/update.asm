@@ -40,7 +40,7 @@ update_sprites:
 .no_inc_y
         ld (ix+OBJECT.Y),bc
 
-        ld de,OBJECT.size
+        ld de,OBJECT
         add ix,de
 
         ld a,(ix+OBJECT.X)

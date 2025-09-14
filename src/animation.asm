@@ -31,7 +31,7 @@ animate_objects:
         ld (ix+OBJECT.flags),d
         ld (ix+OBJECT.frame_index),e
 .not_active
-        ld de,OBJECT.size
+        ld de,OBJECT
         add ix,de
         djnz .anim_loop
         ret

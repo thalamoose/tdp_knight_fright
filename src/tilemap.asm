@@ -22,14 +22,14 @@ initialize_tilemap:
         ld hl,SWAP_BANK_0
         ld de,SWAP_BANK_1
         ld bc,$2000
-        ldir
+        call memcpy_dma
         ;
         ; TEMPORARY FOR TESTING UNTIL TILEMAP PROPERLY SORTED
         ;
         ld hl,SWAP_BANK_0
         ld de,SWAP_BANK_1+32
         ld bc,$1fe0
-        ldir
+        call memcpy_dma
         ; 
         ; END TESTING CODE
         ;

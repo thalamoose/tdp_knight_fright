@@ -34,26 +34,12 @@ wait_vsync:
         ret
 upload_sprites:
         ;
-        ; Upload test sprites
+        ; Upload test sprites (test uses 16384KB - 64 sprites)
         ;
         nextreg MMU_SLOT_6,SPRITES_PAGE
         nextreg MMU_SLOT_7,SPRITES_PAGE+1
-.copy_sprite_page
         ld a,0                                          ; Select sprite 0
+        ld e,16384/256
         ld hl,SWAP_BANK_0
-.next_sprite
-        ld bc,SPRITE_SLOT_PORT
-        out (c),a
-        ld bc,SPRITE_PATTERN_PORT
-        ld d,a
-        ld e,0
-.next_upload
-        outi
-        inc b
-        dec e
-        jr nz,.next_upload
-        ld a,d
-        inc a
-        cp 64
-        jr nz,.next_sprite
+        call sprcpy_dma
         ret

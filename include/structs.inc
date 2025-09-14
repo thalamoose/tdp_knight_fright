@@ -14,7 +14,6 @@ total_frames    BYTE
 flags           BYTE
 anim_speed      BYTE
 anim_delay      BYTE
-size            BYTE
                 ENDS
 
 
@@ -32,5 +31,4 @@ prev_colour     BYTE
 colour          BYTE
 width           BYTE
 flags           BYTE
-size            BYTE
                 ENDS

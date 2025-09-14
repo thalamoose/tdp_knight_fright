@@ -4,15 +4,14 @@ again:
         nextreg CLOCK_SEL,$03                 ; 28Mhz
         nextreg PERIPHERAL_3_CONTROL,%01110000
         call configure_memory
+        call initialize_interrupts
         call clear_screen
         call print_str
         db "Booting KnightFright...\r\n"
         db __TIME__," ",__DATE__,"\r\n",0
-        call initialize_interrupts
         call initialize_display
         call initialize_audio
 ;    call initialize_filesystem
-        ei
         ret
 initialize_game:
         call initialize_sprites
@@ -28,7 +27,7 @@ initialize_game:
         ld (ix+OBJECT.flags),(1<<ANIM_ACTIVE)
         ld (ix+OBJECT.anim_speed),5
         ld (ix+OBJECT.anim_delay),0
-        ld de,OBJECT.size
+        ld de,OBJECT
         add ix,de
 
         ld (ix+OBJECT.X),160
@@ -63,6 +62,4 @@ configure_memory:
         nextreg MMU_SLOT_2,ULA_SHADOW_PAGE
         nextreg MMU_SLOT_3,ULA_SHADOW_PAGE+1
         ld bc,MEM_PAGING_CONTROL_PORT
-        ret
-initialize_interrupts:
         ret

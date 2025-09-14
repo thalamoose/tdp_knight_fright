@@ -10,15 +10,7 @@
 
     SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION
 
-NEX:    equ 1   ;  1=Create nex file, 0=create sna file
-
-    IF NEX == 0
-        ;DEVICE ZXSPECTRUM128
-        DEVICE ZXSPECTRUM48
-        ;DEVICE NOSLOT64Kmf
-    ELSE
-        DEVICE ZXSPECTRUMNEXT
-    ENDIF
+    DEVICE ZXSPECTRUMNEXT
 
     org 0x8000
 
@@ -67,8 +59,6 @@ game_loop:
             inc a
             jr .more
 .enough
-;
-; *DEBUG CODE*
         call wait_vsync
         call render
         call check_reset
@@ -90,17 +80,14 @@ game_loop:
         include "src/audio.asm"
         include "src/filesystem.asm"
         include "src/print.asm"
+        include "src/dma.asm"
+        include "src/interrupts.asm"
         include "src/variables.asm"
         include "src/assets.asm"
         
-        IF NEX == 0
-            SAVESNA "build/KnightFright.sna", main
-        ELSE
-            SAVENEX OPEN "build/KnightFright.nex", main, STACK_TOP
-            SAVENEX CORE 3, 1, 5
-            SAVENEX CFG 7   ; Border color
-            ;SAVENEX AUTO *** THIS DOESN'T WORK RIGHT! IT DOESN'T EXPORT THINGS CORRECTLY.
-            SAVENEX BANK 5,2,0,1,3,4,6,16,17,18,19,20,21,22
-            SAVENEX CLOSE
-        ENDIF
- 
+        SAVENEX OPEN "build/KnightFright.nex", main, STACK_TOP
+        SAVENEX CORE 3, 1, 5
+        SAVENEX CFG 7   ; Border color
+        ;SAVENEX AUTO *** THIS DOESN'T WORK RIGHT! IT DOESN'T EXPORT THINGS CORRECTLY.
+        SAVENEX BANK 5,2,0,1,3,4,6,16,17,18,19,20,21,22
+        SAVENEX CLOSE

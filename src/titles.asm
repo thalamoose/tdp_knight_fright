@@ -30,7 +30,7 @@ copy_splash:
         ld hl,SWAP_BANK_0
         ld de,SWAP_BANK_1
         ld bc,$2000
-        ldir
+        call memcpy_dma
         pop de
         pop bc
         ret

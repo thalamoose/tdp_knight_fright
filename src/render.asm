@@ -55,7 +55,7 @@ convert_objects_to_sprites:
 .not_ext_idx
         nextreg SPRITE_ATTR_4,a
 .not_active
-        ld de,OBJECT.size
+        ld de,OBJECT
         add ix,de
         djnz .update_loop
         ;

@@ -2,7 +2,7 @@
 
 
 animated_objects:
-        block OBJECT.size*MAX_OBJECTS,0
+        block OBJECT*MAX_OBJECTS
 
 active_object_count:
         db 0
@@ -14,15 +14,17 @@ particle_index:
 particles_active:
         db 0
 debug_max_particles:
-        db 128
+        db 64
         ALIGN 16
 particle_slot:
         db 0
         ALIGN 64
 particle_objects:
-        block PARTICLE.size*MAX_PARTICLES,0
+        block PARTICLE*MAX_PARTICLES,0
 ; This is referenced from the center of the screen.
 ; Signed byte
+        ALIGN 4
+vsync_counter dw 0,0
 tilemap_x:
         db 0
 tilemap_y:
