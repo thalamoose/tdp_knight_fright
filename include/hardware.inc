@@ -71,3 +71,26 @@ JOYPAD_L_LEFT           equ 1
 JOYPAD_L_RIGHT          equ 0
 
 MAX_SPRITES             equ 128
+
+DMA_RESET                      equ $c3
+DMA_RESET_PORT_A_TIMING        equ $c7
+DMA_RESET_PORT_B_TIMING        equ $cb
+DMA_LOAD                       equ $cf ; %11001111
+DMA_CONTINUE                   equ $d3
+DMA_DISABLE_INTERUPTS          equ $af
+DMA_ENABLE_INTERUPTS           equ $ab
+DMA_RESET_DISABLE_INTERUPTS    equ $a3
+DMA_ENABLE_AFTER_RETI          equ $b7
+DMA_READ_STATUS_BYTE           equ $bf
+DMA_REINIT_STATUS_BYTE         equ $8b
+DMA_START_READ_SEQUENCE        equ $a7
+DMA_FORCE_READY                equ $b3
+DMA_DISABLE                    equ $83
+DMA_ENABLE                     equ $87
+DMA_WRITE_REGISTER_COMMAND     equ $bb
+DMA_BURST                      equ %11001101
+DMA_CONTINUOUS                 equ %10101101
+ZXN_DMA_PORT                   equ $6b
+SPRITE_STATUS_SLOT_SELECT      equ $303B
+SPRITE_IMAGE_PORT              equ $5b
+SPRITE_INFO_PORT               equ $57

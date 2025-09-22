@@ -7,7 +7,7 @@
             "command": "make", // Please add the full path to sjasmplus
             "args": [
                 "all",
-                "-f","makefile"
+                "-f","makefile", "-j"
             ],
             "problemMatcher": {
                 "owner": "sjasmplus",

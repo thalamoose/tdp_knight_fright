@@ -49,7 +49,7 @@ GetSetDrive:
 
 		xor	a	; set drive. 0 is default
 		rst	$08
-		db	$89
+		db	M_GETSETDRV
 		ld	(DefaultDrive),a
 
 		pop	ix
@@ -150,8 +150,21 @@ fseek:
 ; Init the file system
 ; *******************************************************************************************************
 initialize_filesystem:
+		ret
+		; Page in ROM 2, to $0000-$3fff
+		; Select ROM %10 - +3DOS ROM
+		ld bc,$1ffd
+		ld a,%00000100
+		out (c),a
+		ld bc,$7ffd
+		ld a,%00000000
+		out (c),a
+		ld a,%10000000
+		out ($e3),a
 		call    GetSetDrive
 		ret
+
+prepare_call:
 
 
 ; *******************************************************************************************************
