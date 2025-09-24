@@ -16,7 +16,26 @@ anim_speed      BYTE
 anim_delay      BYTE
                 ENDS
 
+PLAYER_STATE_IDLE       equ 0
+PLAYER_STATE_MOVE_TR    equ 1
+PLAYER_STATE_MOVE_TL    equ 2
+PLAYER_STATE_MOVE_BR    equ 3
+PLAYER_STATE_MOVE_BL    equ 4
+PLAYER_STATE_DIE        equ 5
+PLAYER_STATE_JUMP       equ 6
+PLAYER_STATE_DEAD       equ 7
+PLAYER_STATE_BONUS      equ 8
 
+
+                STRUCT PLAYER
+object          OBJECT
+lives_remaining BYTE
+score           BLOCK 4
+invincible      BYTE
+direction       BYTE
+state           BYTE
+
+                ENDS
 
 PARTICLE_ACTIVE equ 0
                 STRUCT PARTICLE

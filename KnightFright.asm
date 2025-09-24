@@ -73,6 +73,8 @@ game_loop:
         include "src/movement.asm"
         include "src/update.asm"
         include "src/render.asm"
+        include "src/player.asm"
+        include "src/baddies.asm"
         include "src/display.asm"
         include "src/tilemap.asm"
         include "src/sprites.asm"
@@ -89,5 +91,5 @@ game_loop:
         SAVENEX CORE 3, 1, 5
         SAVENEX CFG 7   ; Border color
         ;SAVENEX AUTO *** THIS DOESN'T WORK RIGHT! IT DOESN'T EXPORT THINGS CORRECTLY.
-        SAVENEX BANK 2,16,17,18,19,20,21,22
+        SAVENEX BANK 2,16,17,18,19,20,21,22,23,24,25,26,27
         SAVENEX CLOSE

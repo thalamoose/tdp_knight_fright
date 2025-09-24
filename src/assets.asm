@@ -48,6 +48,39 @@ load_initial_assets:
         mmu 6,TILES_PAGE+0
         org SWAP_BANK_0
         incbin "build/assets/kftiles.bin"
+
+        mmu 6,PLAYER_ANIM_PAGE
+        org SWAP_BANK_0
+        incbin "build/assets/kfplayer.bin",$0000,$2000
+
+        mmu 6,PLAYER_ANIM_PAGE+1
+        org SWAP_BANK_0
+        incbin "build/assets/kfplayer.bin",$2000,$2000
+
+        mmu 6,PLAYER_ANIM_PAGE+2
+        org SWAP_BANK_0
+        incbin "build/assets/kfplayer.bin",$4000,$2000
+
+        mmu 6,PLAYER_ANIM_PAGE+3
+        org SWAP_BANK_0
+        incbin "build/assets/kfplayer.bin",$6000,$2000
+
+        mmu 6,PLAYER_ANIM_PAGE+4
+        org SWAP_BANK_0
+        incbin "build/assets/kfplayer.bin",$8000,$2000
+
+        mmu 6,PLAYER_ANIM_PAGE+5
+        org SWAP_BANK_0
+        incbin "build/assets/kfplayer.bin",$a000,$2000
+
+        mmu 6,PLAYER_ANIM_PAGE+6
+        org SWAP_BANK_0
+        incbin "build/assets/kfplayer.bin",$c000,$2000
+
+        mmu 6,PLAYER_ANIM_PAGE+7
+        org SWAP_BANK_0
+        incbin "build/assets/kfplayer.bin",$e000,$2000
+
         ;
         ; All palettes go here
         ;
@@ -59,6 +92,8 @@ splash_palette:
 ; 256 colours for the sprites
 sprite_palette:
         incbin "build/assets/kfback.pal"
+player_palette:
+        incbin "build/assets/kfplayer.pal"
 ; 256 colours for the tilemap
 tilemap_palette:
         incbin "build/assets/kftiles.pal"

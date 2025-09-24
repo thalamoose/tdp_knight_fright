@@ -1,6 +1,8 @@
 
 
 
+player_object:
+        block PLAYER
 animated_objects:
         block OBJECT*MAX_OBJECTS
 

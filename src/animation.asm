@@ -2,6 +2,12 @@ animate_objects:
         ld ix,animated_objects
         ld b,MAX_OBJECTS
 .anim_loop
+        call animate_object
+        ld de,OBJECT
+        add ix,de
+        djnz .anim_loop
+        ret
+animate_object:
         ld d,(ix+OBJECT.flags)
         ld e,(ix+OBJECT.frame_index)
         bit ANIM_ACTIVE,d                               ; Not animating, skip
@@ -31,9 +37,6 @@ animate_objects:
         ld (ix+OBJECT.flags),d
         ld (ix+OBJECT.frame_index),e
 .not_active
-        ld de,OBJECT
-        add ix,de
-        djnz .anim_loop
         ret
 .going_down
         dec e
