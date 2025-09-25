@@ -1,4 +1,4 @@
-initialize_baddies:
+initialize_npcs:
 		ld hl,animated_objects
 		ld bc,OBJECT*MAX_OBJECTS
 		ld a,0
@@ -39,5 +39,5 @@ initialize_baddies:
 
 		ret
 
-update_baddies:
+update_npcs:
 		ret

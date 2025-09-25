@@ -74,7 +74,7 @@ game_loop:
         include "src/update.asm"
         include "src/render.asm"
         include "src/player.asm"
-        include "src/baddies.asm"
+        include "src/npcs.asm"
         include "src/display.asm"
         include "src/tilemap.asm"
         include "src/sprites.asm"

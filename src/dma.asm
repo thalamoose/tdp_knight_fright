@@ -57,7 +57,7 @@ sprcpy_len
 	  	dw 0                                    ; R0-Block length                                       (length in bytes)
         db %01010100                            ; R1-read A time byte, increment, to memory, bitmask
         db %00000010                            ; R1-Cycle length port A
-        db %01101000                            ; R2-write B time byte, increment, to memory, bitmask
+        db %01101000                            ; R2-write B time byte, to port, bitmask
         db %00000010                            ; R2-Cycle length port B
         db DMA_CONTINUOUS                       ; R4-Continuous mode  (use this for block tansfer), write dest adress
         dw SPRITE_PATTERN_PORT                  ; R4-Dest address                                       (destination port)

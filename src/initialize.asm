@@ -18,8 +18,7 @@ initialize_game:
         call initialize_tilemap
         call initialize_particles
         call initialize_player
-        call initialize_baddies
-
+        call initialize_npcs
         ret
 
 ; Initial memory map:

@@ -72,7 +72,7 @@ def main(args):
 			tile_group=cropped_image.crop((xpos,ypos,xpos+group_width,ypos+group_height))
 			for yoffset in range(0,group_height,block_height):
 				for xoffset in range(0,group_width,block_width):
-					tile=cropped_image.crop((xoffset,yoffset,xoffset+block_width,yoffset+block_height))
+					tile=tile_group.crop((xoffset,yoffset,xoffset+block_width,yoffset+block_height))
 					tile_data = tile.getdata()
 					raw_bytes=bytes(tile_data)
 					if max_colors>16:

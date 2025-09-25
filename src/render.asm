@@ -1,5 +1,6 @@
 render:
         call update_tilemap
+        call render_player
         call convert_objects_to_sprites
         ld a,0
         out (ULA_PORT),a

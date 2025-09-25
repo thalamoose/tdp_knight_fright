@@ -161,7 +161,7 @@
             "request" : "launch",
             "program" : "${file}",
             "console" : "integratedTerminal",
-            "args" : ["assets/kftiles.png","--tile","build/assets/kftiles.bin", "--palette=kftiles.pal"]
+            "args" : ["assets/kfplayer.png","--size=32,32","--sprite", "build/assets/kfplayer.bin", "--palette=kfplayer.pal"]
         }
 
     ]
