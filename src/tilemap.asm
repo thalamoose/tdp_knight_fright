@@ -73,8 +73,12 @@ initialize_tilemap:
         ld de,SWAP_BANK_0+$2000
         ld a,1
         call copy_tile_block
+        ; default position until map is properly set up.
+        ld hl,play_area_center_x
+        ld (hl),PLAY_AREA_CELLS_WIDTH/2
+        inc hl
+        ld (hl),PLAY_AREA_CELLS_HEIGHT/2
         ret
-
 update_tilemap:
         ld a,(tilemap_x)
         inc a

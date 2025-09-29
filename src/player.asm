@@ -7,8 +7,10 @@ initialize_player:
 		ld (ix+PLAYER.object.X),320/2
 		ld (ix+PLAYER.object.Y),256/2
 		ld (ix+PLAYER.direction),0
+		ld (ix+PLAYER.playgrid_x),PLAY_AREA_CELLS_WIDTH/2			; Set initial position to the middle of the play area.
+		ld (ix+PLAYER.playgrid_y),PLAY_AREA_CELLS_HEIGHT/2			; Play area is 16x16 cells (1024x1024 pixels) - way too big!
 		ld (ix+PLAYER.object.frame_index),0
-		ld (ix+PLAYER.object.base_index),32			; Max of 256 frames of animation for the player
+		ld (ix+PLAYER.object.base_index),32							; Max of 256 frames of animation for the player
 		ld (ix+PLAYER.object.anim_delay),4
 		ld (ix+PLAYER.object.anim_speed),4
 		ld (ix+PLAYER.object.total_frames),8
@@ -60,50 +62,115 @@ update_player:
 		ret
 
 update_player_movement:
+		ld a,(ix+PLAYER.move_steps)
+		and a
+		jr z,.move_allowed
+		; Update X movement
+		ld a,(ix+PLAYER.object.X)
+		add (ix+PLAYER.object.VX)
+		ld (ix+PLAYER.object.X),a
+		ld a,(ix+PLAYER.object.X+1)
+		adc (ix+PLAYER.object.VX+1)
+		ld (ix+PLAYER.object.X+1),a
+		; Update Y movement
+		ld a,(ix+PLAYER.object.Y)
+		add (ix+PLAYER.object.VY)
+		ld (ix+PLAYER.object.Y),a
+		ld a,(ix+PLAYER.object.Y+1)
+		adc (ix+PLAYER.object.VY+1)
+		ld (ix+PLAYER.object.Y+1),a
+		dec (ix+PLAYER.move_steps)
+		ret nz
+		; Move has completed. Force player sprite to correct grid position
+		ld a,(play_area_center_x)
+		sub (ix+PLAYER.playgrid_x)
+		ld d,a
+		ld e,32
+		mul d,e
+		add de,LAYER_2_WIDTH/2
+		ld (ix+PLAYER.object.X),de
+
+		ld a,(play_area_center_y)
+		sub (ix+PLAYER.playgrid_y)
+		ld d,a
+		ld e,32
+		mul d,e
+		add de,LAYER_2_HEIGHT/2
+		ld (ix+PLAYER.object.Y),de
+
+		ld a,(ix+PLAYER.direction)
+		add a
+		add a
+		add a
+		add PLAYERSPR_IDLE_ANIM
+		ld h,a
+		ld bc,0
+		ld de,0
+		call set_player_anim_idle
+		; We're allowing drop-through. Since we've just started a new idle anim,
+		; if the player is moving again, it'll switch back to the appropriate run
+		; anim, without there being any noticeable issue.
+.move_allowed:
         ld a,(joystick_buttons)
-        ld bc,(ix+PLAYER.object.X)
         bit JOYPAD_L_LEFT,a
         jr z,.no_dec_x
-        dec bc
-.no_dec_x
+		; Start Move BL (left)
+		ld a,PLAYERDIR_BL
+		ld h,PLAYERSPR_L+PLAYERSPR_RUN_ANIM
+		ld bc,-1
+		ld de,1
+		jp set_player_anim
+.no_dec_x:
         bit JOYPAD_L_RIGHT,a
         jr z,.no_inc_x
-        inc bc
-.no_inc_x
-        ld (ix+PLAYER.object.X),bc
-        ld bc,(ix+PLAYER.object.Y)
+		; Start Move BR (RIGHT),PLAYERDIR_BR
+		ld a,PLAYERDIR_BR
+		ld h,PLAYERSPR_R+PLAYERSPR_RUN_ANIM
+		ld bc,1
+		ld de,-1
+		jp set_player_anim
+.no_inc_x:
         bit JOYPAD_L_UP,a
         jr z,.no_dec_y
-        dec bc
-.no_dec_y
+		; Start Move TL
+		ld a,PLAYERDIR_TL
+		ld h,PLAYERSPR_U+PLAYERSPR_RUN_ANIM
+		ld bc,-1
+		ld de,-1
+		ld (ix+PLAYER.move_steps),32
+		jp set_player_anim
+.no_dec_y:
         bit JOYPAD_L_DOWN,a
         jr z,.no_inc_y
-        inc bc
-.no_inc_y
-        ld (ix+PLAYER.object.Y),bc
-
-        ld de,OBJECT
-        add ix,de
-
-        ld a,(ix+PLAYER.object.X)
-        add 1
-        ld (ix+PLAYER.object.X),a
-        ld a,(ix+PLAYER.object.X+1)
-        adc 0
-.no_wrap        
-        ld (ix+PLAYER.object.X+1),a
-        cp $01
-        jr nz,.no_reset_x
-        ld a,(ix+PLAYER.object.X)
-        cp $40
-        jr nz,.no_reset_x
-        ret nz
-        ld (ix+PLAYER.object.X),0
-        ld (ix+PLAYER.object.X+1),0
-.no_reset_x
-        add ix,de
-        inc (ix+PLAYER.object.Y)
+		; Start Move BL
+		ld a,PLAYERDIR_BL
+		ld h,PLAYERSPR_D+PLAYERSPR_RUN_ANIM
+		ld bc,1
+		ld de,1
+		ld (ix+PLAYER.move_steps),32
+		jp set_player_anim
+.no_inc_y:
+		;
+		; Here is where we check for idle.
+		;
         ret
+;----------------------------------------------------------
+; A - direction
+; H - Base animation index
+; BC - X increment
+; DE - Y increment
+set_player_anim:
+		ld (ix+PLAYER.move_steps),32
+		ld (ix+PLAYER.direction),a
+set_player_anim_idle:		
+		ld (ix+PLAYER.object.base_index),h
+		ld (ix+PLAYER.object.total_frames),8
+		ld (ix+PLAYER.object.frame_index),0
+		ld (ix+PLAYER.object.anim_speed),4
+		ld (ix+PLAYER.object.anim_delay),4
+		ld (ix+PLAYER.object.VX),bc
+		ld (ix+PLAYER.object.VY),de
+		ret
 
 ; Set up the correct animation frame for the base object animations
 update_player_animation:
