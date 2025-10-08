@@ -150,7 +150,6 @@ fseek:
 ; Init the file system
 ; *******************************************************************************************************
 initialize_filesystem:
-		ret
 		; Page in ROM 2, to $0000-$3fff
 		; Select ROM %10 - +3DOS ROM
 		ld bc,$1ffd

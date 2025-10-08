@@ -4,8 +4,10 @@ initialize_player:
 		ld a,0
 		call fill_mem
 		ld ix,player_object
-		ld (ix+PLAYER.object.X),320/2
-		ld (ix+PLAYER.object.Y),256/2
+		ld bc,(320/2)<<FIXED_POINT_BITS
+		ld (ix+PLAYER.object.X),bc
+		ld bc,(256/2)<<FIXED_POINT_BITS
+		ld (ix+PLAYER.object.Y),bc
 		ld (ix+PLAYER.direction),0
 		ld (ix+PLAYER.playgrid_x),PLAY_AREA_CELLS_WIDTH/2			; Set initial position to the middle of the play area.
 		ld (ix+PLAYER.playgrid_y),PLAY_AREA_CELLS_HEIGHT/2			; Play area is 16x16 cells (1024x1024 pixels) - way too big!
@@ -85,17 +87,20 @@ update_player_movement:
 		ld a,(play_area_center_x)
 		sub (ix+PLAYER.playgrid_x)
 		ld d,a
-		ld e,32
+		ld e,16
+		ld b,FIXED_POINT_BITS
 		mul d,e
 		add de,LAYER_2_WIDTH/2
+		bsla de,b
 		ld (ix+PLAYER.object.X),de
 
 		ld a,(play_area_center_y)
 		sub (ix+PLAYER.playgrid_y)
 		ld d,a
-		ld e,32
+		ld e,16
 		mul d,e
 		add de,LAYER_2_HEIGHT/2
+		bsla de,b
 		ld (ix+PLAYER.object.Y),de
 
 		ld a,(ix+PLAYER.direction)
@@ -117,8 +122,10 @@ update_player_movement:
 		; Start Move BL (left)
 		ld a,PLAYERDIR_BL
 		ld h,PLAYERSPR_L+PLAYERSPR_RUN_ANIM
-		ld bc,-1
-		ld de,1
+		ld bc,-1<<FIXED_POINT_BITS
+		ld de,1<<FIXED_POINT_BITS
+		inc (ix+PLAYER.playgrid_x)
+		dec (ix+PLAYER.playgrid_y)
 		jp set_player_anim
 .no_dec_x:
         bit JOYPAD_L_RIGHT,a
@@ -126,8 +133,10 @@ update_player_movement:
 		; Start Move BR (RIGHT),PLAYERDIR_BR
 		ld a,PLAYERDIR_BR
 		ld h,PLAYERSPR_R+PLAYERSPR_RUN_ANIM
-		ld bc,1
-		ld de,-1
+		ld bc,1<<FIXED_POINT_BITS
+		ld de,-1<<FIXED_POINT_BITS
+		dec (ix+PLAYER.playgrid_x)
+		inc (ix+PLAYER.playgrid_y)
 		jp set_player_anim
 .no_inc_x:
         bit JOYPAD_L_UP,a
@@ -135,9 +144,11 @@ update_player_movement:
 		; Start Move TL
 		ld a,PLAYERDIR_TL
 		ld h,PLAYERSPR_U+PLAYERSPR_RUN_ANIM
-		ld bc,-1
-		ld de,-1
+		ld bc,-1<<FIXED_POINT_BITS
+		ld de,-1<<FIXED_POINT_BITS
 		ld (ix+PLAYER.move_steps),32
+		inc (ix+PLAYER.playgrid_x)
+		inc (ix+PLAYER.playgrid_y)
 		jp set_player_anim
 .no_dec_y:
         bit JOYPAD_L_DOWN,a
@@ -145,9 +156,10 @@ update_player_movement:
 		; Start Move BL
 		ld a,PLAYERDIR_BL
 		ld h,PLAYERSPR_D+PLAYERSPR_RUN_ANIM
-		ld bc,1
-		ld de,1
-		ld (ix+PLAYER.move_steps),32
+		ld bc,1<<FIXED_POINT_BITS
+		ld de,1<<FIXED_POINT_BITS
+		dec (ix+PLAYER.playgrid_x)
+		dec (ix+PLAYER.playgrid_y)
 		jp set_player_anim
 .no_inc_y:
 		;
@@ -160,7 +172,7 @@ update_player_movement:
 ; BC - X increment
 ; DE - Y increment
 set_player_anim:
-		ld (ix+PLAYER.move_steps),32
+		ld (ix+PLAYER.move_steps),16
 		ld (ix+PLAYER.direction),a
 set_player_anim_idle:		
 		ld (ix+PLAYER.object.base_index),h
@@ -212,12 +224,18 @@ render_player:
 		call sprcpy_dma
 		; Now update position of player sprite. Note that sprite 64 is relative to 65,66,67.
 		nextreg SPRITE_INDEX,PLAYER_SPRITE_SLOT
-		ld a,(ix+PLAYER.object.X)
+		ld b,FIXED_POINT_BITS
+		ld de,(ix+PLAYER.object.X)
+		bsra de,b
+		ld a,e
 		nextreg SPRITE_ATTR_0,a
-		ld a,(ix+PLAYER.object.Y)
-		nextreg SPRITE_ATTR_1,a
-		ld a,(ix+PLAYER.object.X+1)
+		ld a,d
 		and %00000001
 		nextreg SPRITE_ATTR_2,a
+		ld de,(ix+PLAYER.object.Y)
+		bsra de,b
+		ld a,e
+		nextreg SPRITE_ATTR_1,a
+
 
 		ret
