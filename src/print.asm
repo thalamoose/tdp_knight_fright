@@ -13,123 +13,123 @@ ATTR_LENGTH     equ ATTR_WIDTH*ATTR_HEIGHT
 
 
 print_str:
-		pop ix						; Get format string address
-		push af						; save AF for now. We want to be non-destructive.
+        pop ix                        ; Get format string address
+        push af                        ; save AF for now. We want to be non-destructive.
 print_str_next:
-		ld a, (ix)
-		inc ix
-		and a
-		jr z,print_str_done
-		cp '%'
-		jr z,escape_character
+        ld a, (ix)
+        inc ix
+        and a
+        jr z,print_str_done
+        cp '%'
+        jr z,escape_character
 not_escape:
-		call print_char
-		jr print_str_next
+        call print_char
+        jr print_str_next
 print_str_done:
-		pop af
-		jp (ix)
+        pop af
+        jp (ix)
 escape_character:
-		ld a,(ix)
-		inc ix
-		and a
-		jr z,print_str_done
-		cp 'x'
-		jr z,embedded_hex
-		cp 'c'
-		jr z,embedded_char
-		cp 'd'
-		jr z,embedded_int
-		jp not_escape
+        ld a,(ix)
+        inc ix
+        and a
+        jr z,print_str_done
+        cp 'x'
+        jr z,embedded_hex
+        cp 'c'
+        jr z,embedded_char
+        cp 'd'
+        jr z,embedded_int
+        jp not_escape
 embedded_hex:
-		pop af
-		pop hl
-		push af
-		call print_hex16
-		jp print_str_next
+        pop af
+        pop hl
+        push af
+        call print_hex16
+        jp print_str_next
 embedded_char:
-		pop de
-		pop af
-		push de
-		call print_hex8
-		jp print_str_next
+        pop de
+        pop af
+        push de
+        call print_hex8
+        jp print_str_next
 embedded_int:
-		pop af
-		pop hl
-		push af
-		call print_dec16
-		jp print_str_next
+        pop af
+        pop hl
+        push af
+        call print_dec16
+        jp print_str_next
         ret
 
 ; ----------------------------
 ; Print 2-digit hex (A)
 ; ----------------------------
 print_hex8:
-		push af
-		push af
-		rra
-		rra
-		rra
-		rra
-		and 0x0f
-		call print_hex_digit
-		pop af
-		and 0x0f
-		call print_hex_digit
-		pop af
-		ret
+        push af
+        push af
+        rra
+        rra
+        rra
+        rra
+        and 0x0f
+        call print_hex_digit
+        pop af
+        and 0x0f
+        call print_hex_digit
+        pop af
+        ret
 
 ; ----------------------------
 ; Print 4-digit hex (HL)
 ; ----------------------------
 print_hex16:
-		push af
-		ld a, h
-		call print_hex8
-		ld a, l
-		call print_hex8
-		pop af
-		ret
+        push af
+        ld a, h
+        call print_hex8
+        ld a, l
+        call print_hex8
+        pop af
+        ret
 
 print_hex_digit:
-		cp 10
-		jr c, num_digit
-		add a, 'a' - 10
-		jp print_char
+        cp 10
+        jr c, num_digit
+        add a, 'a' - 10
+        jp print_char
 num_digit:
-		add a, '0'
-		jp print_char
+        add a, '0'
+        jp print_char
 
 ; Routine to print unsigned 16-bit HL as decimal
 print_dec16:
-		push af
-		push bc
-		push hl
-		ld b, 5           ; max 5 digits for 16-bit decimal
-		ld c, 0
+        push af
+        push bc
+        push hl
+        ld b, 5           ; max 5 digits for 16-bit decimal
+        ld c, 0
 
-		; store digits in reverse order in stack
+        ; store digits in reverse order in stack
 store_digits:
-		call divmod10
-		push af            ; store remainder (digit) on stack
-		inc c
-		ld a, h
-		or l
-		jr z, print_digits  ; if HL = 0, we're done
-		djnz store_digits
+        call divmod10
+        push af            ; store remainder (digit) on stack
+        inc c
+        ld a, h
+        or l
+        jr z, print_digits  ; if HL = 0, we're done
+        djnz store_digits
 
 print_digits:
-		ld b,c
+        ld b,c
 digit_loop:
-		pop af
-		add a, '0'         ; convert to ASCII
+        pop af
+        add a, '0'         ; convert to ASCII
                 push bc
-		call print_char
+        call print_char
                 pop bc
-		djnz digit_loop
-		pop hl
-		pop bc
-		pop af
-		ret
+        djnz digit_loop
+        pop hl
+        pop bc
+        pop af
+        ret
 
 ; Input:  HL = 16-bit unsigned dividend
 ; Output: HL = quotient, A = remainder
