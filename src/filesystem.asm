@@ -156,7 +156,7 @@ initialize_filesystem:
         ld a,%00000100
         out (c),a
         ld bc,$7ffd
-        ld a,%00000000
+        ld a,%00001000
         out (c),a
         ld a,%10000000
         out ($e3),a

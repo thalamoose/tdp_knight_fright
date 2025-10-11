@@ -10,18 +10,26 @@ initialize_display:
         nextreg PALETTE_VALUE_8,$e3                     ; set BRIGHT+BLACK to transparent
         nextreg PALETTE_INDEX,$18                       ; set BRIGHT BLACK to transparent
         nextreg PALETTE_VALUE_8,0
-        nextreg SPRITE_AND_LAYERS,%00001001             ; enable sprites, SUL
+        nextreg SPRITE_AND_LAYERS,%00101011             ; enable sprites, SUL, sprites over border
+        ;;nextreg SPRITE_AND_LAYERS,%00000001             ; enable sprites, SLU
+        nextreg ULA_CONTROL,%00000000
         nextreg DISPLAY_CONTROL_1,%11000000             ; Enable layer 2, ULA to shadow bank (bank 7, page 14,15)
 
         nextreg LAYER_2_CONTROL, %00010000              ; Enable 320 mode for layer 2
         ; Set clip to 4,4,314,252 to give us an 8 pixel border for clipping. We don't bother
         ; clipping the actual shape as we're guaranteed any particle effects are below 8x8 in
         ; size.
+        nextreg CLIP_WINDOW_CONTROL,%00001111
+        nextreg LAYER_2_CLIP_WINDOW,(4)>>1                      ; X1 (Y1 in 320 mode)
+        nextreg LAYER_2_CLIP_WINDOW,((319-4)>>1)                ; X2 (Y2 in 320 mode)
+        nextreg LAYER_2_CLIP_WINDOW,(4)                         ; Y1 (X1 in 320 mode)
+        nextreg LAYER_2_CLIP_WINDOW,(255-4)                     ; Y2 (X2 in 320 mode)
 
-        nextreg LAYER_2_CLIP,(4)>>1                     ; X1 (Y1 in 320 mode)
-        nextreg LAYER_2_CLIP,((319-4)>>1)               ; X2 (Y2 in 320 mode)
-        nextreg LAYER_2_CLIP,(4)                        ; Y1 (X1 in 320 mode)
-        nextreg LAYER_2_CLIP,(255-4)                    ; Y2 (X2 in 320 mode)
+        nextreg SPRITE_CLIP_WINDOW,(4)>>1                       ; X1
+        nextreg SPRITE_CLIP_WINDOW,((319-4)>>1)                 ; X2
+        nextreg SPRITE_CLIP_WINDOW,(4)                          ; Y1
+        nextreg SPRITE_CLIP_WINDOW,(255-4)                      ; Y2
+
         ret
 
 ; black border area shows idle time

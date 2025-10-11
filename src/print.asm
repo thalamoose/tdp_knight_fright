@@ -13,6 +13,7 @@ ATTR_LENGTH     equ ATTR_WIDTH*ATTR_HEIGHT
 
 
 print_str:
+        ld (print_save_ix),ix
         pop ix                        ; Get format string address
         push af                        ; save AF for now. We want to be non-destructive.
 print_str_next:
@@ -27,7 +28,9 @@ not_escape:
         jr print_str_next
 print_str_done:
         pop af
-        jp (ix)
+        push ix
+        ld ix,(print_save_ix)
+        ret
 escape_character:
         ld a,(ix)
         inc ix
@@ -251,6 +254,8 @@ char_screen_x:
         db 0
 char_screen_y: 
         db 0
+print_save_ix:
+        dw 0
 
 
 character_set:
