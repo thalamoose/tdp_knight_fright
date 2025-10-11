@@ -1,5 +1,5 @@
 CLOCK_SEL               equ $07
-PERIPHERAL_3_CONTROL	equ $08
+PERIPHERAL_3_CONTROL    equ $08
 LAYER_2_ACCESS          equ $123b
 LAYER_2_RAM_BANK        equ $12
 LAYER_2_SHADOW_BANK     equ $13
@@ -26,7 +26,7 @@ SPRITE_ATTR_4           equ $39
 PALETTE_INDEX           equ $40
 PALETTE_VALUE_8         equ $41
 PALETTE_CONTROL         equ $43
-PALETTE_VALUE_9			equ $44
+PALETTE_VALUE_9            equ $44
 TRANS_FALLBACK          equ $4a
 TRANS_SPRITE_INDEX      equ $4b
 TRANS_TILEMAP_INDEX     equ $4c
@@ -47,7 +47,7 @@ TILEMAP_CONTROL         equ $6b
 DEFAULT_TILEMAP_ATTR    equ $6c
 TILEMAP_BASE_ADDRESS    equ $6e
 TILEMAP_CHAR_ADDRESS    equ $6f
-LAYER_2_CONTROL			equ $70
+LAYER_2_CONTROL            equ $70
 
 ULA_PORT                equ $fe
 KEMPSTON_JOYSTICK_PORT  equ $1f
@@ -58,7 +58,7 @@ KEMPSTON_MOUSE_Y_PORT   equ $ffdf
 SPRITE_SLOT_PORT        equ $303b
 SPRITE_ATTRIB_PORT      equ $57
 SPRITE_PATTERN_PORT     equ $5b
-MEM_PAGING_CONTROL_PORT	equ $7ffd
+MEM_PAGING_CONTROL_PORT    equ $7ffd
 
 
 JOYPAD_R_UP             equ 7

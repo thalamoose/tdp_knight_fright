@@ -158,7 +158,7 @@ READ  <address>     Toggle a READ access break point (also when EXECUTED)
 INPORT <16bitport>  Toggle a breakpoint on port READ
 OUTPORT <16bitport> Toggle a breakpoint on port WRITE
 PUSH <value>        push a 16 bit value onto the stack
-POP				    pop the top of the stack
+POP                    pop the top of the stack
 POKE <add>,<val>    Poke a value into memory
 TONE                Toggles a single tone to be played back. Testing the audio streaming is consistent and working
 NEXTBRK             Toggles stopping in the debugger after a NEXT specific instruction is executed
@@ -178,7 +178,7 @@ LOG OUT [port]      LOG all port writes to [port]. If port is not specified, ALL
                     (Logging only occurs when values to the port change)
 LOG IN  [port]      LOG all port reads from [port]. If port is not specified, ALL port reads are logged.
                     (Logging only occurs when values port changes)
-NEXTREG <reg>,<val> Poke a next register	
+NEXTREG <reg>,<val> Poke a next register    
 OUT Port,Value      Out a value to a 16bit port
 Set <Type>,<StartAddress>,<EndAddress>  Set a range of breakpoints, where TYPE is the breakpoint type (see below)
 Clr <Type>,<StartAddress>,<EndAddress>  Clear a range of breakpoints, where TYPE is the breakpoint type (see below)
@@ -311,11 +311,11 @@ DebugOut extension
 This adds a new "RST $18" command that will output text to the console. There are 2 ways to call this.
 
         ; HL should point to a null terminated string
-		ld	hl,TestString
-		RST	$18
+        ld    hl,TestString
+        RST    $18
 
 The second method is.
-		RST	$18
+        RST    $18
         db  $FF                        ; this is "RST $38" instruction
         dw  Message
 
@@ -328,30 +328,30 @@ The second method will allow all registers to be dumped
 Examples
 -------------
 ; Simple text out
-Example1:   db	"Hello World",0
+Example1:   db    "Hello World",0
 
 ; Out a 8 digit hex value (lower case)
-Example2    db	"Hello World %x",0
+Example2    db    "Hello World %x",0
             db  $21,$43,$65,$87         ; must ALWAYS be a 32bit number
 
 ; Out a 8 digit hex value (upper case)
-Example3    db	"Hello World %X",0
+Example3    db    "Hello World %X",0
             db  $21,$43,$65,$87         ; must ALWAYS be a 32bit number
 
 ; Out a 4 digit hex value (upper case). The top bits are MASKED off. 
-Example4    db	"Hello World %4X",0
+Example4    db    "Hello World %4X",0
             db  $21,$43,$65,$87         ; must ALWAYS be a 32bit number
 
 ; Out a signed decimal value 
-Example5    db	"Hello World %d",0
+Example5    db    "Hello World %d",0
             dw  12345,0                 ; must ALWAYS be a 32bit number
 
 ; Out a signed decimal value 
-Example6    db	"Hello World %d",0
+Example6    db    "Hello World %d",0
             dw  $43,$21,$ff,$ff         ; must ALWAYS be a 32bit number
 
 ; Output a sub string
-Example7    db	"Hello World %s",0
+Example7    db    "Hello World %s",0
             dw  StringToOuput           ; point to someplace in memory
 ; substring to print "somewhere" in paged in memory
 StringToOuput:
@@ -360,15 +360,15 @@ StringToOuput:
 
 
 ; Out a 32bit binary value 
-Example8    db	"Hello World %b",0
+Example8    db    "Hello World %b",0
             db  %10101010,%11110000,%01111110,%11001100        ; must ALWAYS be a 32bit number
 
 ; Out an 8bit signed binary value 
-Example9    db	"Hello World %8b",0
+Example9    db    "Hello World %8b",0
             db  %10101010,0,0,0                             ; must ALWAYS be a 32bit number
 
 ; Out a 16bit signed binary value 
-Example10   db	"Hello World %16b",0
+Example10   db    "Hello World %16b",0
             db  %10101010,%11001100,0,0                     ; must ALWAYS be a 32bit number
 
 
@@ -388,17 +388,17 @@ Printing a register
 %rII  =   I register
 
 ; Out a register value 
-Example8    db	"Hello World %af %rbc %rBC %rix",0          ; af,bc regs, ALT BC and IX
+Example8    db    "Hello World %af %rbc %rBC %rix",0          ; af,bc regs, ALT BC and IX
 
 
 
             ; Full example
-TestString	db	"Hello %s value is - 0x%X, %d, %8b %rpc %raf %rbc %rde",0
-		    dw	SubString
-		    db	$21,$43,$ba,$fd
-		    dw	12345,0
-		    db	%11110000,%10101010,%11001100,%10000001
-SubString	db	"world",0
+TestString    db    "Hello %s value is - 0x%X, %d, %8b %rpc %raf %rbc %rde",0
+            dw    SubString
+            db    $21,$43,$ba,$fd
+            dw    12345,0
+            db    %11110000,%10101010,%11001100,%10000001
+SubString    db    "world",0
 
 
 

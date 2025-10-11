@@ -1,10 +1,10 @@
 initialize_npcs:
-		ld hl,animated_objects
-		ld bc,OBJECT*MAX_OBJECTS
-		ld a,0
-		call fill_mem
+        ld hl,animated_objects
+        ld bc,OBJECT*MAX_OBJECTS
+        ld a,0
+        call fill_mem
 
-		; Just set up the first sprite for now.
+        ; Just set up the first sprite for now.
         ld ix,animated_objects
         ld (ix+OBJECT.X),128
         ld (ix+OBJECT.Y),96
@@ -37,7 +37,7 @@ initialize_npcs:
         ld (ix+OBJECT.anim_delay),0
         add ix,de
 
-		ret
+        ret
 
 update_npcs:
-		ret
+        ret

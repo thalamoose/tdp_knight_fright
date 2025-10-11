@@ -3,10 +3,10 @@
 ;
 ; esxDOS
 ;       setdrv  xor a
-;		rst $08
-;		db $89
-;		a = drive
-;		ret
+;        rst $08
+;        db $89
+;        a = drive
+;        ret
 ;
 ;       fopen   ld      b,$01:db 33
 ;       fcreate ld      b,$0c:push ix:pop hl:ld a,42:rst $08:db $9a:ld (handle),a:ret
@@ -37,295 +37,295 @@ FA_OVERWRITE equ $0C
 
 ; *******************************************************************************************************
 ;
-;	Get/Set the drive (get default drive)
+;    Get/Set the drive (get default drive)
 ;
 ; *******************************************************************************************************
-GetSetDrive:	
-		push	af	; no idea what it uses....
-		push	bc
-		push	de
-		push	hl
-		push	ix
+GetSetDrive:    
+        push    af    ; no idea what it uses....
+        push    bc
+        push    de
+        push    hl
+        push    ix
 
-		xor	a	; set drive. 0 is default
-		rst	$08
-		db	M_GETSETDRV
-		ld	(DefaultDrive),a
+        xor    a    ; set drive. 0 is default
+        rst    $08
+        db    M_GETSETDRV
+        ld    (DefaultDrive),a
 
-		pop	ix
-		pop	hl
-		pop	de
-		pop	bc
-		pop	af
-		ret
-DefaultDrive:	db	0
-
-; *******************************************************************************************************
-;	Function:	Open a file read for reading/writing
-;	In:		ix = filename
-;			b  = Open filemode
-;	ret		a  = handle, 0 on error
-; *******************************************************************************************************
-fopen:		;push	hl
-		;push	ix
-		;pop	hl
-		ld	a,(DefaultDrive)
-		rst	$08
-		db	F_OPEN
-		;pop	ix
-		ret
-
+        pop    ix
+        pop    hl
+        pop    de
+        pop    bc
+        pop    af
+        ret
+DefaultDrive:    db    0
 
 ; *******************************************************************************************************
-;	Function	Read bytes from the open file
-;	In:		ix  = address to read into
-;			bc  = amount to read
-;	ret:		carry set = error
+;    Function:    Open a file read for reading/writing
+;    In:        ix = filename
+;            b  = Open filemode
+;    ret        a  = handle, 0 on error
+; *******************************************************************************************************
+fopen:        ;push    hl
+        ;push    ix
+        ;pop    hl
+        ld    a,(DefaultDrive)
+        rst    $08
+        db    F_OPEN
+        ;pop    ix
+        ret
+
+
+; *******************************************************************************************************
+;    Function    Read bytes from the open file
+;    In:        ix  = address to read into
+;            bc  = amount to read
+;    ret:        carry set = error
 ; *******************************************************************************************************
 fread:
-		or   	a             ; is it zero?
-		ret  	z             ; if so return		
+        or       a             ; is it zero?
+        ret      z             ; if so return        
 
-        	;push	hl
+            ;push    hl
 
-        	;push	ix
-		;pop	hl
-		rst	$08
-		db	F_READ
+            ;push    ix
+        ;pop    hl
+        rst    $08
+        db    F_READ
 
-		;pop	hl
-		ret
+        ;pop    hl
+        ret
 
 ; *******************************************************************************************************
-;	Function	Read bytes from the open file
-;	In:		ix  = address to read into
-;			bc  = amount to read
-;	ret:		carry set = error
+;    Function    Read bytes from the open file
+;    In:        ix  = address to read into
+;            bc  = amount to read
+;    ret:        carry set = error
 ; *******************************************************************************************************
 fwrite:
-		or   	a             ; is it zero?
-		ret  	z             ; if so return		
+        or       a             ; is it zero?
+        ret      z             ; if so return        
 
-        	;push	hl
+            ;push    hl
 
-        	;push	ix
-		;pop	hl
-		rst	$08
-		db	F_WRITE
+            ;push    ix
+        ;pop    hl
+        rst    $08
+        db    F_WRITE
 
-		;pop	hl
-		ret
-
-; *******************************************************************************************************
-;	Function:	Close open file
-;	In:		a  = handle
-;	ret		a  = handle, 0 on error
-; *******************************************************************************************************
-fclose:		
-		or   	a             ; is it zero?
-        ret  	z             ; if so return		
-		rst	$08
-		db	F_CLOSE
-		ret
-
-
+        ;pop    hl
+        ret
 
 ; *******************************************************************************************************
-;	Function	Read bytes from the open file
-;	In:		a   = file handle
-;			L   = Seek mode (0=start, 1=rel, 2=-rel)
-;			BCDE = bytes to seek
-;	ret:		BCDE = file pos from start
+;    Function:    Close open file
+;    In:        a  = handle
+;    ret        a  = handle, 0 on error
+; *******************************************************************************************************
+fclose:        
+        or       a             ; is it zero?
+        ret      z             ; if so return        
+        rst    $08
+        db    F_CLOSE
+        ret
+
+
+
+; *******************************************************************************************************
+;    Function    Read bytes from the open file
+;    In:        a   = file handle
+;            L   = Seek mode (0=start, 1=rel, 2=-rel)
+;            BCDE = bytes to seek
+;    ret:        BCDE = file pos from start
 ; *******************************************************************************************************
 fseek:
-		push	ix
-		push	hl
-		rst	$08
-		db	F_SEEK
-		pop	hl
-		pop	ix
-		ret
+        push    ix
+        push    hl
+        rst    $08
+        db    F_SEEK
+        pop    hl
+        pop    ix
+        ret
 
 ; *******************************************************************************************************
 ; Init the file system
 ; *******************************************************************************************************
 initialize_filesystem:
-		; Page in ROM 2, to $0000-$3fff
-		; Select ROM %10 - +3DOS ROM
-		ld bc,$1ffd
-		ld a,%00000100
-		out (c),a
-		ld bc,$7ffd
-		ld a,%00000000
-		out (c),a
-		ld a,%10000000
-		out ($e3),a
-		call    GetSetDrive
-		ret
+        ; Page in ROM 2, to $0000-$3fff
+        ; Select ROM %10 - +3DOS ROM
+        ld bc,$1ffd
+        ld a,%00000100
+        out (c),a
+        ld bc,$7ffd
+        ld a,%00000000
+        out (c),a
+        ld a,%10000000
+        out ($e3),a
+        call    GetSetDrive
+        ret
 
 prepare_call:
 
 
 ; *******************************************************************************************************
-; Function:	Load a whole file into memory	(confirmed working on real machine)
-; In:		hl = file data pointer
-;		ix = address to load to
+; Function:    Load a whole file into memory    (confirmed working on real machine)
+; In:        hl = file data pointer
+;        ix = address to load to
 ; *******************************************************************************************************
-Load:		call    GetSetDrive		; need to do this each time?!?!?
+Load:        call    GetSetDrive        ; need to do this each time?!?!?
 
-		push	bc
-		push	de
-		push	af
-
-
-		; get file size
-		ld	c,(hl)
-		inc	hl
-		ld	b,(hl)
-		inc	hl
-
-		push	bc			; store size
-		push	ix			; store load address
+        push    bc
+        push    de
+        push    af
 
 
-		push	hl			; get name into ix
-        pop	ix
-        ld      b,FA_READ		; mode open for reading
+        ; get file size
+        ld    c,(hl)
+        inc    hl
+        ld    b,(hl)
+        inc    hl
+
+        push    bc            ; store size
+        push    ix            ; store load address
+
+
+        push    hl            ; get name into ix
+        pop    ix
+        ld      b,FA_READ        ; mode open for reading
         call    fopen
-        jr	c,@error_opening	; carry set? so there was an error opening and A=error code
-        cp	0			; was file handle 0?
-        jr	z,@error_opening	; of so there was an error opening.
+        jr    c,@error_opening    ; carry set? so there was an error opening and A=error code
+        cp    0            ; was file handle 0?
+        jr    z,@error_opening    ; of so there was an error opening.
 
-        pop	ix			; get load address back
-        pop	bc			; get size back
+        pop    ix            ; get load address back
+        pop    bc            ; get size back
 
-        push	af			; remember handle
-        call	fread			; read data from A to address IX of length BC                
-		jr	c,@error_reading
+        push    af            ; remember handle
+        call    fread            ; read data from A to address IX of length BC                
+        jr    c,@error_reading
 
-        pop	af			; get handle back
-        call	fclose			; close file
-        jr	c,@error_closing
+        pop    af            ; get handle back
+        call    fclose            ; close file
+        jr    c,@error_closing
 
-        pop	af			; normal exit
-		pop	de
-		pop	bc
-		ret
+        pop    af            ; normal exit
+        pop    de
+        pop    bc
+        ret
 
 ;
 ; On error, display error code an lock up so we can see it
 ;
 @error_opening:
-		pop	ix
-@error_reading:		
-		pop	bc	; don't pop a, need error code
+        pop    ix
+@error_reading:        
+        pop    bc    ; don't pop a, need error code
 
 @error_closing:
-@NormalError:  	pop	bc	; don't pop into A, return with error code
-		pop	de
-		pop	bc
-		ret
+@NormalError:      pop    bc    ; don't pop into A, return with error code
+        pop    de
+        pop    bc
+        ret
 
 
 
 ; *******************************************************************************************************
-; Function:	Load a whole file into memory	(confirmed working on real machine)
-; In:		hl = file data pointer
-;		ix = address to save from
-;		bc = size
+; Function:    Load a whole file into memory    (confirmed working on real machine)
+; In:        hl = file data pointer
+;        ix = address to save from
+;        bc = size
 ; *******************************************************************************************************
-Save:		call    GetSetDrive		; need to do this each time?!?!?
+Save:        call    GetSetDrive        ; need to do this each time?!?!?
 
-		push	bc			; store size
-		push	ix			; store save address
+        push    bc            ; store size
+        push    ix            ; store save address
 
 
-		push	hl			; get name into ix
-        pop	ix
-        ld      b,FA_OVERWRITE		; mode open for writing
+        push    hl            ; get name into ix
+        pop    ix
+        ld      b,FA_OVERWRITE        ; mode open for writing
         call    fopen
-        jr	c,.error_opening	; carry set? so there was an error opening and A=error code
-        cp	0			; was file handle 0?
-        jr	z,.error_opening	; of so there was an error opening.
+        jr    c,.error_opening    ; carry set? so there was an error opening and A=error code
+        cp    0            ; was file handle 0?
+        jr    z,.error_opening    ; of so there was an error opening.
 
-        pop	ix			; get save address back
-        pop	bc			; get size back
+        pop    ix            ; get save address back
+        pop    bc            ; get size back
 
-        push	af			; remember handle
-        call	fwrite			; read data from A to address IX of length BC                
-		jr	c,.error
+        push    af            ; remember handle
+        call    fwrite            ; read data from A to address IX of length BC                
+        jr    c,.error
 
-        pop	af			; get handle back
-        call	fclose			; close file
+        pop    af            ; get handle back
+        call    fclose            ; close file
 .error
-		ret
+        ret
 
 ;
 ; On error, display error code an lock up so we can see it
 ;
 .error_opening:
-		pop	ix
-		pop	bc	; don't pop a, need error code
-		ret
+        pop    ix
+        pop    bc    ; don't pop a, need error code
+        ret
 
 
 ; ******************************************************************************
-; Function:	Load a 256 colour bitmap directly into the screen
-;		Once loaded, enable and display it
-; In:		hl = file data pointer
+; Function:    Load a 256 colour bitmap directly into the screen
+;        Once loaded, enable and display it
+; In:        hl = file data pointer
 ; ******************************************************************************
 Load256Screen:
-		push	bc
-		push	de
-		push	ix
-		push	af
+        push    bc
+        push    de
+        push    ix
+        push    af
 
-		; ignore file length... it's set for this (should be 256*192)
-		inc	hl
-		inc	hl
+        ; ignore file length... it's set for this (should be 256*192)
+        inc    hl
+        inc    hl
 
-		push	hl
-        pop	ix
+        push    hl
+        pop    ix
         ld      b,FA_READ
         call    fopen
-        jr	c,.error_opening	; error opening?
-        cp	0
-        jr	z,.error_opening	; error opening?
-        ld	(LoadHandle),a		; store handle
+        jr    c,.error_opening    ; error opening?
+        cp    0
+        jr    z,.error_opening    ; error opening?
+        ld    (LoadHandle),a        ; store handle
 
 
-        ld	e,3			; number of blocks
-        ld	a,1			; first bank...
+        ld    e,3            ; number of blocks
+        ld    a,1            ; first bank...
 .LoadAll
         ld      bc, $123b
-        out	(c),a			; bank in first bank
+        out    (c),a            ; bank in first bank
         
-        push	af
+        push    af
 
-        ld	a,(LoadHandle)
-        ld	bc,64*256
-        ld	ix,0
-        call	fread
+        ld    a,(LoadHandle)
+        ld    bc,64*256
+        ld    ix,0
+        call    fread
 
-        pop	af
-        add	a,$40
-        dec	e
-        jr	nz,.LoadAll
+        pop    af
+        add    a,$40
+        dec    e
+        jr    nz,.LoadAll
 
-        ld	a,(LoadHandle)
-        call	fclose
+        ld    a,(LoadHandle)
+        call    fclose
 
         ld      bc, $123b
-        ld	a,2
-        out	(c),a                               
-        jr	.SkipError 
+        ld    a,2
+        out    (c),a                               
+        jr    .SkipError 
 .error_opening
         ld      a,5
         out     ($fe),a
 .SkipError
-        pop	af
-		pop	ix
-		pop	de
-		pop	bc
-		ret
-LoadHandle	db	0
+        pop    af
+        pop    ix
+        pop    de
+        pop    bc
+        ret
+LoadHandle    db    0
