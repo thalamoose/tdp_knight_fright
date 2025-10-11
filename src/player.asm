@@ -16,6 +16,8 @@ initialize_player:
         ld (ix+PLAYER.object.anim_delay),4
         ld (ix+PLAYER.object.anim_speed),4
         ld (ix+PLAYER.object.total_frames),8
+        ld (ix+PLAYER.object.gravity),FIXED_POINT_HALF
+        ld (ix+PLAYER.object.gravity+1),0
         ;
         ; Set up sprites 64..67, so that only the minimum needs to be set up below. 
         ;
@@ -81,6 +83,12 @@ update_player_movement:
         ld a,(ix+PLAYER.object.Y+1)
         adc (ix+PLAYER.object.VY+1)
         ld (ix+PLAYER.object.Y+1),a
+        ld a,(ix+PLAYER.object.gravity)
+        add (ix+PLAYER.object.VY)
+        ld (ix+PLAYER.object.VY),a
+        ld a,(ix+PLAYER.object.VY+1)
+        adc 0
+        ld (ix+PLAYER.object.VY+1),a
         dec (ix+PLAYER.move_steps)
         ret nz
         ; Move has completed. Force player sprite to correct grid position
@@ -90,14 +98,14 @@ update_player_movement:
         ld e,16
         ld b,FIXED_POINT_BITS
         mul d,e
-        add de,LAYER_2_WIDTH/2
+        add de,LAYER_2_WIDTH/2+12
         bsla de,b
         ld (ix+PLAYER.object.X),de
 
         ld a,(play_area_center_y)
         sub (ix+PLAYER.playgrid_y)
         ld d,a
-        ld e,16
+        ld e,24
         mul d,e
         add de,LAYER_2_HEIGHT/2
         bsla de,b
@@ -122,8 +130,8 @@ update_player_movement:
         ; Start Move BL (left)
         ld a,PLAYERDIR_BL
         ld h,PLAYERSPR_L+PLAYERSPR_RUN_ANIM
-        ld bc,-1<<FIXED_POINT_BITS
-        ld de,1<<FIXED_POINT_BITS
+        ld bc,-FIXED_POINT_ONE
+        ld de,-FIXED_POINT_ONE*2
         inc (ix+PLAYER.playgrid_x)
         dec (ix+PLAYER.playgrid_y)
         jp set_player_anim
@@ -133,8 +141,8 @@ update_player_movement:
         ; Start Move BR (RIGHT),PLAYERDIR_BR
         ld a,PLAYERDIR_BR
         ld h,PLAYERSPR_R+PLAYERSPR_RUN_ANIM
-        ld bc,1<<FIXED_POINT_BITS
-        ld de,-1<<FIXED_POINT_BITS
+        ld bc,FIXED_POINT_ONE
+        ld de,-FIXED_POINT_ONE*5
         dec (ix+PLAYER.playgrid_x)
         inc (ix+PLAYER.playgrid_y)
         jp set_player_anim
@@ -144,8 +152,8 @@ update_player_movement:
         ; Start Move TL
         ld a,PLAYERDIR_TL
         ld h,PLAYERSPR_U+PLAYERSPR_RUN_ANIM
-        ld bc,-1<<FIXED_POINT_BITS
-        ld de,-1<<FIXED_POINT_BITS
+        ld bc,-FIXED_POINT_ONE
+        ld de,-FIXED_POINT_ONE*5
         ld (ix+PLAYER.move_steps),32
         inc (ix+PLAYER.playgrid_x)
         inc (ix+PLAYER.playgrid_y)
@@ -156,8 +164,9 @@ update_player_movement:
         ; Start Move BL
         ld a,PLAYERDIR_BL
         ld h,PLAYERSPR_D+PLAYERSPR_RUN_ANIM
-        ld bc,1<<FIXED_POINT_BITS
-        ld de,1<<FIXED_POINT_BITS
+;;; OK
+        ld bc,FIXED_POINT_ONE
+        ld de,-FIXED_POINT_ONE*2
         dec (ix+PLAYER.playgrid_x)
         dec (ix+PLAYER.playgrid_y)
         jp set_player_anim

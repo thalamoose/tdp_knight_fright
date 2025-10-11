@@ -78,14 +78,18 @@ initialize_tilemap:
         ld (hl),PLAY_AREA_CELLS_WIDTH/2
         inc hl
         ld (hl),PLAY_AREA_CELLS_HEIGHT/2
+        ld hl,tilemap_x
+        ld (hl),12
+        inc hl
+        ld (hl),0
         ret
 update_tilemap:
-        ld a,(tilemap_x)
-        inc a
-        ld (tilemap_x),a
-        ld a,(tilemap_y)
-        inc a
-        ld (tilemap_y),a
+        ;ld a,(tilemap_x)
+        ;inc a
+        ;ld (tilemap_x),a
+        ;ld a,(tilemap_y)
+        ;inc a
+        ;ld (tilemap_y),a
 
         ; 
         ; update hw registers
@@ -123,4 +127,4 @@ copy_tile_block:
 
         align 16
 test_tilemap_table:
-        include "build/assets/shape_01.map"
+        include "build/assets/shape_02.map"

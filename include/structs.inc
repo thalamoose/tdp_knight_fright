@@ -10,6 +10,7 @@ X               WORD
 Y               WORD
 VX              WORD
 VY              WORD
+gravity         WORD
 frame_index     BYTE
 base_index      BYTE
 total_frames    BYTE

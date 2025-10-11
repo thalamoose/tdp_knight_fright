@@ -7,7 +7,7 @@ OUT=build/assets
 
 ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
 		$(OUT)/kfback.bin $(OUT)/kftiles.bin \
-		$(OUT)/shape_01.map $(OUT)/charset.bin \
+		$(OUT)/shape_01.map $(OUT)/shape_02.map $(OUT)/charset.bin \
 		makefile
 
 SOURCES=$(wildcard include/*.inc src/*.asm *.asm)
@@ -29,6 +29,9 @@ $(OUT)/kftiles.bin: assets/kftiles.png makefile
 	$(SLICER) $< $@ --tile --palette=$(@:.bin=.pal)
 
 $(OUT)/shape_01.map: assets/kftiles.png assets/shape_01.png
+	$(MAPPER) $^ $@
+
+$(OUT)/shape_02.map: assets/kftiles.png assets/shape_02.png
 	$(MAPPER) $^ $@
 
 $(OUT)/charset.bin: assets/charset.png assets/charset.bin
