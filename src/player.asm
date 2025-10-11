@@ -57,6 +57,8 @@ initialize_player:
         nextreg MMU_SLOT_6,PLAYER_ANIM_PAGE
         ld a,(SWAP_BANK_0)
         nextreg TRANS_SPRITE_INDEX,a
+
+        call snap_player_to_grid
         ret
 
 update_player:
@@ -68,7 +70,7 @@ update_player:
 update_player_movement:
         ld a,(ix+PLAYER.move_steps)
         and a
-        jr z,.move_allowed
+        jp z,.move_allowed
         ; Update X movement
         ld a,(ix+PLAYER.object.X)
         add (ix+PLAYER.object.VX)
@@ -91,26 +93,40 @@ update_player_movement:
         ld (ix+PLAYER.object.VY+1),a
         dec (ix+PLAYER.move_steps)
         ret nz
-        ; Move has completed. Force player sprite to correct grid position
-        ld a,(play_area_center_x)
-        sub (ix+PLAYER.playgrid_x)
-        ld d,a
-        ld e,16
-        ld b,FIXED_POINT_BITS
+        call snap_player_to_grid
+        ; Check to see what is below the player.
+        ; If it's blank, then player dies.
+        ld d,(ix+PLAYER.playgrid_y)
+        ld e,40*2
         mul d,e
-        add de,LAYER_2_WIDTH/2+12
-        bsla de,b
-        ld (ix+PLAYER.object.X),de
-
-        ld a,(play_area_center_y)
-        sub (ix+PLAYER.playgrid_y)
+        ld a,d
+        or SWAP_BANK_0>>8
         ld d,a
-        ld e,24
-        mul d,e
-        add de,LAYER_2_HEIGHT/2
-        bsla de,b
-        ld (ix+PLAYER.object.Y),de
+        ld h,0
+        ld l,(ix+PLAYER.playgrid_x)
+        sll l
+        add de,hl
+        nextreg MMU_SLOT_6,TILEMAP_PAGE
+        nextreg MMU_SLOT_7,TILEMAP_PAGE+1
+        ld a,(de)
+        push ix,de
+        push af
+        push de
+        ld h,0
+        ld l,(ix+PLAYER.playgrid_y)
+        push hl
+        ld l,(ix+PLAYER.playgrid_x)
+        push hl
+        call print_str
+        db "x:%d,y:%d,Addr:0x%x,Cell:%c  \r\n",0
+        pop de,ix
+        ld a,(de)
+        and a
+        jr nz,.not_dead
+        call print_str
+        db "DEAD!!!\r\n",0
 
+.not_dead:
         ld a,(ix+PLAYER.direction)
         add a
         add a
@@ -132,8 +148,8 @@ update_player_movement:
         ld h,PLAYERSPR_L+PLAYERSPR_RUN_ANIM
         ld bc,-FIXED_POINT_ONE
         ld de,-FIXED_POINT_ONE*2
-        inc (ix+PLAYER.playgrid_x)
-        dec (ix+PLAYER.playgrid_y)
+        dec (ix+PLAYER.playgrid_x)
+        inc (ix+PLAYER.playgrid_y)
         jp set_player_anim
 .no_dec_x:
         bit JOYPAD_L_RIGHT,a
@@ -143,8 +159,8 @@ update_player_movement:
         ld h,PLAYERSPR_R+PLAYERSPR_RUN_ANIM
         ld bc,FIXED_POINT_ONE
         ld de,-FIXED_POINT_ONE*5
-        dec (ix+PLAYER.playgrid_x)
-        inc (ix+PLAYER.playgrid_y)
+        inc (ix+PLAYER.playgrid_x)
+        dec (ix+PLAYER.playgrid_y)
         jp set_player_anim
 .no_inc_x:
         bit JOYPAD_L_UP,a
@@ -155,8 +171,8 @@ update_player_movement:
         ld bc,-FIXED_POINT_ONE
         ld de,-FIXED_POINT_ONE*5
         ld (ix+PLAYER.move_steps),32
-        inc (ix+PLAYER.playgrid_x)
-        inc (ix+PLAYER.playgrid_y)
+        dec (ix+PLAYER.playgrid_x)
+        dec (ix+PLAYER.playgrid_y)
         jp set_player_anim
 .no_dec_y:
         bit JOYPAD_L_DOWN,a
@@ -164,11 +180,10 @@ update_player_movement:
         ; Start Move BL
         ld a,PLAYERDIR_BL
         ld h,PLAYERSPR_D+PLAYERSPR_RUN_ANIM
-;;; OK
         ld bc,FIXED_POINT_ONE
         ld de,-FIXED_POINT_ONE*2
-        dec (ix+PLAYER.playgrid_x)
-        dec (ix+PLAYER.playgrid_y)
+        inc (ix+PLAYER.playgrid_x)
+        inc (ix+PLAYER.playgrid_y)
         jp set_player_anim
 .no_inc_y:
         ;
@@ -191,6 +206,32 @@ set_player_anim_idle:
         ld (ix+PLAYER.object.anim_delay),4
         ld (ix+PLAYER.object.VX),bc
         ld (ix+PLAYER.object.VY),de
+        ret
+
+snap_player_to_grid:
+        ; Move has completed. Force player sprite to correct grid position
+        ld b,FIXED_POINT_BITS
+        ld a,(play_area_center_y)
+        add (ix+PLAYER.playgrid_y)
+        ld d,a
+        ld e,24
+        mul d,e
+        push de
+        add de,LAYER_2_HEIGHT/2
+        bsla de,b
+        ld (ix+PLAYER.object.Y),de
+
+        ld a,(play_area_center_x)
+        add (ix+PLAYER.playgrid_x)
+        ld d,a
+        ld e,16
+        mul d,e
+        push de
+        add de,LAYER_2_WIDTH/2+12
+        bsla de,b
+        ld (ix+PLAYER.object.X),de
+        call print_str
+        db "Snap to %d,%d            \r\n",0
         ret
 
 ; Set up the correct animation frame for the base object animations

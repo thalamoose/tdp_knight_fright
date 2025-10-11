@@ -7,7 +7,7 @@ GLOBAL_TRANSPARENCY     equ $14
 SPRITE_AND_LAYERS       equ $15
 LAYER_2_OFFSET_X        equ $16
 LAYER_2_OFFSET_Y        equ $17
-LAYER_2_CLIP            equ $18
+LAYER_2_CLIP_WINDOW     equ $18
 SPRITE_CLIP_WINDOW      equ $19
 ULA_CLIP_WINDOW         equ $1a
 TILEMAP_CLIP_WINDOW     equ $1b
