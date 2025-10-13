@@ -12,13 +12,17 @@
 
     DEVICE ZXSPECTRUMNEXT
 
-    org 0x8000
+    org CODE_BANK_0
 
 ;===========================================================================
 ; main routine - the code execution starts here.
 ; Sets up the new interrupt routine, the memory
 ; banks and jumps to the start loop.
 ;===========================================================================
+        ; This file must be first. The bank code call must be at the same
+        ; address in the assembly code, as well as the C code.
+        ; e.g. 0x8004.
+        include src/bootstrap.asm
 
 main:
         di
@@ -86,10 +90,11 @@ game_loop:
         include "src/interrupts.asm"
         include "src/variables.asm"
         include "src/assets.asm"
+        include "src/c_code.asm"
         
         SAVENEX OPEN "build/KnightFright.nex", main, STACK_TOP
         SAVENEX CORE 3, 1, 5
         SAVENEX CFG 7   ; Border color
         ;SAVENEX AUTO *** THIS DOESN'T WORK RIGHT! IT DOESN'T EXPORT THINGS CORRECTLY.
-        SAVENEX BANK 2,16,17,18,19,20,21,22,23,24,25,26,27
+        SAVENEX BANK 5,2,0,1,3,4,16,17,18,19,20,21,22,23,24,25,26,27
         SAVENEX CLOSE
