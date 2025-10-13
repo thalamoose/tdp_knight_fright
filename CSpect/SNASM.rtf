@@ -2,7 +2,7 @@
 {\colortbl ;\red0\green0\blue255;\red0\green128\blue0;}
 {\stylesheet{ Normal;}{\s1 heading 1;}{\s2 heading 2;}{\s3 heading 3;}}
 {\*\generator Riched20 10.0.19041}{\*\mmathPr\mdispDef1\mwrapIndent1440 }\viewkind4\uc1 
-\pard\keepn\nowidctlpar\s1\li-1276\sb240\sa60\qc\kerning32\b\f0\fs32 SNASM V3.2.4.1 \endash  6502/Z80 assembler\par
+\pard\keepn\nowidctlpar\s1\li-1276\sb240\sa60\qc\kerning32\b\f0\fs32 SNASM V3.2.3.0 \endash  6502/Z80 assembler\par
 
 \pard\nowidctlpar\li-1276\qc\kerning0\b0\f1\fs24\'a9 Copyright Michael Dailly, 2002-2024. All rights reserved.\par
 \par
@@ -31,10 +31,10 @@ I can be reached at:-\par
 
 \pard\keepn\nowidctlpar\s3\li-1276\sb240\sa60\page Numerical\par
 
-\pard\nowidctlpar\fi720\li-1276\b0\f1\fs24 0 - 9\tab\tab\tab\tab Decimal ( '_' can be used as a seperator 12_34)\par
-$A-$F\tab\tab\tab\tab Hex ( '_' can be used as a seperator $FF_FF)\par
-%0-%1\tab\tab\tab\tab Binary ( '_' can be used as a seperator %10_10)\par
-?0-7 \tab\tab\tab\tab Octal ( '_' can be used as a seperator ?77_77)\par
+\pard\nowidctlpar\fi720\li-1276\b0\f1\fs24 0 - 9\tab\tab\tab\tab Decimal\par
+$A-$F\tab\tab\tab Hex\par
+%0-%1\tab\tab\tab Binary\par
+?0-7 \tab\tab\tab\tab Octal\par
 A-Z[A-Z0-9_][:]\tab\tab Label\par
 @A-Z[A-Z0-9_][:]\tab\tab Local Label\par
 !A-Z[A-Z0-9_][:]\tab\tab Local Label\par
@@ -460,17 +460,8 @@ V3.2.2  -\tab Fixed a bug where EQUs wouldn't detect undefined symbols\par
 \tab\tab Fixed a hard crash when using a macroname as a label\line\par
 V3.2.3  -\tab March 30th 2024\line\tab\tab Fixed "NEXTREG" showing undefined symbols as value too large\line\tab\tab Added a check for numbers next to labels without whitespace. \line\tab\tab Fixed a crash when first "a" was left out of SBC,ADD and SDC\line\tab\tab Moved to itch.io\par
 \par
-V3.2.4  -\tab April 1st 2024\line\tab\tab Fixed "RSSET RS+1" - RS was being reset to 0\par
-\tab\tab Added binary seperator %11_00_00_11 is now valid\par
-\tab\tab Added hex seperator $FF_FF is now valid\par
-\tab\tab Added octal seperator ?77_77 is now valid\par
-\tab\tab Added decimal seperator 12_34 is now valid\par
-\par
-V3.2.4.1  -\tab July 16th 2024\line\tab\tab Fixed HEX inside and IF/ENDIF block\par
-\tab\tab You can now use "." inside a label again (PDS)\par
-\tab\tab BANK(unknown)now reports and undefined symbol\line\tab\tab BANKOFF(unknown)now reports and undefined symbol\par
-\tab\tab\par
-\line\par
+
+\pard\widctlpar\fi1276\li164\par
 
 \pard\widctlpar\fi1276\li-1276\par
 \cf0\f1\fs24\par

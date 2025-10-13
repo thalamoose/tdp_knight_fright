@@ -1,16 +1,21 @@
-PATH := $(PATH);$(CURDIR)\tools\z88dk\bin;$(CURDIR)\tools\sjasmplus\bin
-
+PATH:=$(PATH);$(CURDIR)/../z88dk/bin
 SLICER = python scripts/slicer.py
 MAPPER = python scripts/charmapgen.py
-ASSEMBLER = sjasmplus
+ASSEMBLER = $(CURDIR)/../z88dk/bin/z80asm
 IMGGEN = hdfmonkey
-CC = $(CURDIR)/tools/z88dk/bin/zcc
-CFLAGS=+zxn -SO3 -c
-LDFLAGS= --no-crt +zxn -m
+CC = $(CURDIR)/../z88dk/bin/zcc
+BASEFLAGS=+zxn -mz80n --c-code-in-asm -m -s
+CFLAGS=$(BASEFLAGS) -SO3 -c --list
+LDFLAGS= $(BASEFLAGS) -startup=1 -pragma-include:src/c/zpragma.inc
+ASFLAGS= $(BASEFLAGS) -SO3 -c
 
 OUT=build/assets
+ASM_SRC_DIR=src/asm
+ASM_OBJ_DIR=build/asm
+
 C_SRC_DIR=src/c
 C_OBJ_DIR=build/c
+ASM_OBJ_DIR=build/asm
 
 C_SRCS := $(C_SRC_DIR)/overlay.asm $(wildcard $(C_SRC_DIR)/*.c)
 C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS))
@@ -18,10 +23,14 @@ C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS))
 ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
 		$(OUT)/kfback.bin $(OUT)/kftiles.bin \
 		$(OUT)/shape_01.map $(OUT)/shape_02.map $(OUT)/charset.bin \
-		build/c_code.bin \
 		makefile
 
-SOURCES=$(wildcard include/*.inc src/*.asm *.asm)
+##ASM_SRCS := $(wildcard $(ASM_SRC_DIR)/*.asm)
+ASM_SRCS := $(ASM_SRC_DIR)/initialize.asm $(ASM_SRC_DIR)/interrupts.asm \
+			$(ASM_SRC_DIR)/tilemap.asm $(ASM_SRC_DIR)/stubs.asm
+
+ASM_OBJS := $(patsubst $(ASM_SRC_DIR)/%.asm,$(ASM_OBJ_DIR)/%.o,$(ASM_SRCS))
+SOURCES=
 SDCARD=build/kf.img
 EXECUTABLE=build/KnightFright.nex
 
@@ -48,10 +57,13 @@ $(OUT)/shape_02.map: assets/kftiles.png assets/shape_02.png
 $(OUT)/charset.bin: assets/charset.png assets/charset.bin
 	$(SLICER) $< $@ --tile
 
-executable: $(EXECUTABLE)
+executable: $(OUT) src/c/zpragma.inc $(ASSETS) $(EXECUTABLE)
 
-$(EXECUTABLE): KnightFright.asm $(OUT) $(ASSETS) $(SOURCES)
-	$(ASSEMBLER) --msg=war --lst=$(@:.nex=.lst) --sld=$(@:.nex=.sld) --fullpath KnightFright.asm
+##$(EXECUTABLE): KnightFright.asm $(OUT) $(ASSETS) $(SOURCES)
+##	$(ASSEMBLER) --msg=war --lst=$(@:.nex=.lst) --sld=$(@:.nex=.sld) --fullpath KnightFright.asm
+
+$(EXECUTABLE): $(C_OBJS) $(ASM_OBJS)
+	$(CC) $(LDFLAGS) $^ -o $@ -create-app -subtype=nex
 
 $(OUT):
 	mkdir $(subst /,\,$@)
@@ -59,11 +71,16 @@ $(OUT):
 $(C_OBJ_DIR):
 	mkdir $(subst /,\,$@)
 
+$(ASM_OBJ_DIR):
+	mkdir $(subst /,\,$@)
+
 $(C_OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c $(C_OBJ_DIR)
 	$(CC) $(CFLAGS) $< -o $@
 
-build/c_code.bin: $(C_OBJS)
-	$(CC) $(LDFLAGS) $^ -o $@
+$(ASM_OBJ_DIR)/%.o: $(ASM_SRC_DIR)/%.asm $(ASM_OBJ_DIR)
+	$(CC) $(ASFLAGS) $< -o $@
+
+$(ASM_SRC_DIR)/tilemap.asm : $(OUT)/shape_02.map
 
 image: $(SDCARD)
 
@@ -74,7 +91,7 @@ $(SDCARD): $(ASSETS) $(EXECUTABLE)
 	$(IMGGEN) put $(SDCARD) $(EXECUTABLE) /KFRIGHT/KFRIGHT.NEX
 
 clean:
-	del /q *.sld *.lst *.nex
+	del /q/s *.sld *.lst *.nex *.map *.lis *.sym
 	del /s /q build
 
 .DELETE_ON_ERROR:

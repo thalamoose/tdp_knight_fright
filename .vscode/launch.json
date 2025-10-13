@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
+        
 
         {
             "type": "dezog",
@@ -52,6 +53,34 @@
             "rootFolder": "${workspaceFolder}",
             "topOfStack": "$c000",
             //"load": "build/KnightFright.sna",
+            "load": "build/KnightFright.nex",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "CSpect/z88dk",
+            "remoteType": "cspect",
+            "z88dkv2": [
+                {
+                    "path": "src/c/*.lis",
+                    "srcDirs":[
+                        "src/c"
+                    ],
+                    "mapFile" : "build/KnightFright.map",
+                    "excludeFiles":[]
+                },
+            ],
+            "history": {
+                "reverseDebugInstructionCount": 1000000,
+                "spotCount": 10
+            },
+            "startAutomatically": false,
+            "commandsAfterLaunch": [
+            ],
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "$c000",
             "load": "build/KnightFright.nex",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
