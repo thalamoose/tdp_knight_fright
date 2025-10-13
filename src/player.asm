@@ -209,6 +209,8 @@ set_player_anim_idle:
         ret
 
 snap_player_to_grid:
+        ld hl,_c_object_update
+        call call_c_func
         ; Move has completed. Force player sprite to correct grid position
         ld b,FIXED_POINT_BITS
         ld a,(play_area_center_y)

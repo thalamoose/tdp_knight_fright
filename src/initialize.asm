@@ -11,7 +11,7 @@ again:
         db __TIME__," ",__DATE__,"\r\n",0
         call initialize_display
         call initialize_audio
-        call initialize_filesystem
+        ;call initialize_filesystem
         ret
 initialize_game:
         call initialize_sprites

@@ -22,9 +22,9 @@
         ; This file must be first. The bank code call must be at the same
         ; address in the assembly code, as well as the C code.
         ; e.g. 0x8004.
+main:
         include src/bootstrap.asm
 
-main:
         di
         ld sp,STACK_TOP
         call initialize_system
@@ -96,5 +96,9 @@ game_loop:
         SAVENEX CORE 3, 1, 5
         SAVENEX CFG 7   ; Border color
         ;SAVENEX AUTO *** THIS DOESN'T WORK RIGHT! IT DOESN'T EXPORT THINGS CORRECTLY.
-        SAVENEX BANK 5,2,0,1,3,4,16,17,18,19,20,21,22,23,24,25,26,27
-        SAVENEX CLOSE
+        SAVENEX BANK ASM_CODE_PAGE/2
+        SAVENEX BANK SPLASH_PAGE/2,SPLASH_PAGE/2+1,SPLASH_PAGE/2+2,SPLASH_PAGE/2+3,SPLASH_PAGE/2+4
+        SAVENEX BANK SPRITES_PAGE/2,PALETTE_PAGE/2,TILES_PAGE/2
+        SAVENEX BANK PLAYER_ANIM_PAGE/2,PLAYER_ANIM_PAGE/2+1,PLAYER_ANIM_PAGE/2+2,PLAYER_ANIM_PAGE/2+3
+        SAVENEX BANK C_CODE_PAGE/2
+         SAVENEX CLOSE

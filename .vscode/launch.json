@@ -25,7 +25,7 @@
             "commandsAfterLaunch": [
             ],
             "rootFolder": "${workspaceFolder}",
-            "topOfStack": "STACK_TOP",
+            "topOfStack": "$c000",
             //"load": "build/KnightFright.sna",
             "load": "build/KnightFright.nex",
             "smallValuesMaximum": 513,
@@ -50,7 +50,7 @@
             "commandsAfterLaunch": [
             ],
             "rootFolder": "${workspaceFolder}",
-            "topOfStack": "STACK_TOP",
+            "topOfStack": "$c000",
             //"load": "build/KnightFright.sna",
             "load": "build/KnightFright.nex",
             "smallValuesMaximum": 513,
@@ -75,7 +75,7 @@
             "commandsAfterLaunch": [
             ],
             "rootFolder": "${workspaceFolder}",
-            "topOfStack": "STACK_TOP",
+            "topOfStack": "$c000",
             //"load": "build/KnightFright.sna",
             "load": "build/KnightFright.nex",
             "smallValuesMaximum": 513,
@@ -102,7 +102,7 @@
             "startAutomatically": false,
             "commandsAfterLaunch": [],
             "rootFolder": "${workspaceFolder}",
-            "topOfStack": "STACK_TOP",
+            "topOfStack": "$c000",
             //"load": "build/KnightFright.sna",
             "load": "build/KnightFright.nex",
             "smallValuesMaximum": 513,
