@@ -4,20 +4,20 @@ MAPPER = python scripts/charmapgen.py
 ASSEMBLER = $(CURDIR)/../z88dk/bin/z80asm
 IMGGEN = hdfmonkey
 CC = $(CURDIR)/../z88dk/bin/zcc
-BASEFLAGS=+zxn -mz80n --c-code-in-asm -m -s
-CFLAGS=$(BASEFLAGS) -SO3 -c --list
-LDFLAGS= $(BASEFLAGS) -startup=1 -pragma-include:src/c/zpragma.inc
-ASFLAGS= $(BASEFLAGS) -SO3 -c
+BASEFLAGS=+zxn -mz80n -m -s --list -g -Iinclude/
+CFLAGS=$(BASEFLAGS) -SO3 -c --c-code-in-asm
+LDFLAGS= $(BASEFLAGS) -startup=1 -pragma-include:src/zpragma.inc
+ASFLAGS= $(BASEFLAGS) -SO3 -c --debug
 
 OUT=build/assets
 ASM_SRC_DIR=src/asm
 ASM_OBJ_DIR=build/asm
 
-C_SRC_DIR=src/c
+C_SRC_DIR=src
 C_OBJ_DIR=build/c
 ASM_OBJ_DIR=build/asm
 
-C_SRCS := $(C_SRC_DIR)/overlay.asm $(wildcard $(C_SRC_DIR)/*.c)
+C_SRCS := $(wildcard $(C_SRC_DIR)/*.c)
 C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS))
 
 ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
@@ -27,7 +27,8 @@ ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
 
 ##ASM_SRCS := $(wildcard $(ASM_SRC_DIR)/*.asm)
 ASM_SRCS := $(ASM_SRC_DIR)/initialize.asm $(ASM_SRC_DIR)/interrupts.asm \
-			$(ASM_SRC_DIR)/tilemap.asm $(ASM_SRC_DIR)/stubs.asm
+			$(ASM_SRC_DIR)/tilemap.asm $(ASM_SRC_DIR)/stubs.asm \
+			$(ASM_SRC_DIR)/utilities.asm $(ASM_SRC_DIR)/dma.asm
 
 ASM_OBJS := $(patsubst $(ASM_SRC_DIR)/%.asm,$(ASM_OBJ_DIR)/%.o,$(ASM_SRCS))
 SOURCES=
@@ -57,7 +58,7 @@ $(OUT)/shape_02.map: assets/kftiles.png assets/shape_02.png
 $(OUT)/charset.bin: assets/charset.png assets/charset.bin
 	$(SLICER) $< $@ --tile
 
-executable: $(OUT) src/c/zpragma.inc $(ASSETS) $(EXECUTABLE)
+executable: $(OUT) src/zpragma.inc $(ASSETS) $(EXECUTABLE)
 
 ##$(EXECUTABLE): KnightFright.asm $(OUT) $(ASSETS) $(SOURCES)
 ##	$(ASSEMBLER) --msg=war --lst=$(@:.nex=.lst) --sld=$(@:.nex=.sld) --fullpath KnightFright.asm
@@ -73,12 +74,17 @@ $(C_OBJ_DIR):
 
 $(ASM_OBJ_DIR):
 	mkdir $(subst /,\,$@)
+	mkdir build\lst
 
-$(C_OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c $(C_OBJ_DIR)
+$(C_OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c $(C_OBJ_DIR) makefile
 	$(CC) $(CFLAGS) $< -o $@
+	move $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
+	move $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 
-$(ASM_OBJ_DIR)/%.o: $(ASM_SRC_DIR)/%.asm $(ASM_OBJ_DIR)
+$(ASM_OBJ_DIR)/%.o: $(ASM_SRC_DIR)/%.asm $(ASM_OBJ_DIR) makefile
 	$(CC) $(ASFLAGS) $< -o $@
+	move /y $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
+	move /y $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 
 $(ASM_SRC_DIR)/tilemap.asm : $(OUT)/shape_02.map
 

@@ -16,7 +16,8 @@ _InitializeInterrupts:
 ;
 
         ALIGN 256
-        defs $>>8,0
+
+        defs $/256,0
 InterruptHandler:
         push af
         push hl

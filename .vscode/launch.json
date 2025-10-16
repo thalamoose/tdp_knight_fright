@@ -64,9 +64,10 @@
             "remoteType": "cspect",
             "z88dkv2": [
                 {
-                    "path": "src/c/*.lis",
+                    "path": "build/lst/*.lis",
                     "srcDirs":[
-                        "src/c"
+                        "src/asm",
+                        "src"
                     ],
                     "mapFile" : "build/KnightFright.map",
                     "excludeFiles":[]

@@ -5,12 +5,12 @@
         SECTION code_user
 
 bytes_for_tilemap equ (40*32*2)
-        global _InitializeTilemap,_UpdateTilemap
+        global _InitializeTilemap,update_tilemap
         extern memcpy_dma,fill_mem,tilemap_palette,copy_palette
         extern play_area_center_x
         extern tilemap_x
         extern tilemap_y
-_InitializeTilemap:
+initialize_tilemap:
         ; normally, colour 0 is transparent but the test image has it as colour 1
         ; ULA has already been mapped to it's alternate pages at 14,15. Tilemap can
         ; use all of pages 10,11.
@@ -62,9 +62,9 @@ _InitializeTilemap:
         ld hl,SWAP_BANK_0+$2000
         ld e,%00000001      ; Tile attributes
         ld c,32
-@next_line:
+tile_next_line:
         ld b,40
-@next_char:
+tile_next_char:
         ld (hl),a
         ld (hl),0 ;; TEST CODEf
         inc hl
@@ -72,12 +72,12 @@ _InitializeTilemap:
         inc hl
         inc a
         cp 96
-        jr nz,@no_wrap
+        jr nz,tile_no_wrap
         xor a
-@no_wrap:
-        djnz @next_char
+tile_no_wrap:
+        djnz tile_next_char
         dec c
-        jr nz,@next_line
+        jr nz,tile_next_line
 
         ld hl,test_tilemap_table
         ld de,SWAP_BANK_0+$2000
@@ -93,7 +93,7 @@ _InitializeTilemap:
         inc hl
         ld (hl),0
         ret
-_UpdateTilemap:
+update_tilemap:
         ;ld a,(tilemap_x)
         ;inc a
         ;ld (tilemap_x),a
@@ -121,20 +121,20 @@ copy_tile_block:
         inc hl
         ld b,(hl)                       ; b=height
         inc hl
-@next_line:
+copy_next_line:
         push bc
         push de
-@next_char:
+copy_next_char:
         ldi                             ; Copy character code
         ld (de),a                       ; Set attribute
         inc de
         inc c                           ; Just checking to see if we
         dec c                           ; Still have more to do (cannot modify A)
-        jr nz,@next_char
+        jr nz,copy_next_char
         pop de
         pop bc
         add de,40*2
-        djnz @next_line
+        djnz copy_next_line
         ret
 
         align 16

@@ -1,0 +1,39 @@
+
+
+MAX_OBJECTS             equ 16            ; MUST be power of 2
+MAX_PARTICLES            equ 128            ; MUST be power of 2
+
+GRAVITY                 equ 1 ; $40         ; About 0.5G
+
+
+LAYER_2_HEIGHT            equ 256
+LAYER_2_WIDTH             equ 320
+
+PARTICLE_LAYER_WIDTH     equ 320
+PARTICLE_LAYER_HEIGHT     equ 256
+PARTICLE_SAFE_AREA        equ 8 
+
+LAYER_2_BORDER             equ 8
+
+
+PLAYER_SPRITE_SLOT        equ 64
+PLAYER_SPRITE_PATTERN    equ 0
+
+PLAY_AREA_CELLS_WIDTH    equ    32
+PLAY_AREA_CELLS_HEIGHT    equ 32
+PLAY_AREA_CENTER_WIDTH    equ PLAY_AREA_CELLS_WIDTH/2
+PLAY_AREA_CENTER_HEIGHT    equ PLAY_AREA_CELLS_HEIGHT/2
+
+; These should match the player animation order
+PLAYERDIR_TR            equ 0        ; up
+PLAYERDIR_BR            equ 1        ; right
+PLAYERDIR_BL            equ 2        ; down 
+PLAYERDIR_TL            equ 3        ; left
+
+PLAYERSPR_U                equ 0
+PLAYERSPR_R                equ 8
+PLAYERSPR_D                equ 16
+PLAYERSPR_L                equ 24
+
+PLAYERSPR_RUN_ANIM        equ 0
+PLAYERSPR_IDLE_ANIM        equ 32
