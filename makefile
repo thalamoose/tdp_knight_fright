@@ -1,9 +1,11 @@
 PATH:=$(PATH);$(CURDIR)/../z88dk/bin
-SLICER = python scripts/slicer.py
-MAPPER = python scripts/charmapgen.py
-ASSEMBLER = $(CURDIR)/../z88dk/bin/z80asm
+SLICER = @python scripts/slicer.py
+MAPPER = @python scripts/charmapgen.py
+ASSEMBLER = @$(CURDIR)/../z88dk/bin/z80asm
 IMGGEN = hdfmonkey
 CC = $(CURDIR)/../z88dk/bin/zcc
+MV = @move /y
+MKDIR= mkdir
 BASEFLAGS=+zxn -mz80n -m -s --list -g -Iinclude/
 CFLAGS=$(BASEFLAGS) -SO3 -c --c-code-in-asm
 LDFLAGS= $(BASEFLAGS) -startup=1 -pragma-include:src/zpragma.inc
@@ -67,24 +69,24 @@ $(EXECUTABLE): $(C_OBJS) $(ASM_OBJS)
 	$(CC) $(LDFLAGS) $^ -o $@ -create-app -subtype=nex
 
 $(OUT):
-	mkdir $(subst /,\,$@)
+	$(MKDIR) $(subst /,\,$@)
 
 $(C_OBJ_DIR):
-	mkdir $(subst /,\,$@)
+	$(MKDIR) $(subst /,\,$@)
 
 $(ASM_OBJ_DIR):
-	mkdir $(subst /,\,$@)
-	mkdir build\lst
+	$(MKDIR) $(subst /,\,$@)
+	$(MKDIR) build\lst
 
 $(C_OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c $(C_OBJ_DIR) makefile
 	$(CC) $(CFLAGS) $< -o $@
-	move $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
-	move $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
+	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
+	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 
 $(ASM_OBJ_DIR)/%.o: $(ASM_SRC_DIR)/%.asm $(ASM_OBJ_DIR) makefile
 	$(CC) $(ASFLAGS) $< -o $@
-	move /y $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
-	move /y $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
+	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
+	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 
 $(ASM_SRC_DIR)/tilemap.asm : $(OUT)/shape_02.map
 
@@ -97,7 +99,7 @@ $(SDCARD): $(ASSETS) $(EXECUTABLE)
 	$(IMGGEN) put $(SDCARD) $(EXECUTABLE) /KFRIGHT/KFRIGHT.NEX
 
 clean:
-	del /q/s *.sld *.lst *.nex *.map *.lis *.sym
-	del /s /q build
+	@del /q/s *.sld *.lst *.nex *.map *.lis *.sym >nul:
+	@del /s /q build >nul:
 
 .DELETE_ON_ERROR:

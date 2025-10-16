@@ -1,10 +1,11 @@
 #include "kftypes.h"
-#include "hardware.h"
 #include "memorymap.h"
+#include "hardware.h"
 #include "utilities.h"
 #include "tilemap.h"
+#include "defines.h"
 
-typedef struct
+typedef struct s_tile_map
 {
 	s8 x;
 	s8 y;
@@ -15,6 +16,30 @@ typedef struct
 tile_map tilemap;
 
 extern u16 tilemap_palette[];
+
+typedef struct s_tile
+{
+	u8 w;
+	u8 h;
+	u8 data[0];
+} tile_template;
+
+tile_template* test_tilemap_table;
+
+void CopyTileBlock(tile_template* tile, u8* tiletable, u8 attr )
+{
+	u8* src = tile->data;
+	for( u8 h=0; h<tile->h; h++ )
+	{
+		u8* dst = tiletable+h*40*2;
+		for( u8 w=0; w<tile->w; w++ )
+		{
+			*dst++ = *src++;
+			*dst++ = attr;
+		}
+	}
+}
+
 
 void InitializeTilemap(void)
 {
@@ -53,12 +78,17 @@ void InitializeTilemap(void)
 	u8* pTileTable = (u8*)SWAP_BANK_0+0x2000;
 	for( u8 y=0;y<32;y++ )
 	{
-		for( u8 x=0;x<32;x++ )
+		for( u8 x=0;x<40;x++ )
 		{
 			*pTileTable++=0;
 			*pTileTable++=0x01;
 		}
 	}
+	CopyTileBlock(test_tilemap_table,(u8*)(SWAP_BANK_0)+0x2000,1);
+	tilemap.play_x = PLAY_AREA_CELLS_WIDTH/2;
+	tilemap.play_y = PLAY_AREA_CELLS_HEIGHT/2;
+	tilemap.x = 12;
+	tilemap.y = 0;
 /*
 
         ; Fill tilemap area
