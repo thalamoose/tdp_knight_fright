@@ -3,12 +3,14 @@ SLICER = @python scripts/slicer.py
 MAPPER = @python scripts/charmapgen.py
 ASSEMBLER = @$(CURDIR)/../z88dk/bin/z80asm
 IMGGEN = hdfmonkey
-CC = $(CURDIR)/../z88dk/bin/zcc
+CC = @$(CURDIR)/../z88dk/bin/zcc
 MV = @move /y
 RM = @del /s/q
+ECHO = @echo
 MKDIR= mkdir
-BASEFLAGS=+zxn -mz80n -m -s --list -g -Iinclude/
+BASEFLAGS=+zxn -mz80n -m -s --list -g -Iinclude
 CFLAGS=$(BASEFLAGS) -SO3 -c --c-code-in-asm
+DEP_FLAGS = -MT $@ -MD -MF $(DEP_DIR)/$*.d
 #
 # Startup file located at z88dk\libsrc\_DEVELOPMENT\target\zxn\startup\zxn_crt_31.asm
 #
@@ -22,9 +24,11 @@ ASM_OBJ_DIR=build/asm
 C_SRC_DIR=src
 C_OBJ_DIR=build/c
 ASM_OBJ_DIR=build/asm
+DEP_DIR=build/deps
 
 C_SRCS := $(wildcard $(C_SRC_DIR)/*.c)
 C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS))
+DEP_FILES := $(C_SRCS:%.c=$(DEP_DIR)/%.d)
 
 ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
 		$(OUT)/kfback.bin $(OUT)/kftiles.bin \
@@ -38,31 +42,37 @@ ASM_SRCS := $(ASM_SRC_DIR)/initialize.asm $(ASM_SRC_DIR)/interrupts.asm \
 			$(ASM_SRC_DIR)/particles.asm
 
 ASM_OBJS := $(patsubst $(ASM_SRC_DIR)/%.asm,$(ASM_OBJ_DIR)/%.o,$(ASM_SRCS))
-SOURCES=
+
+
 SDCARD=build/kf.img
 EXECUTABLE=build/KnightFright.nex
+
+-include $(wildcard $(DEP_FILES))
 
 all: $(OUT) $(C_OBJ_DIR) executable
 
 $(OUT)/kfsprites.bin: assets/kfsprites.png makefile
+	$(ECHO) Slice $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
 
 $(OUT)/kfplayer.bin: assets/kfplayer.png makefile
+	$(ECHO) Slice $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
 
 $(OUT)/kfback.bin: assets/kfback.png makefile
+	$(ECHO) Slice $<...
 	$(SLICER) $< $@ --palette=$(@:.bin=.pal)
 
 $(OUT)/kftiles.bin: assets/kftiles.png makefile
+	$(ECHO) Slice $<...
 	$(SLICER) $< $@ --tile --palette=$(@:.bin=.pal)
 
-$(OUT)/shape_01.map: assets/kftiles.png assets/shape_01.png
-	$(MAPPER) $^ $@
-
-$(OUT)/shape_02.map: assets/kftiles.png assets/shape_02.png
+$(OUT)/%.map: assets/kftiles.png assets/%.png
+	$(ECHO) Map $<...
 	$(MAPPER) $^ $@
 
 $(OUT)/charset.bin: assets/charset.png assets/charset.bin
+	$(ECHO) Map $<...
 	$(SLICER) $< $@ --tile
 
 executable: $(OUT) src/zpragma.inc $(ASSETS) $(EXECUTABLE)
@@ -71,6 +81,7 @@ executable: $(OUT) src/zpragma.inc $(ASSETS) $(EXECUTABLE)
 ##	$(ASSEMBLER) --msg=war --lst=$(@:.nex=.lst) --sld=$(@:.nex=.sld) --fullpath KnightFright.asm
 
 $(EXECUTABLE): $(C_OBJS) $(ASM_OBJS)
+	$(ECHO) Link $@...
 	$(CC) $(LDFLAGS) $^ -o $@ -create-app -subtype=nex
 
 $(OUT):
@@ -84,15 +95,25 @@ $(ASM_OBJ_DIR):
 	$(MKDIR) build\lst
 
 $(C_OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c $(C_OBJ_DIR) makefile
-	$(CC) $(CFLAGS) $< -o $@
+	$(ECHO) Compile $<...
+	$(CC) $(CFLAGS) $(DEP_FLAGS) $< -o $@
 	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
 	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 
 $(ASM_OBJ_DIR)/%.o: $(ASM_SRC_DIR)/%.asm $(ASM_OBJ_DIR) makefile
+	$(ECHO) Assemble $<...
 	$(CC) $(ASFLAGS) $< -o $@
 	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
 	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 
+$(DEP_DIR): 
+	$(MKDIR) $(subst /,\,$@)
+
+-include $(DEP_FILES)
+
+#
+# Build SD Card image
+#
 image: $(SDCARD)
 
 $(SDCARD): $(ASSETS) $(EXECUTABLE)

@@ -1,4 +1,4 @@
-#include <sys/types.h>
+#include "kftypes.h"
 #include <stdbool.h>
 #include "globals.h"
 #include "tilemap.h"
