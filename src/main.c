@@ -5,7 +5,7 @@
 
 #define CLOCK_SEL 0x03
 #define PERIPHERAL_3_CONTROL 0x08
-//globals global;
+globals global;
 
 extern void ConfigureMemory(void);
 extern void InitializeInterrupts(void);
@@ -70,7 +70,7 @@ int main(void)
             UpdateUserInput();
             UpdateObjects();
             UpdateAudio();
-            //while( global.particlesActive<global.debugMaxParticles )
+            while( global.particlesActive<global.debugMaxParticles )
             {
                 DebugAddParticle();
             }
@@ -78,3 +78,4 @@ int main(void)
     }
 }
 
+void* player_palette;

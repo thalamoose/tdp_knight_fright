@@ -3,7 +3,6 @@
 		global _PrintStr
 		global _InitializeSprites
 		global _InitializeParticles
-		global _InitializePlayer
 		global _InitializeNpcs
 		global _ShowLoadingSplash
 		global _LoadInitialAssets
@@ -30,7 +29,6 @@ _ClearScreen:
 _PrintStr:
 _InitializeSprites:
 _InitializeParticles:
-_InitializePlayer:
 _InitializeNpcs:
 _ShowLoadingSplash:
 _LoadInitialAssets:

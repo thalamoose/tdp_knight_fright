@@ -1,98 +1,111 @@
 #include "include/kftypes.h"
 
-const u8  CLOCK_SEL               = 0x07;
-const u8  PERIPHERAL_3_CONTROL    = 0x08;
-const s16 LAYER_2_ACCESS          = 0x123b;
-const u8  LAYER_2_RAM_BANK        = 0x12;
-const u8  LAYER_2_SHADOW_BANK     = 0x13;
-const u8  GLOBAL_TRANSPARENCY     = 0x14;
-const u8  SPRITE_AND_LAYERS       = 0x15;
-const u8  LAYER_2_OFFSET_X        = 0x16;
-const u8  LAYER_2_OFFSET_Y        = 0x17;
-const u8  LAYER_2_CLIP_WINDOW     = 0x18;
-const u8  SPRITE_CLIP_WINDOW      = 0x19;
-const u8  ULA_CLIP_WINDOW         = 0x1a;
-const u8  TILEMAP_CLIP_WINDOW     = 0x1b;
-const u8  CLIP_WINDOW_CONTROL     = 0x1c;
-const u8  TILEMAP_OFFSET_X_H      = 0x2f;
-const u8  TILEMAP_OFFSET_X_L      = 0x30;
-const u8  TILEMAP_OFFSET_Y        = 0x31;
-const u8  ULA_OFFSET_X            = 0x32;
-const u8  ULA_OFFSET_Y            = 0x33;
-const u8  SPRITE_INDEX            = 0x34;
-const u8  SPRITE_ATTR_0           = 0x35;
-const u8  SPRITE_ATTR_1           = 0x36;
-const u8  SPRITE_ATTR_2           = 0x37;
-const u8  SPRITE_ATTR_3           = 0x38;
-const u8  SPRITE_ATTR_4           = 0x39;
-const u8  PALETTE_INDEX           = 0x40;
-const u8  PALETTE_VALUE_8         = 0x41;
-const u8  PALETTE_CONTROL         = 0x43;
-const u8  PALETTE_VALUE_9         = 0x44;
-const u8  TRANS_FALLBACK          = 0x4a;
-const u8  TRANS_SPRITE_INDEX      = 0x4b;
-const u8  TRANS_TILEMAP_INDEX     = 0x4c;
-const u8  MMU_SLOT_0              = 0x50;  	// 0x0000-0x1fff
-const u8  MMU_SLOT_1              = 0x51;   // 0x2000-0x3fff
-const u8  MMU_SLOT_2              = 0x52;   // 0x4000-0x5fff
-const u8  MMU_SLOT_3              = 0x53;   // 0x6000-0x7fff
-const u8  MMU_SLOT_4              = 0x54;   // 0x8000-0x9fff
-const u8  MMU_SLOT_5              = 0x55;   // 0xa000-0xbfff
-const u8  MMU_SLOT_6              = 0x56;   // 0xc000-0xdfff
-const u8  MMU_SLOT_7              = 0x57;   // 0xe000-0xffff
-const u8  COPPER_DATA             = 0x60;
-const u8  COPPER_CONTROL_L        = 0x61;
-const u8  COPPER_CONTROL_H        = 0x62;
-const u8  ULA_CONTROL             = 0x68;
-const u8  DISPLAY_CONTROL_1       = 0x69;
-const u8  TILEMAP_CONTROL         = 0x6b;
-const u8  DEFAULT_TILEMAP_ATTR    = 0x6c;
-const u8  TILEMAP_BASE_ADDRESS    = 0x6e;
-const u8  TILEMAP_CHAR_ADDRESS    = 0x6f;
-const u8  LAYER_2_CONTROL         = 0x70;
+enum next_registers
+{
+	CLOCK_SEL               = 0x07,
+	PERIPHERAL_3_CONTROL    = 0x08,
+	LAYER_2_ACCESS          = 0x123b,
+	LAYER_2_RAM_BANK        = 0x12,
+	LAYER_2_SHADOW_BANK     = 0x13,
+	GLOBAL_TRANSPARENCY     = 0x14,
+	SPRITE_AND_LAYERS       = 0x15,
+	LAYER_2_OFFSET_X        = 0x16,
+	LAYER_2_OFFSET_Y        = 0x17,
+	LAYER_2_CLIP_WINDOW     = 0x18,
+	SPRITE_CLIP_WINDOW      = 0x19,
+	ULA_CLIP_WINDOW         = 0x1a,
+	TILEMAP_CLIP_WINDOW     = 0x1b,
+	CLIP_WINDOW_CONTROL     = 0x1c,
+	TILEMAP_OFFSET_X_H      = 0x2f,
+	TILEMAP_OFFSET_X_L      = 0x30,
+	TILEMAP_OFFSET_Y        = 0x31,
+	ULA_OFFSET_X            = 0x32,
+	ULA_OFFSET_Y            = 0x33,
+	SPRITE_INDEX            = 0x34,
+	SPRITE_ATTR_0           = 0x35,
+	SPRITE_ATTR_1           = 0x36,
+	SPRITE_ATTR_2           = 0x37,
+	SPRITE_ATTR_3           = 0x38,
+	SPRITE_ATTR_4           = 0x39,
+	PALETTE_INDEX           = 0x40,
+	PALETTE_VALUE_8         = 0x41,
+	PALETTE_CONTROL         = 0x43,
+	PALETTE_VALUE_9         = 0x44,
+	TRANS_FALLBACK          = 0x4a,
+	TRANS_SPRITE_INDEX      = 0x4b,
+	TRANS_TILEMAP_INDEX     = 0x4c,
+	MMU_SLOT_0              = 0x50,  	// 0x0000-0x1fff
+	MMU_SLOT_1              = 0x51,   // 0x2000-0x3fff
+	MMU_SLOT_2              = 0x52,   // 0x4000-0x5fff
+	MMU_SLOT_3              = 0x53,   // 0x6000-0x7fff
+	MMU_SLOT_4              = 0x54,   // 0x8000-0x9fff
+	MMU_SLOT_5              = 0x55,   // 0xa000-0xbfff
+	MMU_SLOT_6              = 0x56,   // 0xc000-0xdfff
+	MMU_SLOT_7              = 0x57,   // 0xe000-0xffff
+	COPPER_DATA             = 0x60,
+	COPPER_CONTROL_L        = 0x61,
+	COPPER_CONTROL_H        = 0x62,
 
-const u8  ULA_PORT                = 0xfe;
-const u8  KEMPSTON_JOYSTICK_PORT  = 0x1f;
-const u16 KEMPSTON_MOUSE_BTN_PORT = 0xfadf;
-const u16 KEMPSTON_MOUSE_X_PORT   = 0xfbdf;
-const u16 KEMPSTON_MOUSE_Y_PORT   = 0xffdf;
+	ULA_CONTROL             = 0x68,
+	DISPLAY_CONTROL_1       = 0x69,
+	TILEMAP_CONTROL         = 0x6b,
+	DEFAULT_TILEMAP_ATTR    = 0x6c,
+	TILEMAP_BASE_ADDRESS    = 0x6e,
+	TILEMAP_CHAR_ADDRESS    = 0x6f,
+	LAYER_2_CONTROL         = 0x70,
 
-const u16 SPRITE_SLOT_PORT        = 0x303b;
-const u8  SPRITE_ATTRIB_PORT      = 0x57;
-const u8  SPRITE_PATTERN_PORT     = 0x5b;
-const u16 MEM_PAGING_CONTROL_PORT = 0x7ffd;
+};
 
+unsigned enum next_ports
+{
+	KEMPSTON_JOYSTICK_PORT  = 0x1f,
+	SPRITE_ATTRIB_PORT      = 0x57,
+	SPRITE_PATTERN_PORT     = 0x5b,
+	ULA_PORT                = 0xfe,
+	ZXN_DMA_PORT            = 0x6b,
+	SPRITE_SLOT_PORT        = 0x303b,
+	MEM_PAGING_CONTROL_PORT = 0x7ffd,
+	KEMPSTON_MOUSE_BTN_PORT = (signed)0xfadf,
+	KEMPSTON_MOUSE_X_PORT   = (signed)0xfbdf,
+	KEMPSTON_MOUSE_Y_PORT   = (signed)0xffdf,
+};
 
-const u8  JOYPAD_R_UP             = 7;
-const u8  JOYPAD_R_LEFT           = 6;
-const u8  JOYPAD_R_RIGHT          = 5;
-const u8  JOYPAD_R_DOWN           = 4;
-const u8  JOYPAD_L_UP             = 3;
-const u8  JOYPAD_L_DOWN           = 2;
-const u8  JOYPAD_L_LEFT           = 1;
-const u8  JOYPAD_L_RIGHT          = 0;
+enum pad_buttons
+{
+	JOYPAD_L_RIGHT,
+	JOYPAD_L_LEFT,
+	JOYPAD_L_DOWN,
+	JOYPAD_L_UP,
+	JOYPAD_R_DOWN,
+	JOYPAD_R_RIGHT,
+	JOYPAD_R_LEFT,
+	JOYPAD_R_UP,
+};
 
-const u8  MAX_SPRITES             = 128;
+enum general_constants
+{
+	MAX_SPRITES          	= 128,
+};
 
-const u8  DMA_RESET                      = 0xc3;
-const u8  DMA_RESET_PORT_A_TIMING        = 0xc7;
-const u8  DMA_RESET_PORT_B_TIMING        = 0xcb;
-const u8  DMA_LOAD                       = 0xcf; // %11001111
-const u8  DMA_CONTINUE                   = 0xd3;
-const u8  DMA_DISABLE_INTERUPTS          = 0xaf;
-const u8  DMA_ENABLE_INTERUPTS           = 0xab;
-const u8  DMA_RESET_DISABLE_INTERUPTS    = 0xa3;
-const u8  DMA_ENABLE_AFTER_RETI          = 0xb7;
-const u8  DMA_READ_STATUS_BYTE           = 0xbf;
-const u8  DMA_REINIT_STATUS_BYTE         = 0x8b;
-const u8  DMA_START_READ_SEQUENCE        = 0xa7;
-const u8  DMA_FORCE_READY                = 0xb3;
-const u8  DMA_DISABLE                    = 0x83;
-const u8  DMA_ENABLE                     = 0x87;
-const u8  DMA_WRITE_REGISTER_COMMAND     = 0xbb;
-const u8  DMA_BURST                      = 0xcd;
-const u8  DMA_CONTINUOUS                 = 0xad;
-const u8  ZXN_DMA_PORT                   = 0x6b;
-const u16 SPRITE_STATUS_SLOT_SELECT      = 0x303B;
-const u8  SPRITE_IMAGE_PORT              = 0x5b;
-const u8  SPRITE_INFO_PORT               = 0x57;
+enum dma_modes
+{
+	DMA_RESET                      = 0xc3,
+	DMA_RESET_PORT_A_TIMING        = 0xc7,
+	DMA_RESET_PORT_B_TIMING        = 0xcb,
+	DMA_LOAD                       = 0xcf, // %11001111
+	DMA_CONTINUE                   = 0xd3,
+	DMA_DISABLE_INTERUPTS          = 0xaf,
+	DMA_ENABLE_INTERUPTS           = 0xab,
+	DMA_RESET_DISABLE_INTERUPTS    = 0xa3,
+	DMA_ENABLE_AFTER_RETI          = 0xb7,
+	DMA_READ_STATUS_BYTE           = 0xbf,
+	DMA_REINIT_STATUS_BYTE         = 0x8b,
+	DMA_START_READ_SEQUENCE        = 0xa7,
+	DMA_FORCE_READY                = 0xb3,
+	DMA_DISABLE                    = 0x83,
+	DMA_ENABLE                     = 0x87,
+	DMA_WRITE_REGISTER_COMMAND     = 0xbb,
+	DMA_BURST                      = 0xcd,
+	DMA_CONTINUOUS                 = 0xad,
+};
+

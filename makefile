@@ -5,6 +5,7 @@ ASSEMBLER = @$(CURDIR)/../z88dk/bin/z80asm
 IMGGEN = hdfmonkey
 CC = $(CURDIR)/../z88dk/bin/zcc
 MV = @move /y
+RM = @del /s/q
 MKDIR= mkdir
 BASEFLAGS=+zxn -mz80n -m -s --list -g -Iinclude/
 CFLAGS=$(BASEFLAGS) -SO3 -c --c-code-in-asm
@@ -29,7 +30,7 @@ ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
 
 ##ASM_SRCS := $(wildcard $(ASM_SRC_DIR)/*.asm)
 ASM_SRCS := $(ASM_SRC_DIR)/initialize.asm $(ASM_SRC_DIR)/interrupts.asm \
-			$(ASM_SRC_DIR)/tilemap.asm $(ASM_SRC_DIR)/stubs.asm \
+			$(ASM_SRC_DIR)/stubs.asm \
 			$(ASM_SRC_DIR)/utilities.asm $(ASM_SRC_DIR)/dma.asm
 
 ASM_OBJS := $(patsubst $(ASM_SRC_DIR)/%.asm,$(ASM_OBJ_DIR)/%.o,$(ASM_SRCS))
@@ -88,8 +89,6 @@ $(ASM_OBJ_DIR)/%.o: $(ASM_SRC_DIR)/%.asm $(ASM_OBJ_DIR) makefile
 	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
 	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 
-$(ASM_SRC_DIR)/tilemap.asm : $(OUT)/shape_02.map
-
 image: $(SDCARD)
 
 $(SDCARD): $(ASSETS) $(EXECUTABLE)
@@ -99,7 +98,7 @@ $(SDCARD): $(ASSETS) $(EXECUTABLE)
 	$(IMGGEN) put $(SDCARD) $(EXECUTABLE) /KFRIGHT/KFRIGHT.NEX
 
 clean:
-	@del /q/s *.sld *.lst *.nex *.map *.lis *.sym >nul:
-	@del /s /q build >nul:
+	$(RM) *.sld *.lst *.nex *.map *.lis *.sym >nul:
+	$(RM) build >nul:
 
 .DELETE_ON_ERROR:
