@@ -9,7 +9,10 @@ RM = @del /s/q
 MKDIR= mkdir
 BASEFLAGS=+zxn -mz80n -m -s --list -g -Iinclude/
 CFLAGS=$(BASEFLAGS) -SO3 -c --c-code-in-asm
-LDFLAGS= $(BASEFLAGS) -startup=1 -pragma-include:src/zpragma.inc
+#
+# Startup file located at z88dk\libsrc\_DEVELOPMENT\target\zxn\startup\zxn_crt_31.asm
+#
+LDFLAGS= $(BASEFLAGS) -startup=31 -pragma-include:src/zpragma.inc
 ASFLAGS= $(BASEFLAGS) -SO3 -c --debug
 
 OUT=build/assets
@@ -31,7 +34,8 @@ ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
 ##ASM_SRCS := $(wildcard $(ASM_SRC_DIR)/*.asm)
 ASM_SRCS := $(ASM_SRC_DIR)/initialize.asm $(ASM_SRC_DIR)/interrupts.asm \
 			$(ASM_SRC_DIR)/stubs.asm \
-			$(ASM_SRC_DIR)/utilities.asm $(ASM_SRC_DIR)/dma.asm
+			$(ASM_SRC_DIR)/utilities.asm $(ASM_SRC_DIR)/dma.asm \
+			$(ASM_SRC_DIR)/particles.asm
 
 ASM_OBJS := $(patsubst $(ASM_SRC_DIR)/%.asm,$(ASM_OBJ_DIR)/%.o,$(ASM_SRCS))
 SOURCES=

@@ -40,7 +40,6 @@ void CopyTileBlock(tile_template* tile, u8* tiletable, u8 attr )
 	}
 }
 
-
 void InitializeTilemap(void)
 {
 	// normally, colour 0 is transparent but the test image has it as colour 1
@@ -72,7 +71,7 @@ void InitializeTilemap(void)
 	//
 	nextreg(MMU_SLOT_6,PALETTE_PAGE);
 
-	copy_palette(tilemap_palette,3);
+	CopyPalette(tilemap_palette,3);
 	nextreg(MMU_SLOT_6,TILEMAP_PAGE);
 	nextreg(MMU_SLOT_7,TILEMAP_PAGE+1);
 	u8* pTileTable = (u8*)SWAP_BANK_0+0x2000;
@@ -89,44 +88,6 @@ void InitializeTilemap(void)
 	tilemap.play_y = PLAY_AREA_CELLS_HEIGHT/2;
 	tilemap.x = 12;
 	tilemap.y = 0;
-/*
-
-        ; Fill tilemap area
-        ld hl,SWAP_BANK_0+$2000
-        ld e,%00000001      ; Tile attributes
-        ld c,32
-tile_next_line:
-        ld b,40
-tile_next_char:
-        ld (hl),a
-        ld (hl),0 ;; TEST CODEf
-        inc hl
-        ld (hl),e
-        inc hl
-        inc a
-        cp 96
-        jr nz,tile_no_wrap
-        xor a
-tile_no_wrap:
-        djnz tile_next_char
-        dec c
-        jr nz,tile_next_line
-
-        ld hl,test_tilemap_table
-        ld de,SWAP_BANK_0+$2000
-        ld a,1
-        call copy_tile_block
-        ; default position until map is properly set up.
-        ld hl,play_area_center_x
-        ld (hl),PLAY_AREA_CELLS_WIDTH/2
-        inc hl
-        ld (hl),PLAY_AREA_CELLS_HEIGHT/2
-        ld hl,tilemap_x
-        ld (hl),12
-        inc hl
-        ld (hl),0
-        ret
-*/
 }
 
 void UpdateTilemap(void)

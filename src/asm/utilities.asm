@@ -2,35 +2,41 @@
         include "include/memorymap.inc"
         SECTION code_user
         global _nextreg
-        global _copy_palette
+        global _CopyPalette
         global _memcpy
         global _memset
+        global get_random
 check_reset:
         xor a
         ret
 
 _nextreg:
-        ld ix,0
+        push ix
+        ld ix,2
         add ix,sp
         ld a,(ix+2)
         ld (@here+2),a
         ld a,(ix+3)
 @here:  nextreg 0,a
+        pop ix
         ret
 
 ; A  - Fill value
 ; HL - Base address
 ; BC - Length
 _memset:
-        ld ix,0
+        push ix
+        ld ix,2
         add ix,sp
-        ld bc,(ix+2)
-        ld de,(ix+4)
+        ld de,(ix+2)
+        ld bc,(ix+4)
         ld a,(ix+6)
+        ld hl,de
         ld (de),a
         inc de
         dec bc
         ldir
+        pop ix
         ret
 
 ; Copy a 9 bit RGB palette
@@ -40,7 +46,15 @@ _memset:
 ;       %001 - L2 1st,    %101 - L2 2nd
 ;       %010 - SPR 1st,   %110 - SPR 2nd
 ;       %011 - tile 1st,  %111 - tile 2nd
-_copy_palette:
+_CopyPalette:
+        ld hl,2
+        add hl,sp
+        ld e,(hl)                       ; First parameter at (sp+2)
+        inc hl
+        ld d,(hl)
+        inc hl
+        ld a,(hl)                       ; second parameter at (sp+4)
+        ld hl,de
         nextreg MMU_SLOT_6,PALETTE_PAGE
         sla a
         sla a
@@ -110,3 +124,4 @@ random_seed:
 random_seed_2:
         dw 0xf00d
 ; total roughly 39–48 T depending on branch timing — comfortably under 50T.
+

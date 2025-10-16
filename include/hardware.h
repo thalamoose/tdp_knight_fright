@@ -56,7 +56,7 @@ enum next_registers
 
 };
 
-unsigned enum next_ports
+enum next_ports
 {
 	KEMPSTON_JOYSTICK_PORT  = 0x1f,
 	SPRITE_ATTRIB_PORT      = 0x57,

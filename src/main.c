@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include "globals.h"
 #include "tilemap.h"
+#include "objects.h"
 
 #define CLOCK_SEL 0x03
 #define PERIPHERAL_3_CONTROL 0x08
@@ -26,7 +27,6 @@ extern void InitializeNpcs(void);
 extern void ReadKeyboard(void);
 extern void ReadControllers(void);
 extern void UpdateUserInput(void);
-extern void UpdateObjects(void);
 extern void UpdateAudio(void);
 extern void DebugAddParticle(void);
 extern bool CheckReset(void);

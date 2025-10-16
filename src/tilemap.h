@@ -1,3 +1,0 @@
-
-extern void InitializeTilemap(void);
-
