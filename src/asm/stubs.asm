@@ -21,8 +21,6 @@ _LoadInitialAssets:
 _ClearLoadingSplash:
 _ShowTitle:
 _CheckReset:
-_ReadKeyboard:
-_ReadControllers:
 _UpdateUserInput:
 tilemap_palette:
 		ret

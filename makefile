@@ -28,7 +28,7 @@ DEP_DIR=build/deps
 
 C_SRCS := $(wildcard $(C_SRC_DIR)/*.c)
 C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS))
-DEP_FILES := $(C_SRCS:%.c=$(DEP_DIR)/%.d)
+DEP_FILES := $(C_SRCS:src/%.c=$(DEP_DIR)/%.d)
 
 ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
 		$(OUT)/kfback.bin $(OUT)/kftiles.bin \
@@ -47,41 +47,36 @@ ASM_OBJS := $(patsubst $(ASM_SRC_DIR)/%.asm,$(ASM_OBJ_DIR)/%.o,$(ASM_SRCS))
 SDCARD=build/kf.img
 EXECUTABLE=build/KnightFright.nex
 
--include $(wildcard $(DEP_FILES))
-
 all: $(OUT) $(C_OBJ_DIR) executable
 
 $(OUT)/kfsprites.bin: assets/kfsprites.png makefile
-	$(ECHO) Slice $<...
+	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
 
 $(OUT)/kfplayer.bin: assets/kfplayer.png makefile
-	$(ECHO) Slice $<...
+	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
 
 $(OUT)/kfback.bin: assets/kfback.png makefile
-	$(ECHO) Slice $<...
+	$(ECHO) Slicing $<...
 	$(SLICER) $< $@ --palette=$(@:.bin=.pal)
 
 $(OUT)/kftiles.bin: assets/kftiles.png makefile
-	$(ECHO) Slice $<...
+	$(ECHO) Slicing $<...
 	$(SLICER) $< $@ --tile --palette=$(@:.bin=.pal)
 
 $(OUT)/%.map: assets/kftiles.png assets/%.png
-	$(ECHO) Map $<...
+	$(ECHO) Mapping $<...
 	$(MAPPER) $^ $@
 
 $(OUT)/charset.bin: assets/charset.png assets/charset.bin
-	$(ECHO) Map $<...
+	$(ECHO) Mapping $<...
 	$(SLICER) $< $@ --tile
 
 executable: $(OUT) src/zpragma.inc $(ASSETS) $(EXECUTABLE)
 
-##$(EXECUTABLE): KnightFright.asm $(OUT) $(ASSETS) $(SOURCES)
-##	$(ASSEMBLER) --msg=war --lst=$(@:.nex=.lst) --sld=$(@:.nex=.sld) --fullpath KnightFright.asm
-
 $(EXECUTABLE): $(C_OBJS) $(ASM_OBJS)
-	$(ECHO) Link $@...
+	$(ECHO) Linking $@...
 	$(CC) $(LDFLAGS) $^ -o $@ -create-app -subtype=nex
 
 $(OUT):
@@ -95,13 +90,13 @@ $(ASM_OBJ_DIR):
 	$(MKDIR) build\lst
 
 $(C_OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c $(C_OBJ_DIR) makefile
-	$(ECHO) Compile $<...
+	$(ECHO) Compiling $<...
 	$(CC) $(CFLAGS) $(DEP_FLAGS) $< -o $@
 	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
 	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 
 $(ASM_OBJ_DIR)/%.o: $(ASM_SRC_DIR)/%.asm $(ASM_OBJ_DIR) makefile
-	$(ECHO) Assemble $<...
+	$(ECHO) Assembling $<...
 	$(CC) $(ASFLAGS) $< -o $@
 	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
 	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
@@ -109,7 +104,7 @@ $(ASM_OBJ_DIR)/%.o: $(ASM_SRC_DIR)/%.asm $(ASM_OBJ_DIR) makefile
 $(DEP_DIR): 
 	$(MKDIR) $(subst /,\,$@)
 
--include $(DEP_FILES)
+##-include $(DEP_FILES)
 
 #
 # Build SD Card image

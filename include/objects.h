@@ -10,10 +10,16 @@ enum fixed_point
 
 typedef struct s_object
 {
-	s16 x;
-	s16 y;
-	s16 vx;
-	s16 vy;
+	struct
+	{
+		s16 x;
+		s16 y;
+	} position;
+	struct
+	{
+		s16 x;
+		s16 y;
+	} velocity;
     s16 gravity;
     u8 frameIndex;
     u8 baseIndex;

@@ -1,11 +1,11 @@
 #include "kftypes.h"
-#include <stdbool.h>
 #include "globals.h"
 #include "tilemap.h"
 #include "objects.h"
+#include "utilities.h"
+#include "hardware.h"
+#include "input.h"
 
-#define CLOCK_SEL 0x03
-#define PERIPHERAL_3_CONTROL 0x08
 globals global;
 
 extern void ConfigureMemory(void);
@@ -24,14 +24,10 @@ extern void InitializeParticles(void);
 extern void InitializePlayer(void);
 extern void InitializeNpcs(void);
 
-extern void ReadKeyboard(void);
-extern void ReadControllers(void);
 extern void UpdateUserInput(void);
 extern void UpdateAudio(void);
 extern void DebugAddParticle(void);
 extern bool CheckReset(void);
-extern void ReadControllers(void);
-extern void nextreg(char register,char value);
 
 void InitializeSystem(void)
 {
@@ -65,8 +61,6 @@ int main(void)
         InitializeGame();
         while( CheckReset()==false )
         {
-            ReadKeyboard();
-            ReadControllers();
             UpdateUserInput();
             UpdateObjects();
             UpdateAudio();

@@ -6,15 +6,18 @@
 
 void InitializePlayer(void);
 void UpdatePlayer(void);
-void AnimatePlayer(void);
 void RenderPlayer(void);
-void MovePlayer(void);
+void SetPlayerAnimIdle(u8 baseIndex, s16 vx, s16 vy);
+void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy);
 
 typedef struct s_player_object
 {
     object object;
-    u8 playgrid_x;
-    u8 playgrid_y;
+    struct
+    {
+        u8 x;
+        u8 y;
+    } playgrid;
     u8 moveSteps;
     u8 direction;
 

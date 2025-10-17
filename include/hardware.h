@@ -1,4 +1,4 @@
-#include "include/kftypes.h"
+#include "kftypes.h"
 
 enum next_registers
 {
@@ -109,3 +109,5 @@ enum dma_modes
 	DMA_CONTINUOUS                 = 0xad,
 };
 
+extern u8 port_in(u16 port);
+extern void port_out(u16 port, u8 val);

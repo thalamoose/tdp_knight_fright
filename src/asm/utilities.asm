@@ -6,6 +6,8 @@
         global _memcpy
         global _memset
         global get_random
+        global _port_in
+        global _port_out
 check_reset:
         xor a
         ret
@@ -21,6 +23,26 @@ _nextreg:
         pop ix
         ret
 
+_port_in:
+        push ix
+        ld ix,2
+        add ix,sp
+        ld a,(ix+2)
+        in a,(c)
+        ld l,a
+        pop ix
+        ret
+
+_port_out:
+        push ix
+        ld ix,2
+        add ix,sp
+        ld bc,(ix+2)
+        ld a,(ix+4)
+        out (c),a
+        ld l,a
+        pop ix
+        ret
 ; A  - Fill value
 ; HL - Base address
 ; BC - Length
