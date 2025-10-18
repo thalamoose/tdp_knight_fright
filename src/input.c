@@ -44,7 +44,7 @@ u8* ReadKeyboardMatrix(void)
 //---------------------------------------------------------
 u8 ReadKeyboard(void)
 {
-	static u8 keyTable[]=
+	static const u8 keyTable[]=
 	{
 		"^","Z","X","C","V",                    // Port FEFE
 		"A","S","D","F","G",                    // Port FDFE

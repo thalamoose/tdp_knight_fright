@@ -62,6 +62,11 @@
             "request": "launch",
             "name": "CSpect/z88dk",
             "remoteType": "cspect",
+            "sjasmplus": [
+                {
+                    "path": "build/KnightFright.sld"
+                }
+            ],
             "z88dkv2": [
                 {
                     "path": "build/lst/*.lis",
@@ -191,7 +196,7 @@
             "request" : "launch",
             "program" : "${file}",
             "console" : "integratedTerminal",
-            "args" : ["assets/kfplayer.png","--size=32,32","--sprite", "build/assets/kfplayer.bin", "--palette=kfplayer.pal"]
+            "args" : ["build/KnightFright.sld.o","build/KnightFright.sld.s"]
         }
 
     ]

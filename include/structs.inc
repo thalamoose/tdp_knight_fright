@@ -1,4 +1,15 @@
 
+
+;===========================================================================
+; main.asm
+;===========================================================================
+
+    SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION
+
+    DEVICE ZXSPECTRUMNEXT
+
+    org 0
+
 ; Bit definitions for animation flags
 ANIM_ACTIVE     equ 0
 ANIM_DIRECTION  equ 1
@@ -60,3 +71,5 @@ flags           BYTE
                 STRUCT PLAYMAP_ENTRY
 contents        BYTE
                 ENDS
+
+
