@@ -4,7 +4,10 @@
 #include "objects.h"
 #include "utilities.h"
 #include "hardware.h"
+#include "audio.h"
 #include "input.h"
+#include "sprites.h"
+#include "player.h"
 
 globals global;
 
@@ -19,13 +22,9 @@ extern void LoadInitialAssets(void);
 extern void ClearLoadingSplash(void);
 extern void ShowTitle(void);
 
-extern void InitializeSprites(void);
 extern void InitializeParticles(void);
-extern void InitializePlayer(void);
 extern void InitializeNpcs(void);
 
-extern void UpdateUserInput(void);
-extern void UpdateAudio(void);
 extern void DebugAddParticle(void);
 extern bool CheckReset(void);
 
@@ -61,7 +60,6 @@ int main(void)
         InitializeGame();
         while( CheckReset()==false )
         {
-            UpdateUserInput();
             UpdateObjects();
             UpdateAudio();
             while( global.particlesActive<global.debugMaxParticles )

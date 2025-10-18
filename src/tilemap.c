@@ -2,27 +2,12 @@
 #include "memorymap.h"
 #include "hardware.h"
 #include "utilities.h"
-#include "tilemap.h"
 #include "defines.h"
-
-typedef struct s_tile_map
-{
-	s8 x;
-	s8 y;
-	s8 play_x;
-	s8 play_y;
-} tile_map;
+#include "tilemap.h"
 
 tile_map tilemap;
 
 extern u16 tilemap_palette[];
-
-typedef struct s_tile
-{
-	u8 w;
-	u8 h;
-	u8 data[0];
-} tile_template;
 
 tile_template* test_tilemap_table;
 
