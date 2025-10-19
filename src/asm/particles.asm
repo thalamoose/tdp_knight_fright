@@ -47,14 +47,14 @@ F_4_4_TO_10_6 MACRO r1,r2
         global _RenderParticles
         global _UpdateParticles
         global _DebugAddParticle
-        extern get_random
+        extern _get_random
 _InitializeParticles:
         ;;;;
         push ix
         xor a
-        ld (particle_index),a
+        ld (_particle_index),a
         ld b,MAX_PARTICLES
-        ld ix,particle_objects
+        ld ix,_particle_objects
         ld de,PARTICLE_sizeof
 @init_loop:
         ld (ix+PARTICLE_flags),0                ; Mark it inactive
@@ -66,22 +66,22 @@ _InitializeParticles:
 
 _DebugAddParticle:
         ld hl,160-16
-        call get_random
+        call _get_random
         and 0x07
         add l
         ld l,a
         ld de,64
-        call get_random
+        call _get_random
         and 0x07
         add e
         ld e,a
 
-        call get_random
+        call _get_random
         sra a
         sra a
         inc a
         ld b,a
-        call get_random
+        call _get_random
         sra a
         sra a
         inc a
@@ -90,7 +90,7 @@ _DebugAddParticle:
         ret
 _UpdateParticles:
         push ix
-        ld ix,particle_objects
+        ld ix,_particle_objects
         ld de,PARTICLE_sizeof
         ld b,MAX_PARTICLES
         ld h,0
@@ -170,11 +170,11 @@ update_particle:
 ; destroys: AF, BC
 add_particle:
         exx
-        ld a,(particle_index)
+        ld a,(_particle_index)
         ld e,a
         ld d,PARTICLE_sizeof
         mul d,e
-        ld ix,particle_objects
+        ld ix,_particle_objects
         add ix,de
         ld b,MAX_PARTICLES
         ld de,PARTICLE_sizeof
@@ -186,7 +186,7 @@ add_particle:
         cp MAX_PARTICLES
         jr nz,@no_wrap
         xor a
-        ld ix,particle_objects
+        ld ix,_particle_objects
 @no_wrap:
         djnz @find_slot
         nop
@@ -210,24 +210,24 @@ add_particle:
         pop de
         bsla de,b
         ld (ix+PARTICLE_Y),de
-        call get_random
+        call _get_random
         ld (ix+PARTICLE_colour),a
 
-        call get_random
+        call _get_random
         and %00000011
         inc a
         ld (ix+PARTICLE_width),a
         ; Give it some initial velocity
-        call get_random
+        call _get_random
         and %01111111
         add 100
         ld (ix+PARTICLE_life),a    ; frames of life - 5 seconds for testing
         ld a,b
         set PARTICLE_ACTIVE,(ix+PARTICLE_flags)
-        ld a,(particle_index)
+        ld a,(_particle_index)
         inc a
         and MAX_PARTICLES-1
-        ld (particle_index),a
+        ld (_particle_index),a
         ret
 
 remove_particle:
@@ -245,12 +245,12 @@ remove_particle:
 
 _RenderParticles:
         push ix
-        ld ix,particle_objects
+        ld ix,_particle_objects
         ld b,MAX_PARTICLES
         ld c,0
         ld de,PARTICLE_sizeof
         xor a
-        ld (particle_slot),a
+        ld (_particle_slot),a
 @render_loop:
         bit PARTICLE_ACTIVE,(ix+PARTICLE_flags)
         jr z,@not_active
@@ -286,7 +286,7 @@ render_particle:
         ; here, HL = X coordinate
         ;       DE = Y coordinate
 
-        ;call get_random
+        ;call _get_random
         ;ld (ix+PARTICLE_colour),a        ; **DEBUG**
         ; Now calculate screen position
         ; Page in the correct bank. Each bank is 8KB, but we page it in to
@@ -405,11 +405,11 @@ DO_PIXELS MACRO hpixels,vpixels
 ; h,l only available
 xor_particle:
         ld l,a
-        ld a,(particle_slot)
+        ld a,(_particle_slot)
         cp l
         jr z,@same_slot
         ld a,l
-        ld (particle_slot),a
+        ld (_particle_slot),a
         nextreg MMU_SLOT_6,a
         inc a
         nextreg MMU_SLOT_7,a
@@ -455,12 +455,13 @@ xor_particle:
         ret
 
         SECTION data_user
-particle_slot:
+_particle_slot:
         dw 0
-particle_index:
+_particle_index:
         dw 0
-particle_objects:
-        ds PARTICLE_sizeof*MAX_PARTICLES
 
 particles_active:
         db 0
+        SECTION bss_user
+_particle_objects:
+        ds PARTICLE_sizeof*MAX_PARTICLES

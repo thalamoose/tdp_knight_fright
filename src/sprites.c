@@ -1,6 +1,9 @@
 #include "hardware.h"
 #include "sprites.h"
 #include "utilities.h"
+#include "defines.h"
+#include "objects.h"
+#include "globals.h"
 
 void InitializeSprites(void)
 {
@@ -23,4 +26,39 @@ void SetupSprite(u8 slot, u8 pattern, u8 attr0, u8 attr1, u8 attr2, u8 attr3, u8
 void UpdateSprites(void)
 {
 
+}
+//
+// This is old, kinda crappy code.
+//
+void RenderSprites(void)
+{
+	object* obj = g_Objects;
+	u8 activeSpriteCount = 0;
+	for (u8 i=0; i<MAX_OBJECTS; i++)
+	{
+		nextreg(SPRITE_INDEX, i);
+		if (obj->flags.active)
+		{
+			nextreg(SPRITE_ATTR_0, obj->position.x);
+			nextreg(SPRITE_ATTR_1, obj->position.y);
+			nextreg(SPRITE_ATTR_2, (obj->position.x>>8) & 0x01);
+			u8 animFrame = obj->baseIndex+obj->frameIndex;
+			u8 attr3 = animFrame|0xc0;
+			nextreg(SPRITE_ATTR_3, attr3);
+			u8 attr4 = (obj->position.y>>8) & 0x01;
+			if (obj->flags.is4bit)
+			{
+				attr4 |= (1<<7);
+			}
+			attr4 |= animFrame & (1<<6);
+			nextreg(SPRITE_ATTR_4, attr4);
+			activeSpriteCount++;
+		}
+		else
+		{
+			// Deactivate it.
+			nextreg(SPRITE_ATTR_3, 0);
+		}
+		global.activeSpriteCount = activeSpriteCount;
+	}
 }

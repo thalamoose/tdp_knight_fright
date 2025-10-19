@@ -8,6 +8,10 @@
 #include "input.h"
 #include "sprites.h"
 #include "player.h"
+#include "npcs.h"
+#include "particles.h"
+#include "assets.h"
+#include "render.h"
 
 globals global;
 
@@ -16,29 +20,23 @@ extern void InitializeInterrupts(void);
 extern void ClearScreen(void);
 extern void PrintStr(const char* fmt,...);
 
-extern void ShowLoadingSplash(void);
-
-extern void LoadInitialAssets(void);
-extern void ClearLoadingSplash(void);
-extern void ShowTitle(void);
-
 extern void InitializeParticles(void);
-extern void InitializeNpcs(void);
 
 extern void DebugAddParticle(void);
-extern bool CheckReset(void);
 
 void InitializeSystem(void)
 {
     nextreg(CLOCK_SEL,0x03);
     nextreg(PERIPHERAL_3_CONTROL,0x70);
     ConfigureMemory();
-    // *NEEDS FIXED* SEGMENT ALIGNMENT IS WRONG! InitializeInterrupts();
+    InitializeInterrupts();
     ClearScreen();
+    InitializeRender();
     PrintStr("Booting Knight Fright...\r\n");
     PrintStr(__DATE__,__TIME__,"\r\n");
 
 }
+
 void InitializeGame(void)
 {
     InitializeSprites();
@@ -46,17 +44,15 @@ void InitializeGame(void)
     InitializeParticles();
     InitializePlayer();
     InitializeNpcs();
+    global.debugMaxParticles = 64;
 }
 
 int main(void)
 {
     InitializeSystem();
-    ShowLoadingSplash();
     LoadInitialAssets();
-    ClearLoadingSplash();
     while( true )
     {
-        ShowTitle();
         InitializeGame();
         while( CheckReset()==false )
         {
@@ -65,9 +61,18 @@ int main(void)
             while( global.particlesActive<global.debugMaxParticles )
             {
                 DebugAddParticle();
+                global.particlesActive++;
             }
+            port_out(ULA_PORT, ULA_COLOUR_BLACK);
+            WaitVSync();
+            port_out(ULA_PORT, ULA_COLOUR_CYAN);
+            Render();
+            port_out(ULA_PORT, ULA_COLOUR_YELLOW);
         }
     }
 }
 
-void* player_palette;
+bool CheckReset(void)
+{
+    return false;
+}

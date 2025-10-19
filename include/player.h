@@ -25,4 +25,5 @@ typedef struct s_player_object
 
 u8 GetPlaygridContent(u8 x, u8 y);
 
+bool CheckReset(void);
 #endif

@@ -33,13 +33,6 @@ initialize_display:
         ret
 
 ; black border area shows idle time
-wait_vsync:
-        ld a,0                              ; black border
-        out (ULA_PORT),a
-        halt
-        ld a,1                              ; blue border
-        out (ULA_PORT),a
-        ret
 upload_sprites:
         ;
         ; Upload test sprites (test uses 16384KB - 64 sprites)

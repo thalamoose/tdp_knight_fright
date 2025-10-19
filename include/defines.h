@@ -16,7 +16,6 @@ enum consts
 
     LAYER_2_BORDER=8,
 
-
     PLAYER_SPRITE_SLOT=64,
     PLAYER_SPRITE_PATTERN=0,
 

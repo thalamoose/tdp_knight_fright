@@ -2,6 +2,7 @@
 ## You need to have some form of gcc installed, but not the native windows one - that doesn't do ELF format
 ## output, and can't be switched. Ideally some simple compiler, maybe from android.
 ##
+## TODO: void*, or likely any pointer type doesn't show up
 import sys
 import argparse
 from pathlib import Path

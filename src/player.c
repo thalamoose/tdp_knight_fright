@@ -11,7 +11,7 @@
 
 player_object player;
 
-extern void* player_palette;
+extern u8 asset_PlayerPalette[];
 
 //---------------------------------------------------------
 void SetPlayerAnimIdle(u8 baseIndex, s16 vx, s16 vy)
@@ -71,7 +71,7 @@ void InitializePlayer(void)
     SetupSprite(PLAYER_SPRITE_SLOT+2, PLAYER_SPRITE_PATTERN+2, 0, 16, 0, 0, 0);
     SetupSprite(PLAYER_SPRITE_SLOT+3, PLAYER_SPRITE_PATTERN+3, 16,16, 0, 0, 0);
 
-    CopyPalette(player_palette,2);
+    CopyPalette(asset_PlayerPalette,2);
     nextreg(MMU_SLOT_6,PLAYER_ANIM_PAGE);
     nextreg(TRANS_SPRITE_INDEX,*(u8*)SWAP_BANK_0);
     SnapToGrid();
@@ -139,7 +139,7 @@ void MovePlayer(void)
 void AnimatePlayer(void)
 {
     player.object.animDelay--;
-    if (player.object.animDelay)
+    if (player.object.animDelay==0)
     {
         player.object.animDelay = player.object.animSpeed;
         player.object.frameIndex++;

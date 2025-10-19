@@ -8,18 +8,16 @@ enum fixed_point
 	FIXED_POINT_HALF=FIXED_POINT_ONE/2,
 };
 
+typedef struct
+{
+	s16 x;
+	s16 y;
+} coordinate;
+
 typedef struct s_object
 {
-	struct
-	{
-		s16 x;
-		s16 y;
-	} position;
-	struct
-	{
-		s16 x;
-		s16 y;
-	} velocity;
+	coordinate position;
+	coordinate velocity;
     s16 gravity;
     u8 frameIndex;
     u8 baseIndex;
@@ -27,9 +25,19 @@ typedef struct s_object
     u8 animSpeed;
     u8 totalFrames;
 	u8 direction;
+	struct 
+	{
+		u8 active:1;
+		u8 pingpong:1;
+		u8 is4bit:1;
+	} flags;
+	
 } object;
 
 void UpdateObjects(void);
+void RenderObjects(void);
+
+extern object g_Objects[];
 
 
 #endif

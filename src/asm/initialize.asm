@@ -21,6 +21,5 @@
 _ConfigureMemory:
         nextreg MMU_SLOT_2,ULA_SHADOW_PAGE
         nextreg MMU_SLOT_3,ULA_SHADOW_PAGE+1
-        ld bc,MEM_PAGING_CONTROL_PORT
         ret
 

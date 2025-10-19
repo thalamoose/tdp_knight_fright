@@ -4,24 +4,25 @@
 #include "utilities.h"
 #include "defines.h"
 #include "tilemap.h"
+#include "assets.h"
 
 tile_map tilemap;
 
-extern u16 tilemap_palette[];
-
-tile_template* test_tilemap_table;
+tile_template _asset_MapShape_02;
 
 void CopyTileBlock(tile_template* tile, u8* tiletable, u8 attr )
 {
 	u8* src = tile->data;
+	u8 step = (40-tile->w)*2;
 	for( u8 h=0; h<tile->h; h++ )
 	{
-		u8* dst = tiletable+h*40*2;
+		u8* dst = tiletable;
 		for( u8 w=0; w<tile->w; w++ )
 		{
 			*dst++ = *src++;
 			*dst++ = attr;
 		}
+		tiletable += step;
 	}
 }
 
@@ -43,24 +44,29 @@ void InitializeTilemap(void)
 	//
 	// Copy tilemap character data to tilemap area
 	//
+	u8* baseOfTileMemory = (u8*)TEMP_SWAP_BANK;
+	nextreg(MMU_SLOT_2,TILEMAP_PAGE);
+	nextreg(MMU_SLOT_3,TILEMAP_PAGE+1);
 	nextreg(MMU_SLOT_6,TILES_PAGE);
-	nextreg(MMU_SLOT_7,TILEMAP_PAGE);
-	memcpy(SWAP_BANK_1,SWAP_BANK_0,0x2000);
+	nextreg(MMU_SLOT_7,TILES_PAGE+1);
+	// Copy tile
+	memcpy_dma(baseOfTileMemory, asset_TileData, 0x2000);
 	//
 	// TEMPORARY FOR TESTING UNTIL TILEMAP PROPERLY SORTED
 	//
-	memcpy(SWAP_BANK_1+32,SWAP_BANK_0,0x1fe0);
-	memset(SWAP_BANK_1,0,32);
+	memcpy_dma(baseOfTileMemory+32,SWAP_BANK_0,0x1fe0);
+	memset(baseOfTileMemory,0,32);
 	//
 	// Copy tile palettes
 	//
 	nextreg(MMU_SLOT_6,PALETTE_PAGE);
+	nextreg(MMU_SLOT_7,PALETTE_PAGE+1);
 
-	CopyPalette(tilemap_palette,3);
-	nextreg(MMU_SLOT_6,TILEMAP_PAGE);
-	nextreg(MMU_SLOT_7,TILEMAP_PAGE+1);
-	u8* pTileTable = (u8*)SWAP_BANK_0+0x2000;
-	for( u8 y=0;y<32;y++ )
+	CopyPalette(asset_TilemapPalette,PALETTE_TILE_PRIMARY);
+	nextreg(MMU_SLOT_6,TILES_PAGE);
+	nextreg(MMU_SLOT_7,TILES_PAGE+1);
+	u8* pTileTable = baseOfTileMemory;
+	for( u8 y=0; y<32; y++ )
 	{
 		for( u8 x=0;x<40;x++ )
 		{
@@ -68,11 +74,13 @@ void InitializeTilemap(void)
 			*pTileTable++=0x01;
 		}
 	}
-	CopyTileBlock(test_tilemap_table,(u8*)(SWAP_BANK_0)+0x2000,1);
+	CopyTileBlock(asset_MapShape_02, baseOfTileMemory+0x2000, 1);
 	tilemap.play_x = PLAY_AREA_CELLS_WIDTH/2;
 	tilemap.play_y = PLAY_AREA_CELLS_HEIGHT/2;
 	tilemap.x = 12;
 	tilemap.y = 0;
+	nextreg(MMU_SLOT_2, ULA_SHADOW_PAGE);
+	nextreg(MMU_SLOT_2, ULA_SHADOW_PAGE+1);
 }
 
 void UpdateTilemap(void)
@@ -83,5 +91,3 @@ void UpdateTilemap(void)
 		nextreg(TILEMAP_OFFSET_X_L,-tilemap.x);
 		nextreg(TILEMAP_OFFSET_Y,tilemap.y);
 }
-
-u16 tilemap_palette[32];

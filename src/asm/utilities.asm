@@ -3,11 +3,12 @@
         SECTION code_user
         global _nextreg
         global _CopyPalette
-        global _memcpy
+        global _memcpy_dma
         global _memset
-        global get_random
+        global _get_random
         global _port_in
         global _port_out
+        global _WaitVSync
 check_reset:
         xor a
         ret
@@ -27,7 +28,7 @@ _port_in:
         push ix
         ld ix,2
         add ix,sp
-        ld a,(ix+2)
+        ld bc,(ix+2)
         in a,(c)
         ld l,a
         pop ix
@@ -51,8 +52,8 @@ _memset:
         ld ix,2
         add ix,sp
         ld de,(ix+2)
-        ld bc,(ix+4)
-        ld a,(ix+6)
+        ld a,(ix+4)
+        ld bc,(ix+5)
         ld hl,de
         ld (de),a
         inc de
@@ -69,15 +70,12 @@ _memset:
 ;       %010 - SPR 1st,   %110 - SPR 2nd
 ;       %011 - tile 1st,  %111 - tile 2nd
 _CopyPalette:
-        ld hl,2
-        add hl,sp
-        ld e,(hl)                       ; First parameter at (sp+2)
-        inc hl
-        ld d,(hl)
-        inc hl
-        ld a,(hl)                       ; second parameter at (sp+4)
+        push ix
+        ld ix,2
+        add ix,sp
+        ld de,(ix+2)
+        ld a,(ix+4)
         ld hl,de
-        nextreg MMU_SLOT_6,PALETTE_PAGE
         sla a
         sla a
         sla a
@@ -93,13 +91,22 @@ _CopyPalette:
         inc hl
         nextreg PALETTE_VALUE_9,a
         djnz @next_palette
+        pop ix
+        ret
+
+_WaitVSync:
+        ld a,0                              ; black border
+        out (ULA_PORT),a
+        halt
+        ld a,1                              ; blue border
+        out (ULA_PORT),a
         ret
 
 ; 16-bit Galois LFSR using polynomial 0xB400
 ; State in RNG_SEEDL (low), RNG_SEEDH (high)
 ; Returns: HL = new 16-bit random value
 ; Affected: AF
-get_random_16:
+_get_random_16:
         ld      hl,(random_seed)
         ld      a,l
         rra                        ; shift right through carry
@@ -121,7 +128,7 @@ get_random_16:
 ; Galois LFSR: x^8 + x^6 + x^5 + x^4 + 1 (one common polynomial)
 ; new = (seed >> 1) ^ ( (seed & 1) ? 0xB8 : 0 )
 ; returns A=new
-get_random:
+_get_random:
         push bc
         ld   a,(random_seed) ; 7T
         srl   a               ; 8T   ; shift right with carry into bit7 (but we prefer logical >>)
@@ -137,6 +144,7 @@ get_random:
         ld   (random_seed_2),a ; 7T
         xor b
         pop bc
+        ld l,a
         ret                  ;10T
 
 

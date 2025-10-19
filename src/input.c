@@ -35,8 +35,8 @@ u8* ReadKeyboardMatrix(void)
 	u8 bitLine=0xfe;
 	for(int i=0; i<8; i++)
 	{
+		scancodes[i] = port_in(bitLine<<8|ULA_PORT);
 		bitLine = bitLine << 1 | 1;
-		scancodes[i] = port_in(ULA_PORT<<8|bitLine);
 	}
 	return scancodes;
 }

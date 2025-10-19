@@ -196,7 +196,7 @@
             "request" : "launch",
             "program" : "${file}",
             "console" : "integratedTerminal",
-            "args" : ["build/KnightFright.sld.o","build/KnightFright.sld.s"]
+            "args" : ["build/assets/kfplayer.bin","build/assets/kfplayer.s","32"]
         }
 
     ]

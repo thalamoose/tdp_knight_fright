@@ -1,4 +1,6 @@
 #include "kftypes.h"
+#if !defined(__TILEMAP_H)
+#define __TILEMAP_H
 
 typedef struct s_tile_map
 {
@@ -17,3 +19,5 @@ typedef struct s_tile
 
 extern void InitializeTilemap(void);
 extern void UpdateTilemap(void);
+#endif
+

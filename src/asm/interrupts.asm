@@ -5,7 +5,7 @@
 _InitializeInterrupts:
         ld a,InterruptVectorTable>>8
         ld i,a
-        im 2
+        im 1
         ei
         ret
 

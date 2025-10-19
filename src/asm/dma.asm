@@ -7,21 +7,21 @@ initialize_dma:
 update_dma:
         ret
 
-        GLOBAL _memcpy
+        GLOBAL _memcpy_dma
         GLOBAL _CopySprite
 
 ; HL - Source
 ; DE - Destination
 ; BC - Size
-_memcpy:
+_memcpy_dma:
         ld ix,0
         add ix,sp
         ld a,6
         out (ULA_PORT),a
         ld de,(ix+2)
-        ld (memcpy_src),de
-        ld de,(ix+4)
         ld (memcpy_dst),de
+        ld de,(ix+4)
+        ld (memcpy_src),de
         ld de,(ix+6)
         ld (memcpy_len),de
         ld hl,memcpy_dma_xfer
