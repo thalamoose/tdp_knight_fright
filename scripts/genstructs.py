@@ -2,86 +2,165 @@
 ## You need to have some form of gcc installed, but not the native windows one - that doesn't do ELF format
 ## output, and can't be switched. Ideally some simple compiler, maybe from android.
 ##
-## TODO: void*, or likely any pointer type doesn't show up
-import sys
 import argparse
-from pathlib import Path
 
 from elftools.elf.elffile import ELFFile
 
-def parseMember(CU,memberDef,prefix):
-	memberLine=''
-	tag = memberDef.tag
-	memberName = memberDef.attributes['DW_AT_name'].value.decode('ASCII')
-	memberType = memberDef.attributes['DW_AT_type'].value
-	memberDef = CU.get_DIE_from_refaddr(memberType)
-	memberLine += parseBaseType(CU,memberDef,memberName,prefix)
-	return memberLine
+globalString = ''
 
-def parseStruct(CU,structDef,name,indent):
-	objline = ''
-	if structDef.has_children:
-		for child in structDef.iter_children():
-			objline += parseBaseType(CU,child,'',name)
-	return objline
+verbose = False
 
-	
-def parseTypedefStart(CU,typeDef,indent):
-	name = typeDef.attributes['DW_AT_name'].value.decode('ASCII')
-	tag = typeDef.tag
-	objline=''
-	type = typeDef.attributes['DW_AT_type'].value
+DW_AT_NAME = 'DW_AT_name'
+DW_AT_BYTE_SIZE = 'DW_AT_byte_size'
+DW_AT_TYPE = 'DW_AT_type'
+DW_AT_UPPER_BOUND='DW_AT_upper_bound'
+DW_AT_SIBLING = 'DW_AT_sibling'
+DW_TAG_BASE_TYPE = 'DW_TAG_base_type'
+DW_TAG_TYPEDEF='DW_TAG_typedef'
+DW_TAG_STRUCTURE_TYPE='DW_TAG_structure_type'
+DW_TAG_ARRAY_TYPE='DW_TAG_array_type'
+DW_TAG_POINTER_TYPE='DW_TAG_pointer_type'
+DW_TAG_MEMBER='DW_TAG_member'
 
-	structDef = CU.get_DIE_from_refaddr(type)
-	if structDef.tag=='DW_TAG_structure_type':
-		objline += f'{indent}STRUCT {name}\n'
-		objline += parseBaseType(CU,structDef,'','')
-		objline += f'{indent}ENDS\n'
-		
-	return objline
 
-def parseTypedef(CU,typeDef,indent):
-	name = typeDef.attributes['DW_AT_name'].value.decode('ASCII')
-	tag = typeDef.tag
-	objline=''
-	type = typeDef.attributes['DW_AT_type'].value
-
-	structDef = CU.get_DIE_from_refaddr(type)
-	objline += parseBaseType(CU,structDef,indent,'')
-		
-	return objline
-
-def parseBaseType(CU,baseType,baseName,indent):
+def getReference(CU, object):
 	try:
-		name = baseType.attributes['DW_AT_name'].value.decode('ASCII')
+		type = object.attributes[DW_AT_TYPE].value
+		return CU.get_DIE_from_refaddr(type)
 	except:
-		name = '<anonymous>'
-	tag = baseType.tag
-	typeName = ''
-	if tag=='DW_TAG_base_type':
-		byteSize = baseType.attributes['DW_AT_byte_size'].value
-		formatted = f'{indent}{baseName}'
-		typeName += f'{formatted:40}'
-		if byteSize==1:
-			typeName += 'BYTE\n'
-		elif byteSize==2:
-			typeName += 'WORD\n'
-		elif byteSize==4:
-			typeName += 'DWORD\n'
-		else:
-			typeName += f'BLOCK {byteSize}\n'
-	elif tag=='DW_TAG_typedef':
-		typeName += parseTypedef(CU,baseType,indent+baseName)
-	elif tag=='DW_TAG_structure_type':
-		typeName += parseStruct(CU,baseType,baseName,'.--->NOT HERE')
-	elif tag=='DW_TAG_member':
-		if indent!='':
-			indent +='_'
-		typeName += parseMember(CU,baseType,indent)
-	return typeName
+		## This means it's a void type, parent needs to handle that
+		return None
+
+def getSiblingReference(CU, object):
+	sibling = object.attributes[DW_AT_SIBLING].value
+	return CU.get_DIE_from_refaddr(sibling)
+
+def parseMember(CU, memberDef):
+	if memberDef.tag==DW_TAG_BASE_TYPE:
+		return parseBaseType(memberDef)
+	if memberDef.tag==DW_TAG_ARRAY_TYPE:
+		return parseArray(CU, memberDef)
+	if memberDef.tag==DW_TAG_TYPEDEF:
+		typeDef = getReference(CU, memberDef)
+		if typeDef.tag==DW_TAG_BASE_TYPE:
+			return parseBaseType(typeDef)
+		if typeDef.tag==DW_TAG_STRUCTURE_TYPE:
+			return getName(CU, typeDef)
+		raise('ERROR: unknown type tag {typeDef.tag}')
+	if memberDef.tag==DW_TAG_POINTER_TYPE:
+		typeDef = getReference(CU, memberDef)
+		name='void'
+		if typeDef!=None:
+			name=getName(CU, typeDef)
+		return f'WORD ;; Pointer to {name}'
+	raise('ERROR: unknown member tag {memberDef.tag}')
+
+def parseStruct(CU, prefix, structDef):
+	if structDef.has_children:
+		structFields = []
+		for child in structDef.iter_children():
+			if child.tag==DW_TAG_MEMBER:
+				memberDef = getReference(CU, child)
+				if memberDef==None:
+					type = 'void'
+				else:
+					type = parseMember(CU, memberDef)
+					if type==None:
+						structFields += [';**WARNING** Unnamed structure. Consider not using\n;anonymous structs. It will display better','']
+						childName = getName(CU, child)
+						anonRef = getReference(CU, memberDef)
+						structFields += parseStruct(CU, childName+'_', anonRef)
+					else:
+						name = prefix+getName(CU, child)
+						if verbose:	print( f'{name:<40}    {type}')
+						structFields.append(f'{name:<40}    {type}')
+			elif child.tag==DW_TAG_BASE_TYPE:
+				baseTypeDef = getReference(CU, getReference(child))
+				base = parseBaseSize(baseTypeDef)
+				if verbose:	print( f'base= {base}')
+		return structFields
+	if structDef.tag==DW_TAG_BASE_TYPE:
+		return
+
+def getEntryCount(type):
+	count = 0
+	if type.has_children:
+		for child in type.iter_children():
+			count = count+child.attributes[DW_AT_UPPER_BOUND].value+1
+	else:
+		raise('ERROR: Unable to determine entry count')
+	return count
+
+def getByteSize(type):
+	return str(type.attributes[DW_AT_BYTE_SIZE].value)
+	
+def parseArray(CU, arrayDef):
+	count = 0
+	typeDef = getReference(CU, arrayDef)
+	name = getName(CU, typeDef)
+	count = getEntryCount(arrayDef)
+
+	if typeDef.tag==DW_TAG_BASE_TYPE:
+		objSize = getByteSize(typeDef)
+		return f'BLOCK {objSize},{count} ;; Array of {name}[{count}]'
+	elif typeDef.tag==DW_TAG_TYPEDEF:
+		sibling = getReference(CU, typeDef)
+		siblingSize = parseBaseSize(sibling)
+		siblingName = getName(CU, sibling)
+		if sibling.tag==DW_TAG_BASE_TYPE:
+			return f'BLOCK {siblingSize},{count} ;; Array of {name}[{count}]'
+
+		return f'BLOCK {siblingName},{count} ;; Array of {siblingName}[{count}]'
+	raise( 'ERROR: unknown tag {typeDef.tag}')
+
+
+def getName(CU, type):
+	if DW_AT_NAME in type.attributes:
+		return type.attributes[DW_AT_NAME].value.decode('ASCII')
+	return None
+	
+def parseBaseSize(baseType):
+	if baseType.tag=='DW_DIE_TAG_structure_type':
+		raise( 'ERROR: unknown tag {typeDef.tag}')
+	byteSize = baseType.attributes[DW_AT_BYTE_SIZE].value
+	if byteSize==1:
+		return '1'
+	if byteSize==2:
+		return '2'
+	if byteSize==4:
+		return '4'
+	return f'BLOCK {byteSize}'
+
+def parseBaseType(baseType):
+	byteSize = baseType.attributes[DW_AT_BYTE_SIZE].value
+	if byteSize==1:		
+		return 'BYTE'
+	if byteSize==2:	
+		return 'WORD'
+	if byteSize==4:
+		return 'DWORD'
+	return f'BLOCK {byteSize}'
+
+def iterateThroughCompileUnit(CU,outFile):
+	for DIE in CU.iter_DIEs():
+		if DIE.tag==DW_TAG_STRUCTURE_TYPE and DIE.has_children:
+			name = getName(CU, DIE)
+			if name!=None:
+				structFields = parseStruct(CU, '', DIE)
+				if structFields:
+					if verbose:	print(f'\n    STRUCT {name}')
+					outFile.write(f'\n    STRUCT {name}\n')
+					for textLine in structFields:
+						if len(textLine):
+							if verbose:	print(textLine)
+							outFile.write(textLine+'\n')
+					if verbose:	print(f'    ENDS ;; {name}')
+					outFile.write(f'    ENDS ;; {name}\n')
+	return
 
 def create_structs_from_dwarf(input_file,output_file):
 	global objline
+	global globalString
 	with open(output_file,'w') as outFile:
 		outFile.write('    SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION\n')
 		outFile.write('    DEVICE ZXSPECTRUMNEXT\n')
@@ -91,13 +170,10 @@ def create_structs_from_dwarf(input_file,output_file):
 			if not elfFile.has_dwarf_info():
 				print('Error: No dwarf info')
 				return
-			
 			dwarfInfo = elfFile.get_dwarf_info()
 			for CU in dwarfInfo.iter_CUs():
-				for DIE in CU.iter_DIEs():
-					if DIE.tag=='DW_TAG_typedef':
-						objline = parseTypedefStart(CU,DIE,'    ')
-						outFile.write(objline)
+				iterateThroughCompileUnit(CU, outFile);
+	return
 
 parser = argparse.ArgumentParser()
 

@@ -196,7 +196,7 @@
             "request" : "launch",
             "program" : "${file}",
             "console" : "integratedTerminal",
-            "args" : ["build/assets/kfplayer.bin","build/assets/kfplayer.s","32"]
+            "args" : ["build/test_structs.asm.o","build/test_structs.asm"]
         }
 
     ]

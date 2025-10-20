@@ -2,11 +2,11 @@ PATH:=$(PATH);$(CURDIR)/../z88dk/bin
 SLICER = @python scripts/slicer.py
 MAPPER = @python scripts/charmapgen.py
 ASSEMBLER = @sjasmplus
-GENSTRUCTS = @python scripts/genstructs.py
+GENSTRUCTS = python scripts/genstructs.py
 SEGMENT = @python scripts/slice_and_bank.py
 IMGGEN = hdfmonkey
 CC = @$(CURDIR)/../z88dk/bin/zcc
-GCC=@/android/sdk/ndk-bundle/toolchains/x86_64-4.9/prebuilt/windows-x86_64/bin/x86_64-linux-android-gcc.exe
+GCC=/android/sdk/ndk-bundle/toolchains/x86_64-4.9/prebuilt/windows-x86_64/bin/x86_64-linux-android-gcc.exe
 MV = @move /y
 RM = @del /s/q
 ECHO = @echo
@@ -152,3 +152,10 @@ clean: $(OUT)
 
 .DELETE_ON_ERROR:
 
+test : build/test_structs.asm
+
+build/test_structs.asm : test_structs.c scripts/genstructs.py makefile $(OUT) 
+	$(ECHO) Generating symbols $@...
+	$(GCC) -fno-eliminate-unused-debug-types -ffreestanding $< -c -g -o $@.o
+	$(GENSTRUCTS) $@.o $@.s
+	$(ASSEMBLER) --msg=war --nologo --fullpath --sld=$@ $@.s 
