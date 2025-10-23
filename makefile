@@ -6,7 +6,6 @@ GENSTRUCTS = python scripts/genstructs.py
 SEGMENT = @python scripts/slice_and_bank.py
 IMGGEN = hdfmonkey
 CC = @$(CURDIR)/../z88dk/bin/zcc
-GCC=/android/sdk/ndk-bundle/toolchains/x86_64-4.9/prebuilt/windows-x86_64/bin/x86_64-linux-android-gcc.exe
 MV = @move /y
 RM = @del /s/q
 ECHO = @echo
@@ -35,6 +34,7 @@ DEP_DIR=build/deps
 C_SRCS := $(wildcard $(C_SRC_DIR)/*.c)
 C_HDRS := $(wildcard $(C_INC_DIR)/*.h)
 C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS))
+C_SYMS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.sym.o,$(C_SRCS))
 DEP_FILES := $(C_SRCS:src/%.c=$(DEP_DIR)/%.d)
 
 ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
@@ -152,10 +152,28 @@ clean: $(OUT)
 
 .DELETE_ON_ERROR:
 
-test : build/test_structs.asm
+GCC_WARN_DISABLE= -Wno-builtin-declaration-mismatch
+GCC_SYM_OPTS= $(GCC_WARN_DISABLE) -fno-eliminate-unused-debug-types -std=gnu99 -ffreestanding -g
+LD_SYM_OPTS= -r
 
-build/test_structs.asm : test_structs.c scripts/genstructs.py makefile $(OUT) 
-	$(ECHO) Generating symbols $@...
-	$(GCC) -fno-eliminate-unused-debug-types -ffreestanding $< -c -g -o $@.o
+symbols: build/symbols.sld
+
+COMPILER_DIR=../arm-none-linux-gnueabihf/bin
+SYM_GCC=@$(COMPILER_DIR)/arm-none-linux-gnueabihf-gcc
+SYM_LD=@$(COMPILER_DIR)/arm-none-linux-gnueabihf-ld
+
+build/symbols.sld : build/test_structs.asm $(C_SYMS)
+	$(SYM_LD) $(LD_SYM_OPTS) $(C_SYMS) -o $@.o
 	$(GENSTRUCTS) $@.o $@.s
 	$(ASSEMBLER) --msg=war --nologo --fullpath --sld=$@ $@.s 
+
+$(C_OBJ_DIR)/%.sym.o: $(C_SRC_DIR)/%.c $(C_OBJ_DIR) makefile
+	$(ECHO) Compiling symbols for $<
+	$(SYM_GCC) $(GCC_SYM_OPTS) -Iinclude $< -c -o $@
+
+test: build/test_structs.asm
+
+build/test_structs.asm : src/tilemap.c scripts/genstructs.py makefile $(OUT)
+	$(ECHO) Generating symbols $@...
+	$(SYM_GCC) $(GCC_SYM_OPTS) -Iinclude $< -c -o $@.o
+	$(GENSTRUCTS) $@.o $@.s

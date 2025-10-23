@@ -8,12 +8,16 @@ from elftools.elf.elffile import ELFFile
 
 globalString = ''
 
-verbose = False
+verbose = True
 
 DW_AT_NAME = 'DW_AT_name'
 DW_AT_BYTE_SIZE = 'DW_AT_byte_size'
 DW_AT_TYPE = 'DW_AT_type'
 DW_AT_UPPER_BOUND='DW_AT_upper_bound'
+DW_AT_COUNT='DW_AT_count'
+DW_AT_DECL_FILE='DW_AT_decl_file'
+DW_AT_DECL_LINE='DW_AT_decl_line'
+DW_AT_DECL_COLUMN='DW_AT_decl_column'
 DW_AT_SIBLING = 'DW_AT_sibling'
 DW_TAG_BASE_TYPE = 'DW_TAG_base_type'
 DW_TAG_TYPEDEF='DW_TAG_typedef'
@@ -21,8 +25,17 @@ DW_TAG_STRUCTURE_TYPE='DW_TAG_structure_type'
 DW_TAG_ARRAY_TYPE='DW_TAG_array_type'
 DW_TAG_POINTER_TYPE='DW_TAG_pointer_type'
 DW_TAG_MEMBER='DW_TAG_member'
+DW_TAG_SUBPROGRAM='DW_TAG_subprogram'
+DW_TAG_FORMAL_PARAMETER = 'DW_TAG_formal_parameter'
+DW_TAG_VARIABLE = 'DW_TAG_variable'
+DW_TAG_COMPILE_UNIT='DW_TAG_compile_unit'
+DW_TAG_UNSPECIFIED_PARAMETERS='DW_TAG_unspecified_parameters'
+DW_TAG_LEXICAL_BLOCK='DW_TAG_lexical_block'
+DW_TAG_CONST_TYPE='DW_TAG_const_type'
 
-
+def error(errorText):
+	raise(Exception(errorText))
+	   
 def getReference(CU, object):
 	try:
 		type = object.attributes[DW_AT_TYPE].value
@@ -35,27 +48,45 @@ def getSiblingReference(CU, object):
 	sibling = object.attributes[DW_AT_SIBLING].value
 	return CU.get_DIE_from_refaddr(sibling)
 
+def getFilename(object):
+	return object.attributes[DW_AT_DECL_FILE].value
+
+def getLinenumber(object):
+	return object.attributes[DW_AT_DECL_LINE].value
+
 def parseMember(CU, memberDef):
 	if memberDef.tag==DW_TAG_BASE_TYPE:
-		return parseBaseType(memberDef)
+		return parseBaseType(CU, memberDef)
 	if memberDef.tag==DW_TAG_ARRAY_TYPE:
 		return parseArray(CU, memberDef)
 	if memberDef.tag==DW_TAG_TYPEDEF:
 		typeDef = getReference(CU, memberDef)
 		if typeDef.tag==DW_TAG_BASE_TYPE:
-			return parseBaseType(typeDef)
+			return parseBaseType(CU, typeDef)
 		if typeDef.tag==DW_TAG_STRUCTURE_TYPE:
 			return getName(CU, typeDef)
-		raise('ERROR: unknown type tag {typeDef.tag}')
+		error('ERROR: unknown type tag {typeDef.tag}')
 	if memberDef.tag==DW_TAG_POINTER_TYPE:
 		typeDef = getReference(CU, memberDef)
-		name='void'
-		if typeDef!=None:
-			name=getName(CU, typeDef)
-		return f'WORD ;; Pointer to {name}'
-	raise('ERROR: unknown member tag {memberDef.tag}')
+		if typeDef==None:
+			return f'{typeDef} ;; Pointer to void'
+		typeStr = parseMember(CU, typeDef)
+		return f'{typeStr} ;; Pointer to {typeStr} array'
+		
+	if memberDef.tag==DW_TAG_STRUCTURE_TYPE:
+		structDef = getSiblingReference(CU, memberDef)
+		name=getName(CU, structDef)
+		return name
+	if memberDef.tag==DW_TAG_CONST_TYPE:
+		typeDef = getReference(CU, memberDef)
+		if typeDef==None:
+			return "void"
+		return parseMember(CU, typeDef)
+
 
 def parseStruct(CU, prefix, structDef):
+	if structDef==None:
+		return "<<<<>>>>"
 	if structDef.has_children:
 		structFields = []
 		for child in structDef.iter_children():
@@ -67,6 +98,10 @@ def parseStruct(CU, prefix, structDef):
 					type = parseMember(CU, memberDef)
 					if type==None:
 						structFields += [';**WARNING** Unnamed structure. Consider not using\n;anonymous structs. It will display better','']
+						if verbose: 
+							file=getFilename(memberDef)
+							line=getLinenumber(memberDef)
+							print(f'WARNING: Unnamed structure at {file}:{line}')
 						childName = getName(CU, child)
 						anonRef = getReference(CU, memberDef)
 						structFields += parseStruct(CU, childName+'_', anonRef)
@@ -80,15 +115,18 @@ def parseStruct(CU, prefix, structDef):
 				if verbose:	print( f'base= {base}')
 		return structFields
 	if structDef.tag==DW_TAG_BASE_TYPE:
-		return
+		return '<BASETYPE>'
 
 def getEntryCount(type):
 	count = 0
 	if type.has_children:
 		for child in type.iter_children():
-			count = count+child.attributes[DW_AT_UPPER_BOUND].value+1
+			if DW_AT_UPPER_BOUND in child.attributes:
+				count += child.attributes[DW_AT_UPPER_BOUND].value+1
+			elif DW_AT_COUNT in child.attributes:
+				count += child.attributes[DW_AT_COUNT].value
 	else:
-		raise('ERROR: Unable to determine entry count')
+		error('ERROR: Unable to determine entry count')
 	return count
 
 def getByteSize(type):
@@ -111,7 +149,12 @@ def parseArray(CU, arrayDef):
 			return f'BLOCK {siblingSize},{count} ;; Array of {name}[{count}]'
 
 		return f'BLOCK {siblingName},{count} ;; Array of {siblingName}[{count}]'
-	raise( 'ERROR: unknown tag {typeDef.tag}')
+	elif typeDef.tag==DW_TAG_CONST_TYPE:
+		constTypeDef = getReference(CU, typeDef)
+		constTypeName = parseMember(CU, constTypeDef)
+		return f'WORD ;; Pointer to {constTypeName}'
+
+	error( 'ERROR: unknown tag {typeDef.tag}')
 
 
 def getName(CU, type):
@@ -121,7 +164,7 @@ def getName(CU, type):
 	
 def parseBaseSize(baseType):
 	if baseType.tag=='DW_DIE_TAG_structure_type':
-		raise( 'ERROR: unknown tag {typeDef.tag}')
+		error('ERROR: unknown tag {typeDef.tag}')
 	byteSize = baseType.attributes[DW_AT_BYTE_SIZE].value
 	if byteSize==1:
 		return '1'
@@ -131,48 +174,115 @@ def parseBaseSize(baseType):
 		return '4'
 	return f'BLOCK {byteSize}'
 
-def parseBaseType(baseType):
-	byteSize = baseType.attributes[DW_AT_BYTE_SIZE].value
-	if byteSize==1:		
-		return 'BYTE'
-	if byteSize==2:	
-		return 'WORD'
-	if byteSize==4:
-		return 'DWORD'
-	return f'BLOCK {byteSize}'
+def parseBaseType(CU, baseType):
+	if baseType.tag==DW_TAG_TYPEDEF:
+		typeRef = getReference(CU, baseType)
+		typeName = getName(CU, typeRef)
+		return f'{typeName}'
+		error(f'ERROR: unknown tag {typeDef.tag}')
+	if DW_AT_BYTE_SIZE in baseType.attributes:
+		byteSize = baseType.attributes[DW_AT_BYTE_SIZE].value
+		if byteSize==1:		
+			return 'BYTE'
+		if byteSize==2:	
+			return 'WORD'
+		if byteSize==4:
+			return 'DWORD'
+		return f'BLOCK {byteSize}'
+	return '***HERE***void'
+
+def handleStruct(CU, structRef, outFile):
+	name = getName(CU, structRef)
+	if name!=None:
+		structFields = parseStruct(CU, '', structRef)
+		if structFields:
+			if verbose:	print(f'    STRUCT {name}')
+			outFile.write(f'    STRUCT {name}\n')
+			for textLine in structFields:
+				if len(textLine):
+					if verbose:	print(textLine)
+					outFile.write(textLine+'\n')
+			if verbose:	print(f'    ENDS ;; {name}\n')
+			outFile.write(f'    ENDS ;; {name}\n\n')
+
+def handleSubprogram(CU, progRef, outFile):
+	progName = getName(CU, progRef)
+	if progRef.has_children:
+		typeRef = getReference(CU, progRef)
+		if (typeRef==None):
+			returnType = 'void'
+		else:
+			returnType = parseBaseType(CU, typeRef)
+		if verbose: print(f';; Returns {returnType}')
+		outFile.write(f';; Returns {returnType}\n')
+		if verbose: print(f'    STRUCT {progName}_stack_frame')
+		outFile.write(f'    STRUCT {progName}_stack_frame\n')
+		paramIndex = 1
+		for child in progRef.iter_children():
+			if child.tag==DW_TAG_FORMAL_PARAMETER:
+				childName = getName(CU, child)
+				if childName==None:
+					childName=f'param_{paramIndex}'
+					paramIndex+=1
+				paramType = getReference(CU, child)
+				if paramType:
+					typeStr = parseMember(CU, paramType)
+				else:
+					typeStr = '<void>'
+				if verbose: print(f'{childName:<40}    {typeStr}')
+				outFile.write(f'{childName:<40}    {typeStr}\n')
+			elif child.tag==DW_TAG_VARIABLE:
+				varName = getName(CU, child)
+				typeRef = getReference(CU, child)
+				typeStr = parseMember(CU, typeRef)
+				if verbose: print(f'{varName:<40}    {typeStr}')
+				outFile.write(f'{varName:<40}    {typeStr}\n')
+			elif child.tag==DW_TAG_UNSPECIFIED_PARAMETERS:
+				if verbose: print(f'*UNSPECIFIED FORMAL PARAMETERS')
+			elif child.tag==DW_TAG_LEXICAL_BLOCK:
+				continue
+			else: 
+				error(f'Unhandled tag {child.tag}')
+		outFile.write(f'    ENDS ;; {progName}\n\n')
+		if verbose: print(f'    ENDS ;; {progName}\n')
+	return
+
 
 def iterateThroughCompileUnit(CU,outFile):
+	ignored_tags=[DW_TAG_FORMAL_PARAMETER, DW_TAG_BASE_TYPE, DW_TAG_VARIABLE]
+	ignored_tags+=[DW_TAG_COMPILE_UNIT, DW_TAG_TYPEDEF, DW_TAG_MEMBER]
+	ignored_tags+=[None]
 	for DIE in CU.iter_DIEs():
 		if DIE.tag==DW_TAG_STRUCTURE_TYPE and DIE.has_children:
-			name = getName(CU, DIE)
-			if name!=None:
-				structFields = parseStruct(CU, '', DIE)
-				if structFields:
-					if verbose:	print(f'\n    STRUCT {name}')
-					outFile.write(f'\n    STRUCT {name}\n')
-					for textLine in structFields:
-						if len(textLine):
-							if verbose:	print(textLine)
-							outFile.write(textLine+'\n')
-					if verbose:	print(f'    ENDS ;; {name}')
-					outFile.write(f'    ENDS ;; {name}\n')
+			handleStruct(CU, DIE, outFile)
+		elif DIE.tag==DW_TAG_SUBPROGRAM:
+			handleSubprogram(CU, DIE, outFile)
 	return
 
 def create_structs_from_dwarf(input_file,output_file):
 	global objline
 	global globalString
-	with open(output_file,'w') as outFile:
-		outFile.write('    SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION\n')
-		outFile.write('    DEVICE ZXSPECTRUMNEXT\n')
-
+	try:
 		with open(input_file,'rb') as inFile:
 			elfFile = ELFFile(inFile)
-			if not elfFile.has_dwarf_info():
-				print('Error: No dwarf info')
-				return
-			dwarfInfo = elfFile.get_dwarf_info()
-			for CU in dwarfInfo.iter_CUs():
-				iterateThroughCompileUnit(CU, outFile);
+			try:
+				with open(output_file,'w') as outFile:
+					outFile.write('    SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION\n')
+					outFile.write('    DEVICE ZXSPECTRUMNEXT\n\n')
+					if not elfFile.has_dwarf_info():
+						print('WARNING: No dwarf info')
+						return
+					dwarfInfo = elfFile.get_dwarf_info()
+					for CU in dwarfInfo.iter_CUs():
+						iterateThroughCompileUnit(CU, outFile);
+			except FileNotFoundError as ex:
+				print(f'ERROR: Unable to open input file {input_file}')
+			except:
+				raise
+	except FileNotFoundError as ex:
+		print(f'ERROR: File {output_file} cannot be opened for writing')
+	except:
+		raise
 	return
 
 parser = argparse.ArgumentParser()
@@ -184,3 +294,4 @@ args=parser.parse_args()
 create_structs_from_dwarf(args.input_file,args.output_file)
 
 
+ 
