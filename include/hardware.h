@@ -134,4 +134,4 @@ enum dma_modes
 };
 
 extern u8 port_in(u16 port);
-extern void port_out(u16 port, u8 val);
+void port_out(u16 port, u8 val);

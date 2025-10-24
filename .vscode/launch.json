@@ -196,8 +196,10 @@
             "request" : "launch",
             "program" : "${file}",
             "console" : "integratedTerminal",
-            "args" : ["build/test_structs.asm.o","build/test_structs.asm"]
+            "args" : ["build/c/assets.o", "build/c/audio.o","build/c/display.o","-output_file=build/test_structs.asm"]
         }
 
     ]
 }
+
+

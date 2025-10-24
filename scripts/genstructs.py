@@ -3,6 +3,7 @@
 ## output, and can't be switched. Ideally some simple compiler, maybe from android.
 ##
 import argparse
+import sys
 
 from elftools.elf.elffile import ELFFile
 
@@ -35,6 +36,7 @@ DW_TAG_CONST_TYPE='DW_TAG_const_type'
 
 def error(errorText):
 	raise(Exception(errorText))
+	sys.exit(-1)
 	   
 def getReference(CU, object):
 	try:
@@ -55,6 +57,8 @@ def getLinenumber(object):
 	return object.attributes[DW_AT_DECL_LINE].value
 
 def parseMember(CU, memberDef):
+	if memberDef.tag==None:
+		return "void"
 	if memberDef.tag==DW_TAG_BASE_TYPE:
 		return parseBaseType(CU, memberDef)
 	if memberDef.tag==DW_TAG_ARRAY_TYPE:
@@ -69,9 +73,9 @@ def parseMember(CU, memberDef):
 	if memberDef.tag==DW_TAG_POINTER_TYPE:
 		typeDef = getReference(CU, memberDef)
 		if typeDef==None:
-			return f'{typeDef} ;; Pointer to void'
+			return f'WORD ;; Pointer to void'
 		typeStr = parseMember(CU, typeDef)
-		return f'{typeStr} ;; Pointer to {typeStr} array'
+		return f'WORD ;; Pointer to {typeStr} array'
 		
 	if memberDef.tag==DW_TAG_STRUCTURE_TYPE:
 		structDef = getSiblingReference(CU, memberDef)
@@ -82,7 +86,13 @@ def parseMember(CU, memberDef):
 		if typeDef==None:
 			return "void"
 		return parseMember(CU, typeDef)
-
+	if memberDef.tag==DW_TAG_MEMBER:
+		raise "This code should't be used"
+		typeDef = getReference(CU, memberDef)
+		if typeDef==None:
+			return "void"
+		return parseMember(CU, typeDef)
+	error(f'ERROR: Unknown member tag {memberDef.tag}')
 
 def parseStruct(CU, prefix, structDef):
 	if structDef==None:
@@ -99,9 +109,7 @@ def parseStruct(CU, prefix, structDef):
 					if type==None:
 						structFields += [';**WARNING** Unnamed structure. Consider not using\n;anonymous structs. It will display better','']
 						if verbose: 
-							file=getFilename(memberDef)
-							line=getLinenumber(memberDef)
-							print(f'WARNING: Unnamed structure at {file}:{line}')
+							print(f'WARNING: Unnamed structure')
 						childName = getName(CU, child)
 						anonRef = getReference(CU, memberDef)
 						structFields += parseStruct(CU, childName+'_', anonRef)
@@ -191,9 +199,14 @@ def parseBaseType(CU, baseType):
 		return f'BLOCK {byteSize}'
 	return '***HERE***void'
 
+existingStructs=[]
 def handleStruct(CU, structRef, outFile):
 	name = getName(CU, structRef)
 	if name!=None:
+		if name in existingStructs:
+			if verbose: print(f'Skipped {name}...')
+			return
+		existingStructs.append(name)
 		structFields = parseStruct(CU, '', structRef)
 		if structFields:
 			if verbose:	print(f'    STRUCT {name}')
@@ -205,6 +218,8 @@ def handleStruct(CU, structRef, outFile):
 			if verbose:	print(f'    ENDS ;; {name}\n')
 			outFile.write(f'    ENDS ;; {name}\n\n')
 
+existingMethods=[]
+
 def handleSubprogram(CU, progRef, outFile):
 	progName = getName(CU, progRef)
 	if progRef.has_children:
@@ -215,8 +230,13 @@ def handleSubprogram(CU, progRef, outFile):
 			returnType = parseBaseType(CU, typeRef)
 		if verbose: print(f';; Returns {returnType}')
 		outFile.write(f';; Returns {returnType}\n')
-		if verbose: print(f'    STRUCT {progName}_stack_frame')
-		outFile.write(f'    STRUCT {progName}_stack_frame\n')
+		if progName in existingMethods:
+			return
+		existingMethods.append(progName)
+		print(existingMethods)
+		stackFrameName = f'{progName}_stack_frame'
+		if verbose: print(f'    STRUCT {stackFrameName}')
+		outFile.write(f'    STRUCT {stackFrameName}\n')
 		paramIndex = 1
 		for child in progRef.iter_children():
 			if child.tag==DW_TAG_FORMAL_PARAMETER:
@@ -234,7 +254,11 @@ def handleSubprogram(CU, progRef, outFile):
 			elif child.tag==DW_TAG_VARIABLE:
 				varName = getName(CU, child)
 				typeRef = getReference(CU, child)
-				typeStr = parseMember(CU, typeRef)
+				if typeRef==None:
+					raise "typeRef is None"
+					typeStr = '****?????*****'
+				else:
+					typeStr = parseMember(CU, typeRef)
 				if verbose: print(f'{varName:<40}    {typeStr}')
 				outFile.write(f'{varName:<40}    {typeStr}\n')
 			elif child.tag==DW_TAG_UNSPECIFIED_PARAMETERS:
@@ -259,39 +283,45 @@ def iterateThroughCompileUnit(CU,outFile):
 			handleSubprogram(CU, DIE, outFile)
 	return
 
-def create_structs_from_dwarf(input_file,output_file):
+def create_structs_from_dwarf(input_file, outFile):
 	global objline
 	global globalString
 	try:
 		with open(input_file,'rb') as inFile:
 			elfFile = ELFFile(inFile)
-			try:
-				with open(output_file,'w') as outFile:
-					outFile.write('    SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION\n')
-					outFile.write('    DEVICE ZXSPECTRUMNEXT\n\n')
-					if not elfFile.has_dwarf_info():
-						print('WARNING: No dwarf info')
-						return
-					dwarfInfo = elfFile.get_dwarf_info()
-					for CU in dwarfInfo.iter_CUs():
-						iterateThroughCompileUnit(CU, outFile);
-			except FileNotFoundError as ex:
-				print(f'ERROR: Unable to open input file {input_file}')
-			except:
-				raise
-	except FileNotFoundError as ex:
-		print(f'ERROR: File {output_file} cannot be opened for writing')
+			outFile.write('    SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION\n')
+			outFile.write('    DEVICE ZXSPECTRUMNEXT\n\n')
+			if not elfFile.has_dwarf_info():
+				print('WARNING: No dwarf info')
+				return
+			dwarfInfo = elfFile.get_dwarf_info()
+			for CU in dwarfInfo.iter_CUs():
+				iterateThroughCompileUnit(CU, outFile);
+	except FileNotFoundError:
+		error(f'ERROR: Unable to open input file {input_file}')
 	except:
 		raise
 	return
 
-parser = argparse.ArgumentParser()
+def main(file_list, outputFile):
+	for filename in file_list:
+		print(f'Processing file {filename}...')
+		create_structs_from_dwarf(filename, outputFile)
+	return
+		 
 
-parser.add_argument('input_file', type=str, help='Processed (ELF format file)')
-parser.add_argument('output_file',type=str, help='Output filename')
-args=parser.parse_args()
+try:
+	parser = argparse.ArgumentParser()
 
-create_structs_from_dwarf(args.input_file,args.output_file)
-
-
- 
+	parser.add_argument('filenames', nargs='+',type=str,help='List of input files')
+	parser.add_argument('-output_file','-o', help='Output filename')
+	args=parser.parse_args()
+	if args.output_file=='':
+		main(args.filenames, sys.stdout)
+	else:
+		with open(args.output_file,'w') as outputFile:
+			main(args.filenames, outputFile)
+except FileNotFoundError as ex:
+	error(f'ERROR: Unable to open output file {args.output_file}')
+except:
+	raise

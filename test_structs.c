@@ -1,5 +1,19 @@
 //#include "include/kftypes.h"
 
+struct s_outer_struct
+{
+    struct
+    {
+        char variable1;
+        short variable2;
+    } this_is_the_anon_struct_variable;
+} this_has_anonymous_struct_inside;
+
+short testFunc(short param)
+{
+	return param*2;
+}
+#if 0
 typedef unsigned short u16;
 typedef unsigned char u8;
 
@@ -10,6 +24,15 @@ typedef struct s_simple_struct
 	void* some_void_ptr;
 } simple_struct;
 
+
+short testFunction(short param1, short param2, char param3)
+{
+	short local1=func(param1)+func(param2)+func(param3);
+	short local2=10;
+	return local1+local2;
+}
+
+void voidTestFunction(void);
 typedef struct s_struct_with_struct_array
 {
 	simple_struct pos[10];
@@ -85,3 +108,4 @@ typedef struct s_complex_struct
 	void* this_is_a_void_ptr;
 	coord* pointer_after_everything;
 } t_complex_struct;
+#endif
