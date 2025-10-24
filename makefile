@@ -176,7 +176,7 @@ $(C_OBJ_DIR)/%.sym.o: $(C_SRC_DIR)/%.c $(C_OBJ_DIR) makefile
 
 test: build/test_structs.asm
 
-build/test_structs.asm : src/tilemap.c scripts/genstructs.py makefile $(OUT)
+build/test_structs.asm : test_structs.c scripts/genstructs.py makefile $(OUT)
 	$(ECHO) Generating symbols $@...
 	$(SYM_GCC) $(GCC_SYM_OPTS) -Iinclude $< -c -o $@.o
-	$(GENSTRUCTS) -o $@.s $(C_SYMS)
+	$(GENSTRUCTS) -o $@ $@.o

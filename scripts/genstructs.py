@@ -56,17 +56,17 @@ def getFilename(object):
 def getLinenumber(object):
 	return object.attributes[DW_AT_DECL_LINE].value
 
-def parseMember(CU, memberDef):
+def getType(CU, memberDef):
 	if memberDef.tag==None:
 		return "void"
 	if memberDef.tag==DW_TAG_BASE_TYPE:
-		return parseBaseType(CU, memberDef)
+		return getBaseType(CU, memberDef)
 	if memberDef.tag==DW_TAG_ARRAY_TYPE:
 		return parseArray(CU, memberDef)
 	if memberDef.tag==DW_TAG_TYPEDEF:
 		typeDef = getReference(CU, memberDef)
 		if typeDef.tag==DW_TAG_BASE_TYPE:
-			return parseBaseType(CU, typeDef)
+			return getBaseType(CU, typeDef)
 		if typeDef.tag==DW_TAG_STRUCTURE_TYPE:
 			return getName(CU, typeDef)
 		error('ERROR: unknown type tag {typeDef.tag}')
@@ -74,9 +74,8 @@ def parseMember(CU, memberDef):
 		typeDef = getReference(CU, memberDef)
 		if typeDef==None:
 			return f'WORD ;; Pointer to void'
-		typeStr = parseMember(CU, typeDef)
+		typeStr = getType(CU, typeDef)
 		return f'WORD ;; Pointer to {typeStr} array'
-		
 	if memberDef.tag==DW_TAG_STRUCTURE_TYPE:
 		structDef = getSiblingReference(CU, memberDef)
 		name=getName(CU, structDef)
@@ -85,13 +84,9 @@ def parseMember(CU, memberDef):
 		typeDef = getReference(CU, memberDef)
 		if typeDef==None:
 			return "void"
-		return parseMember(CU, typeDef)
+		return getType(CU, typeDef)
 	if memberDef.tag==DW_TAG_MEMBER:
 		raise "This code should't be used"
-		typeDef = getReference(CU, memberDef)
-		if typeDef==None:
-			return "void"
-		return parseMember(CU, typeDef)
 	error(f'ERROR: Unknown member tag {memberDef.tag}')
 
 def parseStruct(CU, prefix, structDef):
@@ -105,7 +100,7 @@ def parseStruct(CU, prefix, structDef):
 				if memberDef==None:
 					type = 'void'
 				else:
-					type = parseMember(CU, memberDef)
+					type = getType(CU, memberDef)
 					if type==None:
 						structFields += [';**WARNING** Unnamed structure. Consider not using\n;anonymous structs. It will display better','']
 						if verbose: 
@@ -159,7 +154,7 @@ def parseArray(CU, arrayDef):
 		return f'BLOCK {siblingName},{count} ;; Array of {siblingName}[{count}]'
 	elif typeDef.tag==DW_TAG_CONST_TYPE:
 		constTypeDef = getReference(CU, typeDef)
-		constTypeName = parseMember(CU, constTypeDef)
+		constTypeName = getType(CU, constTypeDef)
 		return f'WORD ;; Pointer to {constTypeName}'
 
 	error( 'ERROR: unknown tag {typeDef.tag}')
@@ -182,7 +177,7 @@ def parseBaseSize(baseType):
 		return '4'
 	return f'BLOCK {byteSize}'
 
-def parseBaseType(CU, baseType):
+def getBaseType(CU, baseType):
 	if baseType.tag==DW_TAG_TYPEDEF:
 		typeRef = getReference(CU, baseType)
 		typeName = getName(CU, typeRef)
@@ -227,7 +222,7 @@ def handleSubprogram(CU, progRef, outFile):
 		if (typeRef==None):
 			returnType = 'void'
 		else:
-			returnType = parseBaseType(CU, typeRef)
+			returnType = getType(CU, typeRef)
 		if verbose: print(f';; Returns {returnType}')
 		outFile.write(f';; Returns {returnType}\n')
 		if progName in existingMethods:
@@ -246,7 +241,7 @@ def handleSubprogram(CU, progRef, outFile):
 					paramIndex+=1
 				paramType = getReference(CU, child)
 				if paramType:
-					typeStr = parseMember(CU, paramType)
+					typeStr = getType(CU, paramType)
 				else:
 					typeStr = '<void>'
 				if verbose: print(f'{childName:<40}    {typeStr}')
@@ -258,7 +253,7 @@ def handleSubprogram(CU, progRef, outFile):
 					raise "typeRef is None"
 					typeStr = '****?????*****'
 				else:
-					typeStr = parseMember(CU, typeRef)
+					typeStr = getType(CU, typeRef)
 				if verbose: print(f'{varName:<40}    {typeStr}')
 				outFile.write(f'{varName:<40}    {typeStr}\n')
 			elif child.tag==DW_TAG_UNSPECIFIED_PARAMETERS:
