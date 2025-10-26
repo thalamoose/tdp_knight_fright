@@ -89,36 +89,43 @@ def getType(CU, memberDef):
 		raise "This code should't be used"
 	error(f'ERROR: Unknown member tag {memberDef.tag}')
 
-def parseStruct(CU, prefix, structDef):
-	if structDef==None:
-		return "<<<<>>>>"
-	if structDef.has_children:
-		structFields = []
-		for child in structDef.iter_children():
+def expandFields(CU, prefix, fieldDef):
+	fields = []
+
+	if fieldDef.tag==DW_TAG_BASE_TYPE:
+		name = prefix
+		type = getType(CU, fieldDef)
+		if verbose:	print( f'{name:<40}    {type}')
+		fields.append(f'{name:<40}    {type}')
+		return fields
+	if fieldDef.tag==DW_TAG_TYPEDEF:
+		typedefType=getReference(CU, fieldDef)
+		fields += expandFields(CU, prefix, typedefType)
+		return fields;
+	if fieldDef.tag==DW_TAG_ARRAY_TYPE:
+		arraydefType=getReference(CU, fieldDef)
+		name = prefix ##+getName(CU, arraydefType)
+		fields += expandFields(CU, name, arraydefType)
+		return fields;
+	if fieldDef==None:
+		return fields
+	if fieldDef.tag!=DW_TAG_STRUCTURE_TYPE:
+		error(f'Unhandled tag {fieldDef.tag}')
+	##
+	## We get here if we're expanding a structure
+	##
+	if fieldDef.has_children:
+		for child in fieldDef.iter_children():
 			if child.tag==DW_TAG_MEMBER:
+				name = getName(CU, child)
+				if prefix!='':
+					name = getName(CU,child)+'_'+prefix
 				memberDef = getReference(CU, child)
-				if memberDef==None:
-					type = 'void'
-				else:
-					type = getType(CU, memberDef)
-					if type==None:
-						structFields += [';**WARNING** Unnamed structure. Consider not using\n;anonymous structs. It will display better','']
-						if verbose: 
-							print(f'WARNING: Unnamed structure')
-						childName = getName(CU, child)
-						anonRef = getReference(CU, memberDef)
-						structFields += parseStruct(CU, childName+'_', anonRef)
-					else:
-						name = prefix+getName(CU, child)
-						if verbose:	print( f'{name:<40}    {type}')
-						structFields.append(f'{name:<40}    {type}')
-			elif child.tag==DW_TAG_BASE_TYPE:
-				baseTypeDef = getReference(CU, getReference(child))
-				base = parseBaseSize(baseTypeDef)
-				if verbose:	print( f'base= {base}')
-		return structFields
-	if structDef.tag==DW_TAG_BASE_TYPE:
-		return '<BASETYPE>'
+				fields += expandFields(CU, name, memberDef)
+			else:
+				fields += expandFields(CU, name, child)
+		return fields
+	return fields
 
 def getEntryCount(type):
 	count = 0
@@ -202,7 +209,7 @@ def handleStruct(CU, structRef, outFile):
 			if verbose: print(f'Skipped {name}...')
 			return
 		existingStructs.append(name)
-		structFields = parseStruct(CU, '', structRef)
+		structFields = expandFields(CU, '', structRef)
 		if structFields:
 			if verbose:	
 				print(f'    STRUCT {name}')
