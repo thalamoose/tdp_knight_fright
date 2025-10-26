@@ -204,8 +204,10 @@ def handleStruct(CU, structRef, outFile):
 		existingStructs.append(name)
 		structFields = parseStruct(CU, '', structRef)
 		if structFields:
-			if verbose:	print(f'    STRUCT {name}')
+			if verbose:	
+				print(f'    STRUCT {name}')
 			outFile.write(f'    STRUCT {name}\n')
+				 
 			for textLine in structFields:
 				if len(textLine):
 					if verbose:	print(textLine)
@@ -230,9 +232,14 @@ def handleSubprogram(CU, progRef, outFile):
 		existingMethods.append(progName)
 		print(existingMethods)
 		stackFrameName = f'{progName}_stack_frame'
-		if verbose: print(f'    STRUCT {stackFrameName}')
-		outFile.write(f'    STRUCT {stackFrameName}\n')
 		paramIndex = 1
+		if verbose: 
+			print(f'    STRUCT {stackFrameName}')
+			print(f'__previous_frame_pointer__          		WORD ;; Previous frame pointer\n')
+			print(f'__return_address__							WORD ;; Return address\n')
+		outFile.write(f'    STRUCT {stackFrameName}\n')
+		outFile.write(f'__previous_frame_pointer__          		WORD ;; Previous frame pointer\n')
+		outFile.write(f'__return_address__							WORD ;; Return address\n')
 		for child in progRef.iter_children():
 			if child.tag==DW_TAG_FORMAL_PARAMETER:
 				childName = getName(CU, child)
@@ -284,8 +291,6 @@ def create_structs_from_dwarf(input_file, outFile):
 	try:
 		with open(input_file,'rb') as inFile:
 			elfFile = ELFFile(inFile)
-			outFile.write('    SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION\n')
-			outFile.write('    DEVICE ZXSPECTRUMNEXT\n\n')
 			if not elfFile.has_dwarf_info():
 				print('WARNING: No dwarf info')
 				return
@@ -299,6 +304,8 @@ def create_structs_from_dwarf(input_file, outFile):
 	return
 
 def main(file_list, outputFile):
+	outputFile.write('    SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION\n')
+	outputFile.write('    DEVICE ZXSPECTRUMNEXT\n\n')
 	for filename in file_list:
 		print(f'Processing file {filename}...')
 		create_structs_from_dwarf(filename, outputFile)
