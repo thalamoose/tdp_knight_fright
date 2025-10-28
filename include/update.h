@@ -1,0 +1,1 @@
+void UpdateSprites(void);

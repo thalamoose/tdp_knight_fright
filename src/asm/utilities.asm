@@ -1,27 +1,65 @@
-
+        include "include/hardware.inc"
+        include "include/memorymap.inc"
+        SECTION code_user
+        global _nextreg
+        global _CopyPalette
+        global _memcpy_dma
+        global _memset
+        global _get_random
+        global _port_in
+        global _port_out
+        global _WaitVSync
 check_reset:
         xor a
         ret
 
-
-
-; 0xe000 remapped to page number
-; A - Page number
-set_page:
-        nextreg $57,a
+_nextreg:
+        push ix
+        ld ix,2
+        add ix,sp
+        ld a,(ix+2)
+        ld (@here+2),a
+        ld a,(ix+3)
+@here:  nextreg 0,a
+        pop ix
         ret
 
+_port_in:
+        push ix
+        ld ix,2
+        add ix,sp
+        ld bc,(ix+2)
+        in a,(c)
+        ld l,a
+        pop ix
+        ret
 
-
+_port_out:
+        push ix
+        ld ix,2
+        add ix,sp
+        ld bc,(ix+2)
+        ld a,(ix+4)
+        out (c),a
+        ld l,a
+        pop ix
+        ret
 ; A  - Fill value
 ; HL - Base address
 ; BC - Length
-fill_mem:
-        ld de,hl
-        ld (hl),a
+_memset:
+        push ix
+        ld ix,2
+        add ix,sp
+        ld de,(ix+2)
+        ld a,(ix+4)
+        ld bc,(ix+5)
+        ld hl,de
+        ld (de),a
         inc de
         dec bc
         ldir
+        pop ix
         ret
 
 ; Copy a 9 bit RGB palette
@@ -31,8 +69,13 @@ fill_mem:
 ;       %001 - L2 1st,    %101 - L2 2nd
 ;       %010 - SPR 1st,   %110 - SPR 2nd
 ;       %011 - tile 1st,  %111 - tile 2nd
-copy_palette:
-        nextreg MMU_SLOT_6,PALETTE_PAGE
+_CopyPalette:
+        push ix
+        ld ix,2
+        add ix,sp
+        ld de,(ix+2)
+        ld a,(ix+4)
+        ld hl,de
         sla a
         sla a
         sla a
@@ -40,21 +83,30 @@ copy_palette:
         nextreg PALETTE_CONTROL,a                           ; 
         ld b,0
         nextreg PALETTE_INDEX,0
-.next_palette
+@next_palette:
         ld a,(hl)
         inc hl
         nextreg PALETTE_VALUE_9,a                       ; Write R2R1R0G2G1G0B2B1
         ld a,(hl)
         inc hl
         nextreg PALETTE_VALUE_9,a
-        djnz .next_palette
+        djnz @next_palette
+        pop ix
+        ret
+
+_WaitVSync:
+        ld a,0                              ; black border
+        out (ULA_PORT),a
+        halt
+        ld a,1                              ; blue border
+        out (ULA_PORT),a
         ret
 
 ; 16-bit Galois LFSR using polynomial 0xB400
 ; State in RNG_SEEDL (low), RNG_SEEDH (high)
 ; Returns: HL = new 16-bit random value
 ; Affected: AF
-get_random_16:
+_get_random_16:
         ld      hl,(random_seed)
         ld      a,l
         rra                        ; shift right through carry
@@ -62,35 +114,44 @@ get_random_16:
         ld      a,h
         rra
         ld      h,a
-        jr      nc,.no_xor
+        jr      nc,@no_xor
         ld      de,0xB400
         xor     d                  ; h ^= 0xB4
         ld      h,a
         ld      a,l
         xor     e                  ; l ^= 0x00
         ld      l,a
-.no_xor:
+@no_xor:
         ld      (random_seed),hl
         ret
 
 ; Galois LFSR: x^8 + x^6 + x^5 + x^4 + 1 (one common polynomial)
 ; new = (seed >> 1) ^ ( (seed & 1) ? 0xB8 : 0 )
 ; returns A=new
-get_random:
+_get_random:
         push bc
         ld   a,(random_seed) ; 7T
         srl   a               ; 8T   ; shift right with carry into bit7 (but we prefer logical >>)
-        jr   nc, .no_xor     ; 7T (taken or not impacts timing)
+        jr   nc,@no_xor         ; 7T (taken or not impacts timing)
         xor  0B8h            ; 7T
-.no_xor:
+@no_xor:
         ld   (random_seed),a ; 7T
         ld   a,(random_seed_2) ; 7T
         srl   a               ; 8T   ; shift right with carry into bit7 (but we prefer logical >>)
-        jr   nc, .no_xor2     ; 7T (taken or not impacts timing)
+        jr   nc, @no_xor2     ; 7T (taken or not impacts timing)
         xor  0B8h            ; 7T
-.no_xor2:
+@no_xor2:
         ld   (random_seed_2),a ; 7T
         xor b
         pop bc
+        ld l,a
         ret                  ;10T
+
+
+        SECTION data_user
+random_seed:
+        dw 0xbaad
+random_seed_2:
+        dw 0xf00d
 ; total roughly 39–48 T depending on branch timing — comfortably under 50T.
+

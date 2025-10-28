@@ -1,0 +1,49 @@
+#if !defined(__DEFINES_H)
+#define __DEFINES_H
+
+enum consts
+{
+
+	MAX_OBJECTS=16,			// MUST be power of 2
+	MAX_PARTICLES=128,      // MUST be power of 2
+
+	GRAVITY=1, 				// About 0.5G
+
+	LAYER_2_HEIGHT=256,
+	LAYER_2_WIDTH=320,
+
+	PARTICLE_LAYER_WIDTH=320,
+
+	PARTICLE_LAYER_HEIGHT=256,
+    PARTICLE_SAFE_AREA=8,
+
+    LAYER_2_BORDER=8,
+
+    PLAYER_SPRITE_SLOT=64,
+    PLAYER_SPRITE_PATTERN=0,
+
+	CELLS_WIDTH=32,
+	CELLS_HEIGHT=32,
+	CELLS_CENTER_X=CELLS_WIDTH/2,
+    PLAY_AREA_CELLS_WIDTH=32,
+    PLAY_AREA_CELLS_HEIGHT=32,
+    PLAY_AREA_CENTER_WIDTH=PLAY_AREA_CELLS_WIDTH/2,
+    PLAY_AREA_CENTER_HEIGHT=PLAY_AREA_CELLS_HEIGHT/2,
+
+// These should match the player animation order
+    PLAYERDIR_TR=0,        // up
+    PLAYERDIR_BR=1,        // right
+    PLAYERDIR_BL=2,        // down 
+    PLAYERDIR_TL=3,        // left
+
+    PLAYERSPR_U=0,
+    PLAYERSPR_R=8,
+    PLAYERSPR_D=16,
+    PLAYERSPR_L=24,
+
+    PLAYERSPR_RUN_ANIM=0,
+    PLAYERSPR_IDLE_ANIM=32,
+
+};
+
+#endif

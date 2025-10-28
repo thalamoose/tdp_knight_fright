@@ -1,5 +1,15 @@
+        include "include/defines.inc"
+        include "include/hardware.inc"
+        include "include/memorymap.inc"
+
+        SECTION code_user
 
 bytes_for_tilemap equ (40*32*2)
+        global _InitializeTilemap,update_tilemap
+        extern _memcpy_dma,fill_mem,tilemap_palette,copy_palette
+        extern play_area_center_x
+        extern tilemap_x
+        extern tilemap_y
 initialize_tilemap:
         ; normally, colour 0 is transparent but the test image has it as colour 1
         ; ULA has already been mapped to it's alternate pages at 14,15. Tilemap can
@@ -13,7 +23,7 @@ initialize_tilemap:
         nextreg TILEMAP_CLIP_WINDOW,8>>1
         nextreg TILEMAP_CLIP_WINDOW,(320-8)>>1
         nextreg TILEMAP_CLIP_WINDOW,8
-        nextreg TILEMAP_CLIP_WINDOW,(256-8)
+        nextreg TILEMAP_CLIP_WINDOW,256-8
         ;
         ; Copy tilemap character data to tilemap area
         ;
@@ -22,14 +32,14 @@ initialize_tilemap:
         ld hl,SWAP_BANK_0
         ld de,SWAP_BANK_1
         ld bc,$2000
-        call memcpy_dma
+        call _memcpy_dma
         ;
         ; TEMPORARY FOR TESTING UNTIL TILEMAP PROPERLY SORTED
         ;
         ld hl,SWAP_BANK_0
         ld de,SWAP_BANK_1+32
         ld bc,$1fe0
-        call memcpy_dma
+        call _memcpy_dma
         ; 
         ; END TESTING CODE
         ;
@@ -52,9 +62,9 @@ initialize_tilemap:
         ld hl,SWAP_BANK_0+$2000
         ld e,%00000001      ; Tile attributes
         ld c,32
-.next_lin
+tile_next_line:
         ld b,40
-.next_char
+tile_next_char:
         ld (hl),a
         ld (hl),0 ;; TEST CODEf
         inc hl
@@ -62,12 +72,12 @@ initialize_tilemap:
         inc hl
         inc a
         cp 96
-        jr nz,.no_wrap
+        jr nz,tile_no_wrap
         xor a
-.no_wrap
-        djnz .next_char
+tile_no_wrap:
+        djnz tile_next_char
         dec c
-        jr nz,.next_lin
+        jr nz,tile_next_line
 
         ld hl,test_tilemap_table
         ld de,SWAP_BANK_0+$2000
@@ -111,18 +121,20 @@ copy_tile_block:
         inc hl
         ld b,(hl)                       ; b=height
         inc hl
-.next_line
-        push bc,de
-.next_char
+copy_next_line:
+        push bc
+        push de
+copy_next_char:
         ldi                             ; Copy character code
         ld (de),a                       ; Set attribute
         inc de
         inc c                           ; Just checking to see if we
         dec c                           ; Still have more to do (cannot modify A)
-        jr nz,.next_char
-        pop de,bc
+        jr nz,copy_next_char
+        pop de
+        pop bc
         add de,40*2
-        djnz .next_line
+        djnz copy_next_line
         ret
 
         align 16

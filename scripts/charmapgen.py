@@ -56,8 +56,6 @@ def create_char_map(texture_file, target_file, output_file, tile_size=8):
         for row in char_map:
             row_str = ", ".join(f"{val:2}" for val in row)
             f.write(f"    db {row_str}\n")
-
-    print(f"Character map saved to {output_file}")
     
 parser = argparse.ArgumentParser()
 

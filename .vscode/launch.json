@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
+        
 
         {
             "type": "dezog",
@@ -25,7 +26,7 @@
             "commandsAfterLaunch": [
             ],
             "rootFolder": "${workspaceFolder}",
-            "topOfStack": "STACK_TOP",
+            "topOfStack": "$c000",
             //"load": "build/KnightFright.sna",
             "load": "build/KnightFright.nex",
             "smallValuesMaximum": 513,
@@ -50,8 +51,42 @@
             "commandsAfterLaunch": [
             ],
             "rootFolder": "${workspaceFolder}",
-            "topOfStack": "STACK_TOP",
+            "topOfStack": "$c000",
             //"load": "build/KnightFright.sna",
+            "load": "build/KnightFright.nex",
+            "smallValuesMaximum": 513,
+            "tmpDir": ".tmp"
+        },
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "CSpect/z88dk",
+            "remoteType": "cspect",
+            "sjasmplus": [
+                {
+                    "path": "build/KnightFright.sld"
+                }
+            ],
+            "z88dkv2": [
+                {
+                    "path": "build/lst/*.lis",
+                    "srcDirs":[
+                        "src/asm",
+                        "src"
+                    ],
+                    "mapFile" : "build/KnightFright.map",
+                    "excludeFiles":[]
+                },
+            ],
+            "history": {
+                "reverseDebugInstructionCount": 1000000,
+                "spotCount": 10
+            },
+            "startAutomatically": true,
+            "commandsAfterLaunch": [
+            ],
+            "rootFolder": "${workspaceFolder}",
+            "topOfStack": "$c000",
             "load": "build/KnightFright.nex",
             "smallValuesMaximum": 513,
             "tmpDir": ".tmp"
@@ -75,7 +110,7 @@
             "commandsAfterLaunch": [
             ],
             "rootFolder": "${workspaceFolder}",
-            "topOfStack": "STACK_TOP",
+            "topOfStack": "$c000",
             //"load": "build/KnightFright.sna",
             "load": "build/KnightFright.nex",
             "smallValuesMaximum": 513,
@@ -102,7 +137,7 @@
             "startAutomatically": false,
             "commandsAfterLaunch": [],
             "rootFolder": "${workspaceFolder}",
-            "topOfStack": "STACK_TOP",
+            "topOfStack": "$c000",
             //"load": "build/KnightFright.sna",
             "load": "build/KnightFright.nex",
             "smallValuesMaximum": 513,
@@ -161,8 +196,10 @@
             "request" : "launch",
             "program" : "${file}",
             "console" : "integratedTerminal",
-            "args" : ["assets/kfplayer.png","--size=32,32","--sprite", "build/assets/kfplayer.bin", "--palette=kfplayer.pal"]
+            "args" : ["build/test_structs.asm.o","-output_file=build/test_structs.asm"]
         }
 
     ]
 }
+
+
