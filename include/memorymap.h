@@ -10,9 +10,9 @@
 #define TILES_PAGE     		51
 #define SPRITES_PAGE    	52
 #define STACK_TOP     	(void*)0xc000
-#define SWAP_BANK_0     (void*)0xc000
-#define SWAP_BANK_1     (void*)0xe000
-#define TEMP_SWAP_BANK  (void*)0x4000
-#define CODE_BANK_0		(void*)0x8000
-#define CODE_BANK_1 	(void*)0xa000
+#define SWAP_BANK_0     (u8*)0xc000
+#define SWAP_BANK_1     (u8*)0xe000
+#define TEMP_SWAP_BANK  (u8*)0x4000
+#define CODE_BANK_0		(u8*)0x8000
+#define CODE_BANK_1 	(u8*)0xa000
 

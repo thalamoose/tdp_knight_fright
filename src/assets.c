@@ -64,8 +64,8 @@ _asset_TilemapPalette:
 	;// to have it within it's own page.
 	;
 	SECTION BANK_25_H
-_asset_TileData:
 	org 0xc000
+_asset_TileData:
 	incbin "build/assets/kftiles.bin"
 	SECTION BANK_26_L
 _asset_SpriteData:

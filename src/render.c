@@ -36,6 +36,8 @@ void InitializeRender(void)
     nextreg(SPRITE_CLIP_WINDOW,((319-4)>>1));       // X2
     nextreg(SPRITE_CLIP_WINDOW,(4));                // Y1
     nextreg(SPRITE_CLIP_WINDOW,(255-4)&0xff);       // Y2
+
+
 }
 
 void Render(void)
@@ -44,6 +46,6 @@ void Render(void)
 	RenderPlayer();
 	RenderSprites();
 	port_out(ULA_PORT, ULA_COLOUR_MAGENTA);
-	//RenderParticles();
+	RenderParticles();
 	port_out(ULA_PORT, ULA_COLOUR_WHITE);
 }

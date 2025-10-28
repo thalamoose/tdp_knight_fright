@@ -34,7 +34,7 @@ void InitializeTilemap(void)
 
 	nextreg(TRANS_TILEMAP_INDEX,0);
 	nextreg(TILEMAP_CONTROL,0x80);
-	nextreg(TILEMAP_CHAR_ADDRESS,0x0000>>8);     // Start character data right after tilemap
+	nextreg(TILEMAP_CHAR_ADDRESS,0);     // Start character data right after tilemap
 	nextreg(TILEMAP_BASE_ADDRESS,0x2000>>8);
 	
 	nextreg(TILEMAP_CLIP_WINDOW,8>>1);

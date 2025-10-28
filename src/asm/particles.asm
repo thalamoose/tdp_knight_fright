@@ -65,27 +65,33 @@ _InitializeParticles:
         ret
 
 _DebugAddParticle:
-        ld hl,160-16
         call _get_random
+        ld a,l
         and 0x07
+        ld hl,160-16
         add l
         ld l,a
-        ld de,64
+        push hl
         call _get_random
+        ld a,l
+        ld de,64
         and 0x07
         add e
         ld e,a
 
         call _get_random
+        ld a,l
         sra a
         sra a
         inc a
         ld b,a
         call _get_random
+        ld a,l
         sra a
         sra a
         inc a
         ld c,a
+        pop hl
         call add_particle
         ret
 _UpdateParticles:
@@ -139,7 +145,7 @@ update_particle:
         inc l
         ld d,(hl)
         ex de,hl                ; Y=Y+VY
-        add hl,de
+        add hl,bc
         ex de,hl
                         
         ld (hl),d                ; Store Y
@@ -209,14 +215,16 @@ add_particle:
         bsla de,b
         ld (ix+PARTICLE_Y),de
         call _get_random
-        ld (ix+PARTICLE_colour),a
+        ld (ix+PARTICLE_colour),l
 
         call _get_random
+        ld a,l
         and %00000011
         inc a
         ld (ix+PARTICLE_width),a
         ; Give it some initial velocity
         call _get_random
+        ld a,l
         and %01111111
         add 100
         ld (ix+PARTICLE_life),a    ; frames of life - 5 seconds for testing
@@ -458,8 +466,6 @@ _particle_slot:
 _particle_index:
         dw 0
 
-particles_active:
-        db 0
         SECTION bss_user
 _particle_objects:
         ds PARTICLE_sizeof*MAX_PARTICLES
