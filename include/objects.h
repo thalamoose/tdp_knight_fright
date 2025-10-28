@@ -8,7 +8,7 @@ enum fixed_point
 	FIXED_POINT_HALF=(FIXED_POINT_ONE/2),
 };
 
-typedef struct
+typedef struct s_coord
 {
 	s16 x;
 	s16 y;

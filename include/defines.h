@@ -1,3 +1,6 @@
+#if !defined(__DEFINES_H)
+#define __DEFINES_H
+
 enum consts
 {
 
@@ -43,3 +46,4 @@ enum consts
 
 };
 
+#endif

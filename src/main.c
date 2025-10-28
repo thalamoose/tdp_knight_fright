@@ -34,7 +34,6 @@ void InitializeSystem(void)
     InitializeRender();
     PrintStr("Booting Knight Fright...\r\n");
     PrintStr(__DATE__,__TIME__,"\r\n");
-
 }
 
 void InitializeGame(void)
@@ -46,8 +45,6 @@ void InitializeGame(void)
     InitializeNpcs();
     global.debugMaxParticles = 64;
 }
-
-extern u8 particles_active;
 
 int main(void)
 {

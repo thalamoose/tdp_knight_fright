@@ -13,7 +13,6 @@ active_object_count:    db 0
 active_sprite_count:    db 0
 
 particle_index:         db 0
-particles_active:       db 0
 debug_max_particles:    db 64
         ALIGN 16
 particle_slot:          db 0
