@@ -1,7 +1,7 @@
 #include "kftypes.h"
 
 void InitializeParticles(void);
-void UpdateParticles(void);
+u8  UpdateParticles(void);
 void RenderParticles(void);
 
 typedef struct 

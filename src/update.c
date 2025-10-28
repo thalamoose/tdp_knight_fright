@@ -1,11 +1,13 @@
 #include "update.h"
 #include "player.h"
 #include "particles.h"
+#include "globals.h"
+#include "npcs.h"
 
 void UpdateObjects(void)
 {
-	AnimateObjects();
+	UpdateNpcs();
 	UpdatePlayer();
 	UpdateSprites();
-	UpdateParticles();
+	global.particlesActive = UpdateParticles();
 }		

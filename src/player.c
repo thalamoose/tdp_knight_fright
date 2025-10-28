@@ -54,9 +54,9 @@ void InitializePlayer(void)
 {
     player.object.position.x = (320/2)<<FIXED_POINT_BITS;
     player.object.position.y = (256/2)<<FIXED_POINT_BITS;
-    player.object.direction = 0;
-    player.playgrid.x = PLAY_AREA_CELLS_WIDTH/2;
-    player.playgrid.y = PLAY_AREA_CELLS_HEIGHT/2;
+    player.object.flags.direction = 0;
+	player.playgrid.x = 12;
+	player.playgrid.y = 0;
     player.object.frameIndex = 0;
     player.object.baseIndex = 32;
     player.object.animDelay = 4;
@@ -66,12 +66,14 @@ void InitializePlayer(void)
 //
 // Set up sprites 64..67, so that only the minimum needs to be set up below. 
 //
-    SetupSprite(PLAYER_SPRITE_SLOT, PLAYER_SPRITE_PATTERN, 0, 0, 0, 0, 0);
-    SetupSprite(PLAYER_SPRITE_SLOT+1, PLAYER_SPRITE_PATTERN+1, 16, 0, 0, 0, 0x60);
-    SetupSprite(PLAYER_SPRITE_SLOT+2, PLAYER_SPRITE_PATTERN+2, 0, 16, 0, 0, 0);
-    SetupSprite(PLAYER_SPRITE_SLOT+3, PLAYER_SPRITE_PATTERN+3, 16,16, 0, 0, 0);
+    SetupSprite(PLAYER_SPRITE_SLOT, PLAYER_SPRITE_PATTERN, 0, 0, 0, 0xc0, 0);
+    SetupSprite(PLAYER_SPRITE_SLOT+1, PLAYER_SPRITE_PATTERN+1, 16, 0, 0, 0xc0, 0x60);
+    SetupSprite(PLAYER_SPRITE_SLOT+2, PLAYER_SPRITE_PATTERN+2, 0, 16, 0, 0xc0, 0x60);
+    SetupSprite(PLAYER_SPRITE_SLOT+3, PLAYER_SPRITE_PATTERN+3, 16,16, 0, 0xc0, 0x60);
 
     CopyPalette(asset_PlayerPalette,2);
+    // Grab whatever colour is the background colour. This will be our transparent
+    // index.
     nextreg(MMU_SLOT_6,PLAYER_ANIM_PAGE);
     nextreg(TRANS_SPRITE_INDEX,*(u8*)SWAP_BANK_0);
     SnapToGrid();
@@ -93,6 +95,7 @@ void MovePlayer(void)
             if (content==0)
             {
                 // dead now.
+                SetPlayerAnimIdle(player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
             }
             else
             {
@@ -139,7 +142,7 @@ void MovePlayer(void)
 void AnimatePlayer(void)
 {
     player.object.animDelay--;
-    if (player.object.animDelay==0)
+    if (player.object.animDelay<0)
     {
         player.object.animDelay = player.object.animSpeed;
         player.object.frameIndex++;
@@ -161,9 +164,9 @@ void UpdatePlayer(void)
 void RenderPlayer(void)
 {
     u8 animIndex = player.object.baseIndex+player.object.frameIndex;
-    u8 page = (animIndex*8)+PLAYER_ANIM_PAGE;
+    u8 page = (animIndex>>3)+PLAYER_ANIM_PAGE;
     nextreg(MMU_SLOT_6,page);
-    u8* pPattern = (u8*)SWAP_BANK_0+(page&7<<2);
+    u8* pPattern = (u8*)SWAP_BANK_0+((animIndex&7)<<10);
     CopySprite(pPattern, PLAYER_SPRITE_PATTERN, 4);
     nextreg(SPRITE_INDEX, PLAYER_SPRITE_SLOT);
     s16 x = player.object.position.x>>FIXED_POINT_BITS;

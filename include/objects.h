@@ -4,40 +4,38 @@
 enum fixed_point
 {
 	FIXED_POINT_BITS=6,
-	FIXED_POINT_ONE=1<<FIXED_POINT_BITS,
-	FIXED_POINT_HALF=FIXED_POINT_ONE/2,
+	FIXED_POINT_ONE=(1<<FIXED_POINT_BITS),
+	FIXED_POINT_HALF=(FIXED_POINT_ONE/2),
 };
 
 typedef struct
 {
 	s16 x;
 	s16 y;
-} coordinate;
+} coord;
 
 typedef struct s_object
 {
-	coordinate position;
-	coordinate velocity;
+	coord position;
+	coord velocity;
     s16 gravity;
     u8 frameIndex;
     u8 baseIndex;
-    u8 animDelay;
+    s8 animDelay;
     u8 animSpeed;
     u8 totalFrames;
-	u8 direction;
 	struct 
 	{
 		u8 active:1;
 		u8 pingpong:1;
 		u8 is4bit:1;
+		u8 direction:1;
 	} flags;
 	
 } object;
 
-void UpdateObjects(void);
 void RenderObjects(void);
-
-extern object g_Objects[];
-
+void UpdateObjects(void);
+void AnimateObject(object* pObj);
 
 #endif

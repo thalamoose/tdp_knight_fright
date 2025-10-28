@@ -14,15 +14,16 @@ update_dma:
 ; DE - Destination
 ; BC - Size
 _memcpy_dma:
+        push ix
         ld ix,0
         add ix,sp
         ld a,6
         out (ULA_PORT),a
-        ld de,(ix+2)
-        ld (memcpy_dst),de
         ld de,(ix+4)
-        ld (memcpy_src),de
+        ld (memcpy_dst),de
         ld de,(ix+6)
+        ld (memcpy_src),de
+        ld de,(ix+8)
         ld (memcpy_len),de
         ld hl,memcpy_dma_xfer
         ld b,memcpy_dma_len
@@ -32,6 +33,7 @@ _memcpy_dma:
         otir
         ld a,0
         out (ULA_PORT),a
+        pop ix
         ret
 
 ; A - Sprite slot
@@ -39,11 +41,11 @@ _memcpy_dma:
 ; E - Slots to transfer (16x16)
 _CopySprite:
         push ix
-        ld ix,2
+        ld ix,0
         add ix,sp
-        ld hl,(ix+2)
-        ld a,(ix+4)
-        ld e,(ix+5)
+        ld hl,(ix+4)
+        ld a,(ix+6)
+        ld e,(ix+7)
 
         ld bc,SPRITE_SLOT_PORT
         out (c),a

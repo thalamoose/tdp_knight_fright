@@ -1,19 +1,54 @@
 //#include "include/kftypes.h"
+//#include "include/objects.h"
 
-struct s_outer_struct
+typedef unsigned char u8;
+
+typedef struct
 {
-    struct
-    {
-        char variable1;
-        short variable2;
-    } this_is_the_anon_struct_variable;
-} this_has_anonymous_struct_inside;
+	short x;
+	short y;
+} t_coord;
+
+
+typedef struct s_object
+{
+	t_coord position;
+	struct 
+	{
+		u8 active:1;
+		u8 pingpong:1;
+		u8 is4bit:1;
+	} flags;
+    u8 totalFrames;
+	u8 direction;
+	
+} object;
+
+#if 0
+typedef struct s_test_object
+{
+    u8 gravity;
+	struct 
+	{
+		char active:1;
+		char pingpong:1;
+		char is4bit:1;
+	} flags;
+
+    char frameIndex;
+	
+} object;
 
 short testFunc(short param)
 {
 	return param*2;
 }
-#if 0
+typedef short s16;
+typedef struct s_test_coord
+{
+	short x;
+	short y;
+} test_coord;
 typedef unsigned short u16;
 typedef unsigned char u8;
 

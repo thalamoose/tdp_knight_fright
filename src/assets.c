@@ -5,12 +5,10 @@
 #include "hardware.h"
 
 void CopyBackgroundBitmap(void);
-void UploadSprites(void);
 
 void LoadInitialAssets(void)
 {
 	CopyBackgroundBitmap();
-	UploadSprites();
 }
 
 void CopyBackgroundBitmap(void)
@@ -31,15 +29,9 @@ void CopyBackgroundBitmap(void)
 	CopyPalette(asset_BackdropPalette,PALETTE_LAYER_2_PRIMARY);
 }
 
-void UploadSprites(void)
-{
-	nextreg(MMU_SLOT_6,SPRITES_PAGE);
-	nextreg(MMU_SLOT_7,SPRITES_PAGE+1);
-	CopySprite(asset_SpriteData, 16, 32);
-}
-
 void allAssets(void)
 {
+#if !defined(__GNUC__)
 __asm
 	global _asset_BackdropPalette,_asset_PlayerPalette
 	global _asset_SpritePalette,_asset_SpriteData
@@ -52,16 +44,12 @@ __asm
 	;
 	; This is for miscellaneous small assets
 	;
-	SECTION BANK_25
+	SECTION BANK_25_L
 	org 0xc000
 _asset_MapShape_01:
-	incbin "build/assets/shape_01.map"
+	include "build/assets/shape_01.map"
 _asset_MapShape_02:
-	incbin "build/assets/shape_02.map"
-_asset_TileData:
-	incbin "build/assets/kftiles.bin"
-_asset_SpriteData:
-	incbin "build/assets/kfsprites.bin"
+	include "build/assets/shape_02.map"
 _asset_BackdropPalette:
 	incbin "build/assets/kfback.pal"
 _asset_PlayerPalette:
@@ -70,9 +58,21 @@ _asset_SpritePalette:
 	incbin "build/assets/kfsprites.pal"
 _asset_TilemapPalette:
 	incbin "build/assets/kftiles.pal"
-__endasm;
+
+	;
+	;// We need the tile data to be in its own page. The tile data is exactly 8KB so it makes sense
+	;// to have it within it's own page.
+	;
+	SECTION BANK_25_H
+_asset_TileData:
+	org 0xc000
+	incbin "build/assets/kftiles.bin"
+	SECTION BANK_26_L
+_asset_SpriteData:
+	incbin "build/assets/kfsprites.bin"
+
+
+
+	__endasm;
+#endif
 }
-
-
-
-

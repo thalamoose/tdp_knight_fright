@@ -13,11 +13,7 @@ void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy);
 typedef struct s_player_object
 {
     object object;
-    struct
-    {
-        u8 x;
-        u8 y;
-    } playgrid;
+    coord playgrid;
     u8 moveSteps;
     u8 direction;
 

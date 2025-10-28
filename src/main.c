@@ -47,6 +47,8 @@ void InitializeGame(void)
     global.debugMaxParticles = 64;
 }
 
+extern u8 particles_active;
+
 int main(void)
 {
     InitializeSystem();

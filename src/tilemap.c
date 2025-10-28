@@ -5,24 +5,24 @@
 #include "defines.h"
 #include "tilemap.h"
 #include "assets.h"
-
-tile_map tilemap;
+#include "globals.h"
 
 tile_template _asset_MapShape_02;
+tile_template _asset_MapShape_01;
 
 void CopyTileBlock(tile_template* tile, u8* tiletable, u8 attr )
 {
 	u8* src = tile->data;
 	u8 step = (40-tile->w)*2;
+	u8* dst = tiletable;
 	for( u8 h=0; h<tile->h; h++ )
 	{
-		u8* dst = tiletable;
 		for( u8 w=0; w<tile->w; w++ )
 		{
 			*dst++ = *src++;
 			*dst++ = attr;
 		}
-		tiletable += step;
+		dst += step;
 	}
 }
 
@@ -44,50 +44,45 @@ void InitializeTilemap(void)
 	//
 	// Copy tilemap character data to tilemap area
 	//
-	u8* baseOfTileMemory = (u8*)TEMP_SWAP_BANK;
-	nextreg(MMU_SLOT_2,TILEMAP_PAGE);
-	nextreg(MMU_SLOT_3,TILEMAP_PAGE+1);
 	nextreg(MMU_SLOT_6,TILES_PAGE);
-	nextreg(MMU_SLOT_7,TILES_PAGE+1);
-	// Copy tile
-	memcpy_dma(baseOfTileMemory, asset_TileData, 0x2000);
+	nextreg(MMU_SLOT_7,TILEMAP_PAGE);
+	// Copy tile bitmap data
+	memcpy_dma(SWAP_BANK_1, SWAP_BANK_0, 0x2000);
 	//
-	// TEMPORARY FOR TESTING UNTIL TILEMAP PROPERLY SORTED
+	// This is copying characters 1...255 to 0...254 (test purposes). We need character 0 to be blank.
 	//
-	memcpy_dma(baseOfTileMemory+32,SWAP_BANK_0,0x1fe0);
-	memset(baseOfTileMemory,0,32);
+	memcpy_dma(SWAP_BANK_1+32,SWAP_BANK_0,0x1fe0);
+	// Make the first character 0
+	memset(SWAP_BANK_1,0,32);
 	//
 	// Copy tile palettes
 	//
-	nextreg(MMU_SLOT_6,PALETTE_PAGE);
-	nextreg(MMU_SLOT_7,PALETTE_PAGE+1);
+	nextreg(MMU_SLOT_6, PALETTE_PAGE);
+	CopyPalette(asset_TilemapPalette, PALETTE_TILE_PRIMARY);
+	//
+	// Initialize tile data
+	//
+	nextreg(MMU_SLOT_7, TILEMAP_PAGE+1);
+	u8* pTileTable = (u8*)SWAP_BANK_1;
+	pTileTable[0]=0x00;
+	pTileTable[1]=0x01;
+	// Since I know this copies forward, I can copy the first 2 bytes
+	// to the rest with a DMA memcpy. It's a lot faster.
+	memcpy_dma(pTileTable+2, pTileTable, 40*32*2-2);
 
-	CopyPalette(asset_TilemapPalette,PALETTE_TILE_PRIMARY);
-	nextreg(MMU_SLOT_6,TILES_PAGE);
-	nextreg(MMU_SLOT_7,TILES_PAGE+1);
-	u8* pTileTable = baseOfTileMemory;
-	for( u8 y=0; y<32; y++ )
-	{
-		for( u8 x=0;x<40;x++ )
-		{
-			*pTileTable++=0;
-			*pTileTable++=0x01;
-		}
-	}
-	CopyTileBlock(asset_MapShape_02, baseOfTileMemory+0x2000, 1);
-	tilemap.play_x = PLAY_AREA_CELLS_WIDTH/2;
-	tilemap.play_y = PLAY_AREA_CELLS_HEIGHT/2;
-	tilemap.x = 12;
-	tilemap.y = 0;
-	nextreg(MMU_SLOT_2, ULA_SHADOW_PAGE);
-	nextreg(MMU_SLOT_2, ULA_SHADOW_PAGE+1);
+	// Tilemap templates are in the same bank as the palette
+	CopyTileBlock(asset_MapShape_02, SWAP_BANK_1, 1);
+	global.playArea.x = PLAY_AREA_CELLS_WIDTH/2;
+	global.playArea.y = PLAY_AREA_CELLS_HEIGHT/2;
+	global.tileMap.x = 12;
+	global.tileMap.y = 0;
 }
 
 void UpdateTilemap(void)
 {
-		tilemap.x++;
-		tilemap.y++;
-		nextreg(TILEMAP_OFFSET_X_H,0);
-		nextreg(TILEMAP_OFFSET_X_L,-tilemap.x);
-		nextreg(TILEMAP_OFFSET_Y,tilemap.y);
+		//tilemap.x++;
+		//tilemap.y++;
+		nextreg(TILEMAP_OFFSET_X_H,(-global.tileMap.x>>8) & 0x3);
+		nextreg(TILEMAP_OFFSET_X_L,-global.tileMap.x);
+		nextreg(TILEMAP_OFFSET_Y,global.tileMap.y);
 }

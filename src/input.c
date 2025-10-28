@@ -29,7 +29,7 @@ u8 ReadController(void)
 }
 
 //---------------------------------------------------------
-u8* ReadKeyboardMatrix(void)
+static const u8* ReadKeyboardMatrix(void)
 {
 	static u8 scancodes[8];
 	u8 bitLine=0xfe;
@@ -44,18 +44,18 @@ u8* ReadKeyboardMatrix(void)
 //---------------------------------------------------------
 u8 ReadKeyboard(void)
 {
-	static const u8 keyTable[]=
+	static const u8 keyTable[48]=
 	{
-		"^","Z","X","C","V",                    // Port FEFE
-		"A","S","D","F","G",                    // Port FDFE
-		"Q","W","E","R","T",                    // Port FBFE
-		"1","2","3","4","5",                    // Port F7FE
-		"0","9","8","7","6",                    // Port EFFE 
-		"P","O","I","U","Y",                    // Port DFFE
-		13 ,"L","K","J","H",                    // Port BFFE
-		" ","~","M","N","B"                    // Port 7FFE
+		'^','Z','X','C','V',                    // Port FEFE
+		'A','S','D','F','G',                    // Port FDFE
+		'Q','W','E','R','T',                    // Port FBFE
+		'1','2','3','4','5',                    // Port F7FE
+		'0','9','8','7','6',                    // Port EFFE 
+		'P','O','I','U','Y',                    // Port DFFE
+		13 ,'L','K','J','H',                    // Port BFFE
+		' ','~','M','N','B'                    // Port 7FFE
 	};
-	u8* scanCodes = ReadKeyboardMatrix();
+	const u8* scanCodes = ReadKeyboardMatrix();
 	for (u8 row=0; row<8; row++)
 	{
 		u8 scanCode = ~scanCodes[row] & 0x1f;

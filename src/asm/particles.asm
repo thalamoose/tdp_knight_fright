@@ -93,19 +93,17 @@ _UpdateParticles:
         ld ix,_particle_objects
         ld de,PARTICLE_sizeof
         ld b,MAX_PARTICLES
-        ld h,0
+        ld l,0
 @update_loop:
         bit PARTICLE_ACTIVE,(ix+PARTICLE_flags)
         jr z,@not_active
         exx
         call update_particle
         exx
-        inc h
+        inc l
 @not_active:
         add ix,de
         djnz @update_loop
-        ld a,h
-        ld (particles_active),a
         pop ix
         ret
 

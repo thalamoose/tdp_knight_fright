@@ -44,6 +44,6 @@ void Render(void)
 	RenderPlayer();
 	RenderSprites();
 	port_out(ULA_PORT, ULA_COLOUR_MAGENTA);
-	RenderParticles();
+	//RenderParticles();
 	port_out(ULA_PORT, ULA_COLOUR_WHITE);
 }

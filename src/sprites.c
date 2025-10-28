@@ -4,6 +4,14 @@
 #include "defines.h"
 #include "objects.h"
 #include "globals.h"
+#include "memorymap.h"
+
+void UploadSprites(void)
+{
+	nextreg(MMU_SLOT_6, SPRITES_PAGE);
+	nextreg(MMU_SLOT_7, SPRITES_PAGE+1);
+	CopySprite(SWAP_BANK_0, 0, 64);
+}
 
 void InitializeSprites(void)
 {
@@ -12,6 +20,7 @@ void InitializeSprites(void)
 		nextreg(SPRITE_INDEX,i);
 		nextreg(SPRITE_ATTR_3,0);
 	}
+	UploadSprites();
 }
 void SetupSprite(u8 slot, u8 pattern, u8 attr0, u8 attr1, u8 attr2, u8 attr3, u8 attr4)
 {
@@ -32,7 +41,7 @@ void UpdateSprites(void)
 //
 void RenderSprites(void)
 {
-	object* obj = g_Objects;
+	object* obj = global.objects;
 	u8 activeSpriteCount = 0;
 	for (u8 i=0; i<MAX_OBJECTS; i++)
 	{

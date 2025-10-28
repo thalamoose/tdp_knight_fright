@@ -9,7 +9,7 @@ from elftools.elf.elffile import ELFFile
 
 globalString = ''
 
-verbose = True
+verbose = False
 
 DW_AT_NAME = 'DW_AT_name'
 DW_AT_BYTE_SIZE = 'DW_AT_byte_size'
@@ -119,7 +119,7 @@ def expandFields(CU, prefix, fieldDef):
 			if child.tag==DW_TAG_MEMBER:
 				name = getName(CU, child)
 				if prefix!='':
-					name = getName(CU,child)+'_'+prefix
+					name = prefix+'_'+getName(CU,child)
 				memberDef = getReference(CU, child)
 				fields += expandFields(CU, name, memberDef)
 			else:
@@ -227,17 +227,14 @@ existingMethods=[]
 def handleSubprogram(CU, progRef, outFile):
 	progName = getName(CU, progRef)
 	if progRef.has_children:
-		typeRef = getReference(CU, progRef)
-		if (typeRef==None):
-			returnType = 'void'
-		else:
-			returnType = getType(CU, typeRef)
-		if verbose: print(f';; Returns {returnType}')
-		outFile.write(f';; Returns {returnType}\n')
 		if progName in existingMethods:
 			return
 		existingMethods.append(progName)
-		print(existingMethods)
+		typeRef = getReference(CU, progRef)
+		if (typeRef!=None):
+			returnType = getType(CU, typeRef)
+			if verbose: print(f';; Returns {returnType}')
+			outFile.write(f';; Returns {returnType}\n')
 		stackFrameName = f'{progName}_stack_frame'
 		paramIndex = 1
 		if verbose: 
