@@ -12,6 +12,7 @@
 #include "particles.h"
 #include "assets.h"
 #include "render.h"
+#include "memorymap.h"
 
 globals global;
 
@@ -28,7 +29,9 @@ void InitializeSystem(void)
 {
     nextreg(CLOCK_SEL,0x03);
     nextreg(PERIPHERAL_3_CONTROL,0x70);
-    ConfigureMemory();
+    // Remap 16K to ULA shadow.
+    nextreg(MMU_SLOT_2, ULA_SHADOW_PAGE);
+    nextreg(MMU_SLOT_3, ULA_SHADOW_PAGE+1);
     InitializeInterrupts();
     ClearScreen();
     InitializeRender();

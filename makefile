@@ -44,7 +44,7 @@ ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
 		makefile
 
 ##ASM_SRCS := $(wildcard $(ASM_SRC_DIR)/*.asm)
-ASM_SRCS := $(ASM_SRC_DIR)/initialize.asm $(ASM_SRC_DIR)/interrupts.asm \
+ASM_SRCS := $(ASM_SRC_DIR)/interrupts.asm \
 			$(ASM_SRC_DIR)/stubs.asm \
 			$(ASM_SRC_DIR)/utilities.asm $(ASM_SRC_DIR)/dma.asm \
 			$(ASM_SRC_DIR)/particles.asm
