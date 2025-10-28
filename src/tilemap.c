@@ -63,7 +63,7 @@ void InitializeTilemap(void)
 	// Initialize tile data
 	//
 	nextreg(MMU_SLOT_7, TILEMAP_PAGE+1);
-	u8* pTileTable = (u8*)SWAP_BANK_1;
+	u8* pTileTable = SWAP_BANK_1;
 	pTileTable[0]=0x00;
 	pTileTable[1]=0x01;
 	// Since I know this copies forward, I can copy the first 2 bytes
