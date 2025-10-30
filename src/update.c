@@ -6,6 +6,7 @@
 
 void UpdateObjects(void)
 {
+
 	UpdateNpcs();
 	UpdatePlayer();
 	UpdateSprites();

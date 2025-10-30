@@ -7,5 +7,6 @@ extern void nextreg(u8 reg,u8 val);
 extern void CopyPalette(void* palette,u8 paletteType);
 extern void CopySprite(void* srcData, u8 slot, u8 totalSlots);
 extern void WaitVSync(void);
+extern void x_printf(const char* format, ...);
 
 #endif

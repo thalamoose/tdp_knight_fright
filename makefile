@@ -45,7 +45,7 @@ ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
 
 ##ASM_SRCS := $(wildcard $(ASM_SRC_DIR)/*.asm)
 ASM_SRCS := $(ASM_SRC_DIR)/interrupts.asm \
-			$(ASM_SRC_DIR)/stubs.asm \
+			$(ASM_SRC_DIR)/stubs.asm $(ASM_SRC_DIR)/print.asm \
 			$(ASM_SRC_DIR)/utilities.asm $(ASM_SRC_DIR)/dma.asm \
 			$(ASM_SRC_DIR)/particles.asm
 
@@ -142,7 +142,6 @@ clean: $(OUT)
 
 GCC_WARN_DISABLE= -Wno-builtin-declaration-mismatch
 GCC_SYM_OPTS= $(GCC_WARN_DISABLE) -fno-eliminate-unused-debug-types -std=gnu99 -ffreestanding -g
-LD_SYM_OPTS= -r
 
 symbols: build/KnightFright.sld
 

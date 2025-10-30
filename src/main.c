@@ -35,8 +35,8 @@ void InitializeSystem(void)
     InitializeInterrupts();
     ClearScreen();
     InitializeRender();
-    PrintStr("Booting Knight Fright...\r\n");
-    PrintStr(__DATE__,__TIME__,"\r\n");
+    x_printf("Booting Knight Fright...\n");
+    x_printf("Built: %s, %s\n", __TIME__, __DATE__);
 }
 
 void InitializeGame(void)
@@ -49,14 +49,17 @@ void InitializeGame(void)
     global.debugMaxParticles = 64;
 }
 
+short counter=0;
+char c=0;
+
 int main(void)
 {
     InitializeSystem();
     LoadInitialAssets();
-    while( true )
+    while(true)
     {
         InitializeGame();
-        while( CheckReset()==false )
+        while (CheckReset()==false)
         {
             UpdateObjects();
             UpdateAudio();
@@ -70,6 +73,15 @@ int main(void)
             port_out(ULA_PORT, ULA_COLOUR_CYAN);
             Render();
             port_out(ULA_PORT, ULA_COLOUR_YELLOW);
+            c++;
+            if (c>10)
+            {
+                c=0;
+                nextreg(ULA_CONTROL, ULA_COLOUR_WHITE);
+                x_printf("Count %d\n",counter);
+                nextreg(ULA_CONTROL, ULA_COLOUR_BLACK);
+                counter++;
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+        include "include/hardware.inc"
 SCREEN_WIDTH    equ 256
 SCREEN_HEIGHT   equ 192
 ATTR_WIDTH      equ SCREEN_WIDTH/8
@@ -11,14 +12,27 @@ ATTR_LENGTH     equ ATTR_WIDTH*ATTR_HEIGHT
 ; Destroys DE,HL
 ; ----------------------------
 
+        SECTION code_user
 
-print_str:
-        ld (print_save_ix),ix
-        pop ix                        ; Get format string address
-        push af                        ; save AF for now. We want to be non-destructive.
+        global _x_printf, _memcpy_dma
+_x_printf:
+        ld hl, 2
+        add hl,sp
+        ld e,(hl)
+        inc hl
+        ld d,(hl)
+        inc hl
+        ex de,hl
+        ld a,(ula_scroll_offset)
+        add a
+        add a
+        add a
+        nextreg ULA_SCROLL_Y,a
+        ; de - points to parameter list
+        ; hl - points to the format string
 print_str_next:
-        ld a, (ix)
-        inc ix
+        ld a, (hl)
+        inc hl
         and a
         jr z,print_str_done
         cp '%'
@@ -27,13 +41,10 @@ not_escape:
         call print_char
         jr print_str_next
 print_str_done:
-        pop af
-        push ix
-        ld ix,(print_save_ix)
         ret
 escape_character:
-        ld a,(ix)
-        inc ix
+        ld a,(hl)
+        inc hl
         and a
         jr z,print_str_done
         cp 'x'
@@ -42,31 +53,58 @@ escape_character:
         jr z,embedded_char
         cp 'd'
         jr z,embedded_int
+        cp 's'
+        jr z,embedded_string
         jp not_escape
 embedded_hex:
-        pop af
-        pop hl
-        push af
-        call print_hex16
+        ex de,hl
+        ld c,(hl)
+        inc hl
+        ld b,(hl)
+        inc hl
+        ex de,hl
+        call print_hex16_bc
         jp print_str_next
 embedded_char:
-        pop de
-        pop af
-        push de
-        call print_hex8
+        ex de,hl
+        ld a,(hl)
+        inc hl
+        ex de,hl
+        call print_hex8_a
         jp print_str_next
 embedded_int:
-        pop af
+        ex de,hl
+        ld c,(hl)
+        inc hl
+        ld b,(hl)
+        inc hl
+        ex de,hl
+        call print_dec16_bc
+        jp print_str_next
+embedded_string:
+        push hl
+        ex de,hl
+        ld e,(hl)
+        inc hl
+        ld d,(hl)
+        inc hl
+        ex de,hl
+@embedded_str_next:
+        ld a,(hl)
+        inc hl
+        and a
+        jr z,@embedded_str_done
+        call print_char
+        jr @embedded_str_next
+@embedded_str_done:
         pop hl
-        push af
-        call print_dec16
         jp print_str_next
         ret
 
 ; ----------------------------
 ; Print 2-digit hex (A)
 ; ----------------------------
-print_hex8:
+print_hex8_a:
         push af
         push af
         rra
@@ -82,15 +120,13 @@ print_hex8:
         ret
 
 ; ----------------------------
-; Print 4-digit hex (HL)
+; Print 4-digit hex (bc)
 ; ----------------------------
-print_hex16:
-        push af
-        ld a, h
-        call print_hex8
-        ld a, l
-        call print_hex8
-        pop af
+print_hex16_bc:
+        ld a, b
+        call print_hex8_a
+        ld a, c
+        call print_hex8_a
         ret
 
 print_hex_digit:
@@ -103,84 +139,68 @@ num_digit:
         jp print_char
 
 ; Routine to print unsigned 16-bit HL as decimal
-print_dec16:
-        push af
-        push bc
-        push hl
-        ld b, 5           ; max 5 digits for 16-bit decimal
-        ld c, 0
+print_dec16_bc:
+        push de
+        ld d, 5           ; max 5 digits for 16-bit decimal
+        ld e, 0
 
         ; store digits in reverse order in stack
 store_digits:
         call divmod10
         push af            ; store remainder (digit) on stack
-        inc c
-        ld a, h
-        or l
-        jr z, print_digits  ; if HL = 0, we're done
-        djnz store_digits
+        inc e
+        ld a, b
+        or c
+        jr z, print_digits  
+        dec d
+        jr nz,store_digits
 
 print_digits:
-        ld b,c
+        ld d,e
 digit_loop:
         pop af
         add a, '0'         ; convert to ASCII
-                push bc
         call print_char
-                pop bc
-        djnz digit_loop
-        pop hl
-        pop bc
-        pop af
+        dec d
+        jr nz,digit_loop
+        pop de
         ret
 
-; Input:  HL = 16-bit unsigned dividend
-; Output: HL = quotient, A = remainder
+; Input:  BC = 16-bit unsigned dividend
+; Output: BC = quotient, A = remainder
 
 divmod10:
-        push bc
-        ld c,10
+        push de
+        ld e,10
 div_hl_c:
         xor a           ; Clear A (remainder = 0)
-        ld b, 16        ; We'll shift 16 bits
+        ld d, 16        ; We'll shift 16 bits
 div_loop:
-        add hl, hl      ; Shift HL left, MSB into carry
+        sla c           ; Shift BC left, MSB in to carry
+        rl b
         rla             ; Shift A left through carry (A = remainder)
         jr c, skip_cmp  ; If carry set, remainder ? 128 ? definitely ? C
-        cp c            ; Compare remainder to divisor
+        cp e            ; Compare remainder to divisor
         jr c, skip_sub  ; If A < C, skip subtraction
 skip_cmp:
-        sub c           ; A -= C (remainder -= divisor)
-        inc l           ; L = L + 1 (quotient bit set)
+        sub e           ; A -= E (remainder -= divisor)
+        inc c           ; C = C + 1 (quotient bit set)
 skip_sub:
-        djnz div_loop   ; Repeat for all bits
-        pop bc
-        ret             ; L = quotient, A = remainder
+        dec d
+        jr nz,div_loop   ; Repeat for all bits
+        pop de
+        ret             ; C = quotient, A = remainder
    
 
-clear_screen:
-        xor a
-        ld (char_screen_x),a
-        ld (char_screen_y),a
-        ld hl,SCREEN_BASE
-        ld bc,SCREEN_LENGTH
-        ld a,$00
-        call fill_mem
-        ld hl,ATTR_BASE
-        ld bc,ATTR_LENGTH
-        ld a,%01000111    ; Attribute, INK=7, PAPER=0
-        call fill_mem
-        ret
 ; Address
 ;          15 14 13 12 11 10  9  8    7  6  5  4  3  2  1  0
 ; Bitmap    0  1  0 y4 y3  0  0  0 : y2 y1 y0 x4 x3 x2 x1 x0  
 ; Attr      0  1  0  1  1  0 y4 y3 : y2 y1 y0 x4 x3 x2 x1 x0  
 print_char:
         push hl
-        cp 13
-        jr z,.cr
-        cp 10
-        jr z,.lf
+        push de
+        cp '\n'
+        jr z,@crlf
         sub ' '
         ld l,a
         ld h,0
@@ -190,6 +210,13 @@ print_char:
         ld bc,character_set
         add hl,bc
         ld a,(char_screen_y)
+        ld d,a
+        ld a,(ula_scroll_offset)
+        add d
+        cp 24
+        jr c,@nowrap
+        sub 24
+@nowrap:
         ld d,a
         ; Shuffle y[2..0] to addr [7..5]
         and %00000111
@@ -209,12 +236,9 @@ print_char:
         ld d,a
         push de
         ld b,8
-.char_loop
-        ld a,(hl)
-        ld (de),a
-        inc d
-        inc hl
-        djnz .char_loop
+@char_loop:
+        ldws
+        djnz @char_loop
         pop de
         ; Update attributes
         ld a,d
@@ -229,34 +253,45 @@ print_char:
         ; Update screen coordinate
         ld a,(char_screen_x)
         inc a
-.nextline
+@nextline:
         and 31
         ld (char_screen_x),a
-        jr nz,.same_line
+        jr nz,@same_line
         ld a,(char_screen_y)
         inc a
         cp 24
-        jr c,.not_eos
-        ld a,0
-.not_eos
-        ld (char_screen_y),a
-.same_line
-        pop hl
-        ret
-.cr
+        jr c,@not_eos
+        ;
+        ; Scroll the screen
+        ;
+        ld a,(ula_scroll_offset)
+        inc a
+        cp 24
+        jr c,@nowrap2
         xor a
-        jr .nextline
-.lf
+@nowrap2:
+        ld (ula_scroll_offset),a
+        ld a,23
+@not_eos:
+        ld (char_screen_y),a
+@same_line:
+        pop de
         pop hl
         ret
+@crlf:
+        xor a
+        jr @nextline
 
+        align 256
+character_set:
+        incbin "assets/charset.bin"
+
+        SECTION data_user
+
+ula_scroll_offset:
+        db 0
 char_screen_x:  
         db 0
 char_screen_y: 
         db 0
-print_save_ix:
-        dw 0
 
-
-character_set:
-        incbin assets/charset.bin
