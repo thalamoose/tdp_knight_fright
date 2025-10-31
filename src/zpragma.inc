@@ -7,12 +7,12 @@
 
 //// Real IM2
 #pragma output REGISTER_SP = 0x8180
-#pragma output CRT_ORG_CODE = 0x8183
+#pragma output CRT_ORG_CODE = 0x8000
 
 
 
 
-////#pragma output CRT_ORG_BSS = 0
+#pragma output CRT_ORG_BSS = 0x6000
 
 //// Disable interrupts at start and at exit
 #pragma output CRT_ENABLE_EIDI = 0x11

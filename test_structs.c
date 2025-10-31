@@ -3,28 +3,41 @@
 
 typedef unsigned char u8;
 
-typedef struct
+typedef struct s_coord
 {
 	short x;
 	short y;
 } t_coord;
 
-
-typedef struct s_object
+typedef struct
 {
-	t_coord position;
-	struct 
-	{
+	short x;
+	short y;
+} t_coord2;
+
+typedef struct s_obj2
+{
+	struct {
 		u8 active:1;
 		u8 pingpong:1;
 		u8 is4bit:1;
 	} flags;
-    u8 totalFrames;
-	u8 direction;
-	
-} object;
+    char totalFrames;
+	char direction;
+	t_coord coordinate;	
+	t_coord2 coord2;
+} obj2;
+
+void CopyPalette(void* palette, u8 paletteType);
 
 #if 0
+
+
+typedef struct s_object
+{
+	t_coord position;
+} obj1;
+
 typedef struct s_test_object
 {
     u8 gravity;

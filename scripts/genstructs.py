@@ -78,6 +78,8 @@ def getType(CU, memberDef):
 		return f'WORD ;; Pointer to {typeStr} array'
 	if memberDef.tag==DW_TAG_STRUCTURE_TYPE:
 		structDef = getSiblingReference(CU, memberDef)
+		if getName(CU, memberDef)==None:
+			return None
 		name=getName(CU, structDef)
 		return name
 	if memberDef.tag==DW_TAG_CONST_TYPE:
@@ -121,7 +123,12 @@ def expandFields(CU, prefix, fieldDef):
 				if prefix!='':
 					name = prefix+'_'+getName(CU,child)
 				memberDef = getReference(CU, child)
-				fields += expandFields(CU, name, memberDef)
+				type = getType(CU, memberDef)
+				if type!=None:
+					if verbose:	print( f'{name:<40}    {type}')
+					fields.append(f'{name:<40}    {type}')
+				else:
+					fields += expandFields(CU, name, memberDef)
 			else:
 				fields += expandFields(CU, name, child)
 		return fields
@@ -226,6 +233,8 @@ existingMethods=[]
 
 def handleSubprogram(CU, progRef, outFile):
 	progName = getName(CU, progRef)
+	print(f'Program name {progName}')
+
 	if progRef.has_children:
 		if progName in existingMethods:
 			return
@@ -283,6 +292,8 @@ def iterateThroughCompileUnit(CU,outFile):
 	ignored_tags+=[DW_TAG_COMPILE_UNIT, DW_TAG_TYPEDEF, DW_TAG_MEMBER]
 	ignored_tags+=[None]
 	for DIE in CU.iter_DIEs():
+		name = getName(CU, DIE)
+		print(f'DIE name {name}')
 		if DIE.tag==DW_TAG_STRUCTURE_TYPE and DIE.has_children:
 			handleStruct(CU, DIE, outFile)
 		elif DIE.tag==DW_TAG_SUBPROGRAM:

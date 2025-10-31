@@ -5,6 +5,7 @@
 #include "defines.h"
 #include "objects.h"
 #include "player.h"
+#include "playarea.h"
 
 typedef struct s_globals
 {
@@ -12,11 +13,11 @@ typedef struct s_globals
 	u8 debugMaxParticles;
 	u8 activeSpriteCount;
 	bool gameIsRunning;
-	coord playArea;
 	coord tileMap;
 	coord charScreen;
 	player_object player;
 	object objects[MAX_OBJECTS];
+	play_area playArea;
 } globals;
 
 extern globals global;

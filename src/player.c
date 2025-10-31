@@ -43,8 +43,8 @@ u8 GetPlaygridContent(u8 x, u8 y)
 //---------------------------------------------------------
 void SnapToGrid(void)
 {
-    global.player.object.position.x = ((global.playArea.x+global.player.playgrid.x)*16+LAYER_2_WIDTH/2+12)<<FIXED_POINT_BITS;
-    global.player.object.position.y = ((global.playArea.y+global.player.playgrid.y)*24+LAYER_2_HEIGHT/2)<<FIXED_POINT_BITS;
+    global.player.object.position.x = ((global.playArea.position.x+global.player.playgrid.x)*16+LAYER_2_WIDTH/2+12)<<FIXED_POINT_BITS;
+    global.player.object.position.y = ((global.playArea.position.y+global.player.playgrid.y)*24+LAYER_2_HEIGHT/2)<<FIXED_POINT_BITS;
 }
 
 //---------------------------------------------------------

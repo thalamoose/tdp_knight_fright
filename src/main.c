@@ -25,6 +25,9 @@ extern void InitializeParticles(void);
 
 extern void DebugAddParticle(void);
 
+extern u8 _BSS_head[];
+extern u8 _BSS_END_tail[];
+
 void InitializeSystem(void)
 {
     nextreg(CLOCK_SEL,0x03);
@@ -32,6 +35,7 @@ void InitializeSystem(void)
     // Remap 16K to ULA shadow.
     nextreg(MMU_SLOT_2, ULA_SHADOW_PAGE);
     nextreg(MMU_SLOT_3, ULA_SHADOW_PAGE+1);
+    memset(_BSS_head,0,_BSS_END_tail-_BSS_head);
     InitializeInterrupts();
     ClearScreen();
     InitializeRender();
