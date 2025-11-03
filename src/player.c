@@ -8,6 +8,7 @@
 #include "sprites.h"
 #include "input.h"
 #include "globals.h"
+#include "particles.h"
 
 extern u8 asset_PlayerPalette[];
 
@@ -32,19 +33,10 @@ void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy)
 }
 
 //---------------------------------------------------------
-u8 GetPlaygridContent(u8 x, u8 y)
-{
-    u8* tileEntry = (u8*)(SWAP_BANK_0)+(y*40+x)*2;
-    nextreg(MMU_SLOT_6,TILEMAP_PAGE);
-    nextreg(MMU_SLOT_7,TILEMAP_PAGE+1);
-    return *tileEntry;
-}
-
-//---------------------------------------------------------
 void SnapToGrid(void)
 {
-    global.player.object.position.x = ((global.playArea.position.x+global.player.playgrid.x)*16+LAYER_2_WIDTH/2+12)<<FIXED_POINT_BITS;
-    global.player.object.position.y = ((global.playArea.position.y+global.player.playgrid.y)*24+LAYER_2_HEIGHT/2)<<FIXED_POINT_BITS;
+    global.player.object.position.x = ((global.player.playgrid.x-global.playArea.position.x-2)*16+LAYER_2_WIDTH/2+12)<<FIXED_POINT_BITS;
+    global.player.object.position.y = ((global.player.playgrid.y-global.playArea.position.y-1)*24+LAYER_2_HEIGHT/2-14)<<FIXED_POINT_BITS;
 }
 
 //---------------------------------------------------------
@@ -59,8 +51,9 @@ void InitializePlayer(void)
     global.player.object.animSpeed = 4;
     global.player.object.totalFrames = 8;
     global.player.object.gravity = FIXED_POINT_HALF;
-	global.player.playgrid.x = PLAY_AREA_CELLS_WIDTH/2-1;
-	global.player.playgrid.y = PLAY_AREA_CELLS_HEIGHT/2-1;
+	global.player.playgrid.x = PLAY_AREA_CELLS_WIDTH/2;
+	global.player.playgrid.y = PLAY_AREA_CELLS_HEIGHT/2;
+    global.player.moveSteps = 0;
 //
 // Set up sprites 64..67, so that only the minimum needs to be set up below. 
 //
@@ -69,6 +62,7 @@ void InitializePlayer(void)
     SetupSprite(PLAYER_SPRITE_SLOT+2, PLAYER_SPRITE_PATTERN+2, 0, 16, 0, 0xc0, 0x60);
     SetupSprite(PLAYER_SPRITE_SLOT+3, PLAYER_SPRITE_PATTERN+3, 16,16, 0, 0xc0, 0x60);
 
+    nextreg(MMU_SLOT_6, PALETTE_PAGE);
     CopyPalette(asset_PlayerPalette,2);
     // Grab whatever colour is the background colour. This will be our transparent
     // index.
@@ -86,52 +80,73 @@ void MovePlayer(void)
         global.player.object.position.y += global.player.object.velocity.y;
         global.player.object.velocity.y += global.player.object.gravity;
         global.player.moveSteps--;
-        if (global.player.moveSteps==0)
+        if (global.player.moveSteps!=0)
         {
-            SnapToGrid();
-            u8 content = GetPlaygridContent(global.player.playgrid.x, global.player.playgrid.y);
-            if (content==0)
+            if (global.player.object.position.y>(240<<FIXED_POINT_BITS))
             {
-                // dead now.
-                SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
+                // We must have been in a die. Respawn now.
+                InitializePlayer();
             }
-            else
+            return;
+        }
+        SnapToGrid();
+        u8 content = GetPlayAreaContent(global.player.playgrid.x, global.player.playgrid.y);
+        x_printf("Coord:(%d,%d), content:%c\n", global.player.playgrid.x, global.player.playgrid.y, content);
+        if (content==2)
+        {
+            // dead now.
+            SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
+            for (int i=0; i<32; i++)
             {
-                SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
+                s16 px = global.player.object.position.x+(16<<FIXED_POINT_BITS)+(get_random_16()>>10);
+                s16 py = global.player.object.position.y+(8<<FIXED_POINT_BITS)+(get_random_16()>>10);
+                s16 vx = get_random_16()>>8;
+                s16 vy = get_random_16()>>8;
+                s8 width = get_random()&3+1;
+                s8 colour = (get_random()&63)+1;
+                s8 age = (get_random()&31)+24;
+                AddParticle(px, py, vx, vy, age, colour, width, 0);
             }
+        }
+        else if (content==0)
+        {
+            SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,-FIXED_POINT_ONE*2);
+            global.player.moveSteps = 64;
+            global.player.object.gravity = FIXED_POINT_HALF/2;
+        }
+        else
+        {
+            SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
         }
     }
-    if (global.player.moveSteps==0)
+    u8 buttons = ReadController();
+    if (buttons & (1<<JOYPAD_L_LEFT))
     {
-        u8 buttons = ReadController();
-        if (buttons & (1<<JOYPAD_L_LEFT))
-        {
-            global.player.playgrid.x--;
-            global.player.playgrid.y++;
-            SetPlayerAnim(PLAYERSPR_L+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
-            return;
-        }
-        if (buttons & (1<<JOYPAD_L_RIGHT))
-        {
-            global.player.playgrid.x++;
-            global.player.playgrid.y--;
-            SetPlayerAnim(PLAYERSPR_R+PLAYERSPR_RUN_ANIM,PLAYERDIR_BR,FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
-            return;
-        }
-        if (buttons & (1<<JOYPAD_L_UP))
-        {
-            global.player.playgrid.x--;
-            global.player.playgrid.y--;
-            SetPlayerAnim(PLAYERSPR_U+PLAYERSPR_RUN_ANIM,PLAYERDIR_TL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
-            return;
-        }
-        if (buttons & (1<<JOYPAD_L_DOWN))
-        {
-            global.player.playgrid.x++;
-            global.player.playgrid.y++;
-            SetPlayerAnim(PLAYERSPR_D+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
-            return;
-        }
+        global.player.playgrid.x--;
+        global.player.playgrid.y++;
+        SetPlayerAnim(PLAYERSPR_L+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
+        return;
+    }
+    if (buttons & (1<<JOYPAD_L_RIGHT))
+    {
+        global.player.playgrid.x++;
+        global.player.playgrid.y--;
+        SetPlayerAnim(PLAYERSPR_R+PLAYERSPR_RUN_ANIM,PLAYERDIR_BR,FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
+        return;
+    }
+    if (buttons & (1<<JOYPAD_L_UP))
+    {
+        global.player.playgrid.x--;
+        global.player.playgrid.y--;
+        SetPlayerAnim(PLAYERSPR_U+PLAYERSPR_RUN_ANIM,PLAYERDIR_TL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
+        return;
+    }
+    if (buttons & (1<<JOYPAD_L_DOWN))
+    {
+        global.player.playgrid.x++;
+        global.player.playgrid.y++;
+        SetPlayerAnim(PLAYERSPR_D+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
+        return;
     }
 }
 
@@ -172,4 +187,5 @@ void RenderPlayer(void)
     nextreg(SPRITE_ATTR_0, x&0xff);
     nextreg(SPRITE_ATTR_1, y);
     nextreg(SPRITE_ATTR_2, (x>>8)&1);
+    nextreg(SPRITE_ATTR_3, 0xc0);
 }

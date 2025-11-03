@@ -28,6 +28,7 @@ extern void DebugAddParticle(void);
 extern u8 _BSS_head[];
 extern u8 _BSS_END_tail[];
 
+//---------------------------------------------------------
 void InitializeSystem(void)
 {
     nextreg(CLOCK_SEL,0x03);
@@ -43,19 +44,22 @@ void InitializeSystem(void)
     x_printf("Built: %s, %s\n", __TIME__, __DATE__);
 }
 
+extern play_area_template asset_PlayArea_01;
+
+//---------------------------------------------------------
 void InitializeGame(void)
 {
     InitializeSprites();
     InitializeTilemap();
+    InitializePlayArea(&asset_PlayArea_01);
     InitializeParticles();
     InitializePlayer();
     InitializeNpcs();
     global.debugMaxParticles = 64;
 }
 
-short counter=0;
-char c=0;
-
+//---------------------------------------------------------
+//---------------------------------------------------------
 int main(void)
 {
     InitializeSystem();
@@ -69,7 +73,7 @@ int main(void)
             UpdateAudio();
             while( global.particlesActive<global.debugMaxParticles )
             {
-                DebugAddParticle();
+                //DebugAddParticle();
                 global.particlesActive++;
             }
             port_out(ULA_PORT, ULA_COLOUR_BLACK);
@@ -77,19 +81,11 @@ int main(void)
             port_out(ULA_PORT, ULA_COLOUR_CYAN);
             Render();
             port_out(ULA_PORT, ULA_COLOUR_YELLOW);
-            c++;
-            if (c>10)
-            {
-                c=0;
-                nextreg(ULA_CONTROL, ULA_COLOUR_WHITE);
-                x_printf("Count %d\n",counter);
-                nextreg(ULA_CONTROL, ULA_COLOUR_BLACK);
-                counter++;
-            }
         }
     }
 }
 
+//---------------------------------------------------------
 bool CheckReset(void)
 {
     return false;

@@ -6,6 +6,7 @@
         global _memcpy_dma
         global _memset
         global _get_random
+        global _get_random_16
         global _port_in
         global _port_out
         global _WaitVSync

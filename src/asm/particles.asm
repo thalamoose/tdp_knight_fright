@@ -32,6 +32,7 @@ DEFVARS 0
         PARTICLE_sizeof         ds.b 0
 }
 
+        global _particleObjects
 PARTICLE_ACTIVE equ 0
 F_4_4_TO_10_6 MACRO r1,r2
         ld r2,r1
@@ -48,21 +49,7 @@ F_4_4_TO_10_6 MACRO r1,r2
         global _UpdateParticles
         global _DebugAddParticle
         extern _get_random
-_InitializeParticles:
-        ;;;;
-        push ix
-        xor a
-        ld (_particle_index),a
-        ld b,MAX_PARTICLES
-        ld ix,_particle_objects
-        ld de,PARTICLE_sizeof
-@init_loop:
-        ld (ix+PARTICLE_flags),0                ; Mark it inactive
-        ld (ix+PARTICLE_prev_page),0            ; Mark it so it doesn't need restoring.
-        add ix,de
-        djnz @init_loop
-        pop ix
-        ret
+
 
 _DebugAddParticle:
         call _get_random
@@ -96,7 +83,7 @@ _DebugAddParticle:
         ret
 _UpdateParticles:
         push ix
-        ld ix,_particle_objects
+        ld ix,_particleObjects
         ld de,PARTICLE_sizeof
         ld b,MAX_PARTICLES
         ld l,0
@@ -165,7 +152,8 @@ update_particle:
         ; Decrement life
         dec (hl)
         ret nz                    ; If not dead, return
-        ld (ix+PARTICLE_life),0
+        ld (ix+PARTICLE_flags),0
+        call remove_particle
         ret
 
 ; in: HL = start X, DE = start Y
@@ -178,7 +166,7 @@ add_particle:
         ld e,a
         ld d,PARTICLE_sizeof
         mul d,e
-        ld ix,_particle_objects
+        ld ix,_particleObjects
         add ix,de
         ld b,MAX_PARTICLES
         ld de,PARTICLE_sizeof
@@ -190,7 +178,7 @@ add_particle:
         cp MAX_PARTICLES
         jr nz,@no_wrap
         xor a
-        ld ix,_particle_objects
+        ld ix,_particleObjects
 @no_wrap:
         djnz @find_slot
         nop
@@ -251,7 +239,7 @@ remove_particle:
 
 _RenderParticles:
         push ix
-        ld ix,_particle_objects
+        ld ix,_particleObjects
         ld b,MAX_PARTICLES
         ld c,0
         ld de,PARTICLE_sizeof
@@ -465,7 +453,3 @@ _particle_slot:
         dw 0
 _particle_index:
         dw 0
-
-        SECTION bss_user
-_particle_objects:
-        ds PARTICLE_sizeof*MAX_PARTICLES

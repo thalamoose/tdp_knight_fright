@@ -279,19 +279,26 @@ print_char:
         pop hl
         ret
 @crlf:
-        xor a
-        jr @nextline
-
-        align 256
-character_set:
-        incbin "assets/charset.bin"
+        ld a,' '
+        call print_char
+        ld a,(char_screen_x)
+        and a
+        jr nz,@crlf
+        pop de
+        pop hl
+        ret
 
         SECTION data_user
-
 ula_scroll_offset:
         db 0
 char_screen_x:  
         db 0
 char_screen_y: 
         db 0
+
+        SECTION data_align_256
+        align 256
+        
+character_set:
+        incbin "assets/charset.bin"
 

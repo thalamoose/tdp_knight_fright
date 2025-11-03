@@ -9,4 +9,7 @@ extern void CopySprite(void* srcData, u8 slot, u8 totalSlots);
 extern void WaitVSync(void);
 extern void x_printf(const char* format, ...);
 
+extern s16 get_random_16(void);
+extern s8 get_random(void);
+
 #endif

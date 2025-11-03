@@ -72,10 +72,10 @@ void InitializeTilemap(void)
 
 	// Tilemap templates are in the same bank as the palette
 	CopyTileBlock(asset_MapShape_02, SWAP_BANK_1, 1);
-	global.playArea.position.x = PLAY_AREA_CELLS_WIDTH/2;
-	global.playArea.position.y = PLAY_AREA_CELLS_HEIGHT/2;
+	global.playArea.position.x = PLAY_AREA_CELLS_WIDTH/2-10;
+	global.playArea.position.y = PLAY_AREA_CELLS_HEIGHT/2-13;
 	global.tileMap.x = 12;
-	global.tileMap.y = 0;
+	global.tileMap.y = -8;
 }
 
 void UpdateTilemap(void)

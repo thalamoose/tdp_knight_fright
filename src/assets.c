@@ -37,6 +37,7 @@ __asm
 	global _asset_SpritePalette,_asset_SpriteData
 	global _asset_TilemapPalette, _asset_TileData
 	global _asset_MapShape_01,_asset_MapShape_02
+	global _asset_PlayArea_01,_asset_PlayArea_02
 
 	include "build/assets/kfplayer.bin.s"
 	include "build/assets/kfback.bin.s"
@@ -50,6 +51,30 @@ _asset_MapShape_01:
 	include "build/assets/shape_01.map"
 _asset_MapShape_02:
 	include "build/assets/shape_02.map"
+_asset_PlayArea_01:
+	db 10,10
+	;; 0,1,2,3,4,5,6,7,8,9
+	db 0,0,0,0,1,0,1,0,0,0	; 0
+	db 9,0,9,1,9,1,9,1,9,0	; 1
+	db 0,0,1,0,1,0,1,0,1,0	; 2
+	db 0,1,0,1,0,1,0,0,0,1	; 3
+	db 0,0,1,0,1,0,1,0,1,0	; 4
+	db 0,0,0,2,0,1,0,1,0,0	; 5
+	db 0,0,0,0,1,0,1,0,0,0	; 6
+	db 0,0,0,1,0,1,0,0,0,0	; 7
+	db 0,0,0,0,1,0,1,0,0,0	; 8
+	db 0,0,0,0,0,1,0,0,0,0	; 9
+
+_asset_PlayArea_02:
+	db 7,7
+	db 1, 1, 1, 1, 0, 0, 0
+	db 1, 2, 2, 1, 0, 0 ,0
+	db 1, 2, 2, 1, 0, 0 ,0
+	db 1, 1, 1, 1, 1, 1 ,1
+	db 0, 0, 0, 1, 2, 2 ,1
+	db 0, 0, 0, 1, 2, 1, 1
+	db 0, 0, 0, 1, 1, 1 ,1
+
 _asset_BackdropPalette:
 	incbin "build/assets/kfback.pal"
 _asset_PlayerPalette:

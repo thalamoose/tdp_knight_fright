@@ -18,7 +18,8 @@ void InitializeRender(void)
     nextreg(PALETTE_VALUE_8,0xe3);                  // set BRIGHT+BLACK to transparent
     nextreg(PALETTE_INDEX,0x18);                    // set BRIGHT BLACK to transparent
     nextreg(PALETTE_VALUE_8,0);
-    nextreg(SPRITE_AND_LAYERS,0x2b);             	// enable sprites, SUL, sprites over border
+    //nextreg(SPRITE_AND_LAYERS,0x23|(2<<2));             	// enable sprites, SUL, sprites over border
+    nextreg(SPRITE_AND_LAYERS,0x23|(1<<2));             	// enable sprites, LSU, sprites over border
     nextreg(ULA_CONTROL,0);
     nextreg(DISPLAY_CONTROL_1,0xc0);             	// Enable layer 2, ULA to shadow bank (bank 7, page 14,15)
 
@@ -45,7 +46,7 @@ void Render(void)
 	UpdateTilemap();
 	RenderPlayer();
 	RenderSprites();
-	port_out(ULA_PORT, ULA_COLOUR_MAGENTA);
+	port_out(ULA_PORT, ULA_COLOUR_BLACK);
 	RenderParticles();
 	port_out(ULA_PORT, ULA_COLOUR_WHITE);
 }

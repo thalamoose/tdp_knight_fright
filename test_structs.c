@@ -26,12 +26,25 @@ typedef struct s_obj2
 	char direction;
 	t_coord coordinate;	
 	t_coord2 coord2;
-} obj2;
+	t_coord arrayTest[10];
+} t_obj2;
 
 void CopyPalette(void* palette, u8 paletteType);
+void sprcpy_dma(u8 a, u8 b, short c);
 
+
+void testmain(short input_a, short input_b, char input_c, void* input_d)
+{
+	CopyPalette((void*)0x100, 0);
+	sprcpy_dma(1,2,3);
+}
+
+void CopyPalette(void* p, u8 t)
+{
+	(void)p;
+	(void)t;
+}
 #if 0
-
 
 typedef struct s_object
 {

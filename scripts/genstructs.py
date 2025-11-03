@@ -68,7 +68,7 @@ def getType(CU, memberDef):
 		if typeDef.tag==DW_TAG_BASE_TYPE:
 			return getBaseType(CU, typeDef)
 		if typeDef.tag==DW_TAG_STRUCTURE_TYPE:
-			return getName(CU, typeDef)
+			return getName(CU, memberDef)
 		error('ERROR: unknown type tag {typeDef.tag}')
 	if memberDef.tag==DW_TAG_POINTER_TYPE:
 		typeDef = getReference(CU, memberDef)
@@ -165,7 +165,7 @@ def parseArray(CU, arrayDef):
 		if sibling.tag==DW_TAG_BASE_TYPE:
 			return f'BLOCK {siblingSize},{count} ;; Array of {name}[{count}]'
 
-		return f'BLOCK {siblingName},{count} ;; Array of {siblingName}[{count}]'
+		return f'BLOCK {name},{count} ;; Array of {name}[{count}]'
 	elif typeDef.tag==DW_TAG_CONST_TYPE:
 		constTypeDef = getReference(CU, typeDef)
 		constTypeName = getType(CU, constTypeDef)
@@ -208,26 +208,27 @@ def getBaseType(CU, baseType):
 		return f'BLOCK {byteSize}'
 	return '***HERE***void'
 
-existingStructs=[]
-def handleStruct(CU, structRef, outFile):
-	name = getName(CU, structRef)
-	if name!=None:
-		if name in existingStructs:
-			if verbose: print(f'Skipped {name}...')
-			return
-		existingStructs.append(name)
-		structFields = expandFields(CU, '', structRef)
+existingTypedefs=[]
+def handleTypedef(CU, typedefRef, outFile):
+	typeRef = getReference(CU, typedefRef)
+	typedefName = getName(CU, typedefRef)
+	if typedefName in existingTypedefs:
+		return
+	existingTypedefs.append(typedefName)
+	if typeRef.tag==DW_TAG_STRUCTURE_TYPE:
+		structFields = expandFields(CU, '', typeRef)
 		if structFields:
 			if verbose:	
-				print(f'    STRUCT {name}')
-			outFile.write(f'    STRUCT {name}\n')
+				print(f'    STRUCT {typedefName}')
+			outFile.write(f'    STRUCT {typedefName}\n')
 				 
 			for textLine in structFields:
 				if len(textLine):
 					if verbose:	print(textLine)
 					outFile.write(textLine+'\n')
-			if verbose:	print(f'    ENDS ;; {name}\n')
-			outFile.write(f'    ENDS ;; {name}\n\n')
+			if verbose:	print(f'    ENDS ;; {typedefName}\n')
+			outFile.write(f'    ENDS ;; {typedefName}\n\n')
+	return
 
 existingMethods=[]
 
@@ -289,15 +290,14 @@ def handleSubprogram(CU, progRef, outFile):
 
 def iterateThroughCompileUnit(CU,outFile):
 	ignored_tags=[DW_TAG_FORMAL_PARAMETER, DW_TAG_BASE_TYPE, DW_TAG_VARIABLE]
-	ignored_tags+=[DW_TAG_COMPILE_UNIT, DW_TAG_TYPEDEF, DW_TAG_MEMBER]
+	ignored_tags+=[DW_TAG_COMPILE_UNIT, DW_TAG_MEMBER, DW_TAG_STRUCTURE_TYPE]
 	ignored_tags+=[None]
 	for DIE in CU.iter_DIEs():
-		name = getName(CU, DIE)
-		print(f'DIE name {name}')
-		if DIE.tag==DW_TAG_STRUCTURE_TYPE and DIE.has_children:
-			handleStruct(CU, DIE, outFile)
-		elif DIE.tag==DW_TAG_SUBPROGRAM:
+		if DIE.tag==DW_TAG_SUBPROGRAM:
 			handleSubprogram(CU, DIE, outFile)
+		elif DIE.tag==DW_TAG_TYPEDEF:
+			handleTypedef(CU, DIE, outFile)
+
 	return
 
 def create_structs_from_dwarf(input_file, outFile):
