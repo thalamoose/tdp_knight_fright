@@ -98,13 +98,13 @@ void MovePlayer(void)
             SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
             for (int i=0; i<32; i++)
             {
-                s16 px = global.player.object.position.x+(16<<FIXED_POINT_BITS)+(get_random_16()>>10);
-                s16 py = global.player.object.position.y+(8<<FIXED_POINT_BITS)+(get_random_16()>>10);
-                s16 vx = get_random_16()>>8;
-                s16 vy = get_random_16()>>8;
-                s8 width = get_random()&3+1;
-                s8 colour = (get_random()&63)+1;
-                s8 age = (get_random()&31)+24;
+                s16 px = global.player.object.position.x+(16<<FIXED_POINT_BITS)+(random16()>>10);
+                s16 py = global.player.object.position.y+(8<<FIXED_POINT_BITS)+(random16()>>10);
+                s16 vx = (s16)(s8)random8();
+                s16 vy = (s16)(s8)random8();
+                s8 width = random8()&3+1;
+                s8 colour = (random8()&127)|128;
+                s8 age = (random8()&31)+24;
                 AddParticle(px, py, vx, vy, age, colour, width, 0);
             }
         }

@@ -2,11 +2,12 @@
         include "include/memorymap.inc"
         SECTION code_user
         global _nextreg
+        global _nextreg16
         global _CopyPalette
         global _memcpy_dma
         global _memset
-        global _get_random
-        global _get_random_16
+        global _random8
+        global _random16
         global _port_in
         global _port_out
         global _WaitVSync
@@ -15,52 +16,71 @@ check_reset:
         ret
 
 _nextreg:
-        push ix
-        ld ix,2
-        add ix,sp
-        ld a,(ix+2)
-        ld (@here+2),a
-        ld a,(ix+3)
-@here:  nextreg 0,a
-        pop ix
+        ld hl,2
+        add hl,sp
+        ld a,(hl)
+        ld bc, NEXTREG_SELECT_PORT
+        out (c),a
+        inc hl
+        ld a,(hl)
+        inc b
+        out (c),a
         ret
-
+_nextreg16:
+        ld hl,2
+        add hl,sp
+        ld a,(hl)
+        ld bc, NEXTREG_SELECT_PORT
+        out (c),a
+        inc hl
+        inc b
+        ld a,(hl)
+        inc hl
+        out (c),a
+        ret
 _port_in:
-        push ix
-        ld ix,2
-        add ix,sp
-        ld bc,(ix+2)
+        ld hl,2
+        add hl,sp
+        ld c,(hl)
+        inc hl
+        ld b,(hl)
         in a,(c)
         ld l,a
-        pop ix
         ret
 
 _port_out:
-        push ix
-        ld ix,2
-        add ix,sp
-        ld bc,(ix+2)
-        ld a,(ix+4)
+        ld hl,2
+        add hl,sp
+        ld c,(hl)
+        inc hl
+        ld b,(hl)
+        inc hl
+        ld a,(hl)
         out (c),a
-        ld l,a
-        pop ix
         ret
 ; A  - Fill value
 ; HL - Base address
 ; BC - Length
 _memset:
-        push ix
-        ld ix,2
-        add ix,sp
-        ld de,(ix+2)
-        ld a,(ix+4)
-        ld bc,(ix+5)
+        ld hl,2
+        add hl,sp
+        ld e,(hl)
+        inc hl
+        ld d,(hl)
+        inc hl
+        ld a,(hl)
+        inc hl
+        ld c,(hl)
+        inc hl
+        ld b,(hl)
         ld hl,de
         ld (de),a
         inc de
         dec bc
+        ld a,b
+        or c
+        ret z
         ldir
-        pop ix
         ret
 
 ; Copy a 9 bit RGB palette
@@ -71,11 +91,13 @@ _memset:
 ;       %010 - SPR 1st,   %110 - SPR 2nd
 ;       %011 - tile 1st,  %111 - tile 2nd
 _CopyPalette:
-        push ix
-        ld ix,2
-        add ix,sp
-        ld de,(ix+2)
-        ld a,(ix+4)
+        ld hl,2
+        add hl,sp
+        ld e,(hl)
+        inc hl
+        ld d,(hl)
+        inc hl
+        ld a,(hl)
         ld hl,de
         sla a
         sla a
@@ -92,7 +114,6 @@ _CopyPalette:
         inc hl
         nextreg PALETTE_VALUE_9,a
         djnz @next_palette
-        pop ix
         ret
 
 _WaitVSync:
@@ -107,7 +128,7 @@ _WaitVSync:
 ; State in RNG_SEEDL (low), RNG_SEEDH (high)
 ; Returns: HL = new 16-bit random value
 ; Affected: AF
-_get_random_16:
+_random16:
         ld      hl,(random_seed)
         ld      a,l
         rra                        ; shift right through carry
@@ -128,8 +149,8 @@ _get_random_16:
 
 ; Galois LFSR: x^8 + x^6 + x^5 + x^4 + 1 (one common polynomial)
 ; new = (seed >> 1) ^ ( (seed & 1) ? 0xB8 : 0 )
-; returns A=new
-_get_random:
+; returns L=new
+_random8:
         push bc
         ld   a,(random_seed) ; 7T
         srl   a               ; 8T   ; shift right with carry into bit7 (but we prefer logical >>)
@@ -156,3 +177,4 @@ random_seed_2:
         dw 0xf00d
 ; total roughly 39–48 T depending on branch timing — comfortably under 50T.
 
+        

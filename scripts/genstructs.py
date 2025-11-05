@@ -234,7 +234,7 @@ existingMethods=[]
 
 def handleSubprogram(CU, progRef, outFile):
 	progName = getName(CU, progRef)
-	print(f'Program name {progName}')
+	if verbose:	print(f'Program name {progName}')
 
 	if progRef.has_children:
 		if progName in existingMethods:
@@ -322,7 +322,7 @@ def main(file_list, outputFile):
 	outputFile.write('    SLDOPT COMMENT WPMEM, LOGPOINT, ASSERTION\n')
 	outputFile.write('    DEVICE ZXSPECTRUMNEXT\n\n')
 	for filename in file_list:
-		print(f'Processing file {filename}...')
+		if verbose:	print(f'Processing file {filename}...')
 		create_structs_from_dwarf(filename, outputFile)
 	return
 		 

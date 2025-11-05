@@ -16,7 +16,7 @@ void CopyBackgroundBitmap(void)
 	u8 srcPage = BACKDROP_PAGE;
 	u8 dstPage = LAYER_2_PAGE;
 	u8 totalPages = 10;
-	for (int i=0; i<totalPages;i++)
+	for (int i=0; i<totalPages; i++)
 	{
 		nextreg(MMU_SLOT_6,srcPage);
 		nextreg(MMU_SLOT_7,dstPage);
@@ -27,6 +27,7 @@ void CopyBackgroundBitmap(void)
 	nextreg(MMU_SLOT_6, PALETTE_PAGE);
 	nextreg(MMU_SLOT_7, PALETTE_PAGE+1);
 	CopyPalette(asset_BackdropPalette,PALETTE_LAYER_2_PRIMARY);
+	CopyPalette(asset_BackdropPalette+128,PALETTE_LAYER_2_SECONDARY);
 }
 
 void allAssets(void)

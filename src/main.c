@@ -13,6 +13,7 @@
 #include "assets.h"
 #include "render.h"
 #include "memorymap.h"
+#include "copper.h"
 
 globals global;
 
@@ -55,6 +56,7 @@ void InitializeGame(void)
     InitializeParticles();
     InitializePlayer();
     InitializeNpcs();
+    InitializeCopper();
     global.debugMaxParticles = 64;
 }
 

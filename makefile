@@ -1,11 +1,12 @@
-PATH:=$(PATH);$(CURDIR)/../z88dk/bin
-SLICER = @python scripts/slicer.py
-MAPPER = @python scripts/charmapgen.py
-ASSEMBLER = @sjasmplus
-GENSTRUCTS = python scripts/genstructs.py
-SEGMENT = @python scripts/slice_and_bank.py
-IMGGEN = hdfmonkey
 SILENCE=@
+
+PATH:=$(PATH);$(CURDIR)/../z88dk/bin
+SLICER = $(SILENCE)python scripts/slicer.py
+MAPPER = $(SILENCE)python scripts/charmapgen.py
+ASSEMBLER = $(SILENCE)sjasmplus
+GENSTRUCTS = $(SILENCE)python scripts/genstructs.py
+SEGMENT = $(SILENCE)python scripts/slice_and_bank.py
+IMGGEN = hdfmonkey
 CC = $(SILENCE)$(CURDIR)/../z88dk/bin/zcc
 MV = $(SILENCE)move /y
 RM = $(SILENCE)del /s/q
@@ -13,7 +14,8 @@ ECHO = $(SILENCE)echo
 MKDIR= $(SILENCE)mkdir
 RMDIR= $(SILENCE)rmdir
 BASEFLAGS=+zxn -mz80n -m -s --list -g -Iinclude
-CFLAGS=$(BASEFLAGS) -SO0 -c --c-code-in-asm $(OPT_FLAGS)
+OPT_FLAGS=-SO1 --fomit-frame-pointer
+CFLAGS=$(BASEFLAGS) -c --c-code-in-asm $(OPT_FLAGS)
 DEP_FLAGS = -MT $@ -MD -MF $(DEP_DIR)/$*.d
 #
 # Startup file located at z88dk\libsrc\_DEVELOPMENT\target\zxn\startup\zxn_crt_31.asm
@@ -90,7 +92,7 @@ executable: $(OUT) src/zpragma.inc $(ASSETS) $(EXECUTABLE) $(SYMBOLS)
 
 $(EXECUTABLE): $(C_OBJS) $(ASM_OBJS)
 	$(ECHO) Linking $@...
-	$(CC) $(LDFLAGS) $^ -o $@ -create-app -subtype=nex
+	$(CC) $(LDFLAGS) $^ -o $@ -create-app -subtype=nex > nul:
 
 
 $(C_SRC_DIR)/assets.c: $(ASSETS)
@@ -107,7 +109,7 @@ $(ASM_OBJ_DIR):
 $(LST_DIR):
 	$(MKDIR) $(subst /,\,$@)
 
-$(C_OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c $(C_OBJ_DIR) makefile
+$(C_OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c makefile
 	$(ECHO) Compiling $<...
 	$(CC) $(CFLAGS) $(DEP_FLAGS) $< -o $@
 	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
@@ -154,7 +156,7 @@ build/KnightFright.sld : $(C_SYMS)
 	$(ECHO) Generating symbol file $@
 	$(ASSEMBLER) --msg=war --nologo --fullpath --sld=$@ $@.s 
 
-$(C_OBJ_DIR)/%.sym.o: $(C_SRC_DIR)/%.c $(C_OBJ_DIR) makefile
+$(C_OBJ_DIR)/%.sym.o: $(C_SRC_DIR)/%.c makefile
 	$(ECHO) Compiling symbols for $<
 	$(SYM_GCC) $(GCC_SYM_OPTS) -Iinclude $< -c -o $@
 

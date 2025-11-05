@@ -7,11 +7,12 @@
 #include "utilities.h"
 #include "sprites.h"
 #include "memorymap.h"
+#include "copper.h"
 
 void InitializeRender(void)
 {
 	nextreg(LAYER_2_RAM_BANK, LAYER_2_PAGE/2);
-	port_out(LAYER_2_ACCESS, 2);
+	port_out(LAYER_2_ACCESS_PORT, 2);
 	nextreg(GLOBAL_TRANSPARENCY, 0);
     nextreg(PALETTE_CONTROL, 0);
     nextreg(PALETTE_INDEX,0x88);                   	// set "bright+black" ULA colour
@@ -43,7 +44,8 @@ void InitializeRender(void)
 
 void Render(void)
 {
-	UpdateTilemap();
+    RenderCopper();             // Must be done first, just after vsync
+    UpdateTilemap();
 	RenderPlayer();
 	RenderSprites();
 	port_out(ULA_PORT, ULA_COLOUR_BLACK);

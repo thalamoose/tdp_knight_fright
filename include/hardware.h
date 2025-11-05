@@ -4,7 +4,6 @@ enum next_registers
 {
 	CLOCK_SEL               = 0x07,
 	PERIPHERAL_3_CONTROL    = 0x08,
-	LAYER_2_ACCESS          = 0x123b,
 	LAYER_2_RAM_BANK        = 0x12,
 	LAYER_2_SHADOW_BANK     = 0x13,
 	GLOBAL_TRANSPARENCY     = 0x14,
@@ -63,6 +62,9 @@ enum next_ports
 	SPRITE_PATTERN_PORT     = 0x5b,
 	ULA_PORT                = 0xfe,
 	ZXN_DMA_PORT            = 0x6b,
+	LAYER_2_ACCESS_PORT     = 0x123b,
+	NEXTREG_SELECT_PORT		= 0x243b,
+	NEXTREG_VALUE_PORT		= 0x253b,
 	SPRITE_SLOT_PORT        = 0x303b,
 	MEM_PAGING_CONTROL_PORT = 0x7ffd,
 	KEMPSTON_MOUSE_BTN_PORT = (signed)0xfadf,

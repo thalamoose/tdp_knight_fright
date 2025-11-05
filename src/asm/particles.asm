@@ -44,35 +44,34 @@ F_4_4_TO_10_6 MACRO r1,r2
         rl  r1
         ENDM
 
-        global _InitializeParticles
         global _RenderParticles
         global _UpdateParticles
         global _DebugAddParticle
-        extern _get_random
+        extern _random8
 
 
 _DebugAddParticle:
-        call _get_random
+        call _random8
         ld a,l
         and 0x07
         ld hl,160-16
         add l
         ld l,a
         push hl
-        call _get_random
+        call _random8
         ld a,l
         ld de,64
         and 0x07
         add e
         ld e,a
 
-        call _get_random
+        call _random8
         ld a,l
         sra a
         sra a
         inc a
         ld b,a
-        call _get_random
+        call _random8
         ld a,l
         sra a
         sra a
@@ -202,16 +201,16 @@ add_particle:
         pop de
         bsla de,b
         ld (ix+PARTICLE_Y),de
-        call _get_random
+        call _random8
         ld (ix+PARTICLE_colour),l
 
-        call _get_random
+        call _random8
         ld a,l
         and %00000011
         inc a
         ld (ix+PARTICLE_width),a
         ; Give it some initial velocity
-        call _get_random
+        call _random8
         ld a,l
         and %01111111
         add 100
@@ -280,7 +279,7 @@ render_particle:
         ; here, HL = X coordinate
         ;       DE = Y coordinate
 
-        ;call _get_random
+        ;call _random8
         ;ld (ix+PARTICLE_colour),a        ; **DEBUG**
         ; Now calculate screen position
         ; Page in the correct bank. Each bank is 8KB, but we page it in to
@@ -425,10 +424,6 @@ xor_particle:
         ;  B - Colour
         ;  C - Copy of E
         jp (hl)
-        ALIGN 16
-@index_table:
-        dw @one_pixel,@two_pixel,@three_pixel,@four_pixel,@five_pixel,@six_pixel,@seven_pixel,@eight_pixel
-
 @eight_pixel:
         DO_PIXELS 8,8
 @seven_pixel:
@@ -448,8 +443,14 @@ xor_particle:
 @zero_pixel:
         ret
 
+        SECTION data_align_32
+        ALIGN 32
+@index_table:
+        dw @one_pixel,@two_pixel,@three_pixel,@four_pixel,@five_pixel,@six_pixel,@seven_pixel,@eight_pixel
+
         SECTION data_user
 _particle_slot:
         dw 0
 _particle_index:
         dw 0
+
