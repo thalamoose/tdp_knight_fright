@@ -79,6 +79,21 @@ embedded_int:
         ld b,(hl)
         inc hl
         ex de,hl
+        bit 7,b
+        jr z,@positive
+        push hl
+        push de
+        push bc
+        ld a,'-'
+        call print_char
+        pop bc
+        pop de
+        ld hl,0
+        sbc hl,bc
+        ld bc,hl
+        pop hl
+
+@positive:
         call print_dec16_bc
         jp print_str_next
 embedded_string:

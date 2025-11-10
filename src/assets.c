@@ -27,7 +27,6 @@ void CopyBackgroundBitmap(void)
 	nextreg(MMU_SLOT_6, PALETTE_PAGE);
 	nextreg(MMU_SLOT_7, PALETTE_PAGE+1);
 	CopyPalette(asset_BackdropPalette,PALETTE_LAYER_2_PRIMARY);
-	CopyPalette(asset_BackdropPalette+128,PALETTE_LAYER_2_SECONDARY);
 }
 
 void allAssets(void)
@@ -53,18 +52,25 @@ _asset_MapShape_01:
 _asset_MapShape_02:
 	include "build/assets/shape_02.map"
 _asset_PlayArea_01:
-	db 10,10
+	db 8,6
+	db 0,0,0,1,1,1,1,0
+	db 0,0,0,1,1,1,1,1
+	db 0,0,0,2,1,1,1,1
+	db 0,0,1,1,1,1,0,1
+	db 0,0,1,1,1,1,1,1
+	db 0,0,0,1,0,0,0,0
+
 	;; 0,1,2,3,4,5,6,7,8,9
-	db 0,0,0,0,1,0,1,0,0,0	; 0
-	db 9,0,9,1,9,1,9,1,9,0	; 1
-	db 0,0,1,0,1,0,1,0,1,0	; 2
-	db 0,1,0,1,0,1,0,0,0,1	; 3
-	db 0,0,1,0,1,0,1,0,1,0	; 4
-	db 0,0,0,2,0,1,0,1,0,0	; 5
-	db 0,0,0,0,1,0,1,0,0,0	; 6
-	db 0,0,0,1,0,1,0,0,0,0	; 7
-	db 0,0,0,0,1,0,1,0,0,0	; 8
-	db 0,0,0,0,0,1,0,0,0,0	; 9
+	db 0,0,1,1,0	; 0
+	db 0,1,1,1,0	; 1
+	db 0,1,1,1,1	; 2
+	db 1,1,1,0,1	; 3
+	db 0,1,1,1,1	; 4
+	db 0,2,1,1,0	; 5
+	db 0,0,1,1,0	; 6
+	db 0,1,1,0,0	; 7
+	db 0,0,1,1,0	; 8
+	db 0,0,1,0,0	; 9
 
 _asset_PlayArea_02:
 	db 7,7

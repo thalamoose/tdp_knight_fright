@@ -5,13 +5,14 @@
 
 typedef struct s_play_cell
 {
-	u8 blockContent;
+	unsigned char type:2;
+	unsigned char dark:1;
 } play_cell;
 
 typedef struct s_play_area
 {
 	coord position;
-	play_cell cells[PLAY_AREA_CELLS_WIDTH][PLAY_AREA_CELLS_HEIGHT];
+	play_cell cells[PLAY_AREA_CELLS_HEIGHT][PLAY_AREA_CELLS_WIDTH];
 } play_area;
 
 typedef struct s_play_area_template
@@ -21,7 +22,12 @@ typedef struct s_play_area_template
 	u8 data[0];
 } play_area_template;
 
-void InitializePlayArea(play_area_template* pTemplate);
+void InitializePlayArea(const play_area_template* pTemplate);
 
-u8 GetPlayAreaContent(u8 x, u8 y);
+u8 GetPlayAreaContent(s8 x, s8 y);
+play_cell* GetPlayAreaCell(s8 x, s8 y);
+void DrawPlayArea(void);
+void RefreshPlayAreaBlock(s8 x, s8 y);
+
+
 #endif

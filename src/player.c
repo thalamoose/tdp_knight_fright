@@ -12,6 +12,24 @@
 
 extern u8 asset_PlayerPalette[];
 
+#define PLAYER_TO_TILE_X_OFFSET (-1)
+#define PLAYER_TO_TILE_Y_OFFSET (-22)
+//---------------------------------------------------------
+void SnapToGrid(void)
+{
+    s16 x = global.player.playgrid.x-global.playArea.position.x;
+    s16 y = global.player.playgrid.y-global.playArea.position.y;
+
+    s16 sx = (x+y)*16+LAYER_2_WIDTH/2;
+    s16 sy = (y-x)*24+LAYER_2_HEIGHT/2;
+    sx += global.tileMap.x+PLAYER_TO_TILE_X_OFFSET;
+    sy += global.tileMap.y+PLAYER_TO_TILE_Y_OFFSET;
+
+    global.player.object.position.x = sx<<FIXED_POINT_BITS;
+    global.player.object.position.y = sy<<FIXED_POINT_BITS;
+
+}
+
 //---------------------------------------------------------
 void SetPlayerAnimIdle(u8 baseIndex, s16 vx, s16 vy)
 {
@@ -33,13 +51,6 @@ void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy)
 }
 
 //---------------------------------------------------------
-void SnapToGrid(void)
-{
-    global.player.object.position.x = ((global.player.playgrid.x-global.playArea.position.x-2)*16+LAYER_2_WIDTH/2+12)<<FIXED_POINT_BITS;
-    global.player.object.position.y = ((global.player.playgrid.y-global.playArea.position.y-1)*24+LAYER_2_HEIGHT/2-14)<<FIXED_POINT_BITS;
-}
-
-//---------------------------------------------------------
 void InitializePlayer(void)
 {
     global.player.object.position.x = (320/2)<<FIXED_POINT_BITS;
@@ -51,8 +62,8 @@ void InitializePlayer(void)
     global.player.object.animSpeed = 4;
     global.player.object.totalFrames = 8;
     global.player.object.gravity = FIXED_POINT_HALF;
-	global.player.playgrid.x = PLAY_AREA_CELLS_WIDTH/2;
-	global.player.playgrid.y = PLAY_AREA_CELLS_HEIGHT/2;
+	global.player.playgrid.x = 0;
+	global.player.playgrid.y = 0;
     global.player.moveSteps = 0;
 //
 // Set up sprites 64..67, so that only the minimum needs to be set up below. 
@@ -90,11 +101,11 @@ void MovePlayer(void)
             return;
         }
         SnapToGrid();
-        u8 content = GetPlayAreaContent(global.player.playgrid.x, global.player.playgrid.y);
-        x_printf("Coord:(%d,%d), content:%c\n", global.player.playgrid.x, global.player.playgrid.y, content);
-        if (content==2)
+        play_cell* pCell = GetPlayAreaCell(global.player.playgrid.x, global.player.playgrid.y);
+        //x_printf("Coord:(%d,%d), content:%c\n", global.player.playgrid.x, global.player.playgrid.y, content);
+        if (pCell->type==2)
         {
-            // dead now.
+            // Pickup
             SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
             for (int i=0; i<32; i++)
             {
@@ -108,8 +119,9 @@ void MovePlayer(void)
                 AddParticle(px, py, vx, vy, age, colour, width, 0);
             }
         }
-        else if (content==0)
+        else if (pCell->type==0)
         {
+            // Dead due to empty cell
             SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,-FIXED_POINT_ONE*2);
             global.player.moveSteps = 64;
             global.player.object.gravity = FIXED_POINT_HALF/2;
@@ -118,32 +130,35 @@ void MovePlayer(void)
         {
             SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
         }
+        if (pCell->type && !pCell->dark)
+        {
+            // Make it dark,
+            pCell->dark = 1;
+            // Eventually, start palette pulse.
+            RefreshPlayAreaBlock(global.player.playgrid.x, global.player.playgrid.y);
+        }
     }
     u8 buttons = ReadController();
     if (buttons & (1<<JOYPAD_L_LEFT))
     {
         global.player.playgrid.x--;
-        global.player.playgrid.y++;
         SetPlayerAnim(PLAYERSPR_L+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
         return;
     }
     if (buttons & (1<<JOYPAD_L_RIGHT))
     {
         global.player.playgrid.x++;
-        global.player.playgrid.y--;
         SetPlayerAnim(PLAYERSPR_R+PLAYERSPR_RUN_ANIM,PLAYERDIR_BR,FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
         return;
     }
     if (buttons & (1<<JOYPAD_L_UP))
     {
-        global.player.playgrid.x--;
         global.player.playgrid.y--;
         SetPlayerAnim(PLAYERSPR_U+PLAYERSPR_RUN_ANIM,PLAYERDIR_TL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
         return;
     }
     if (buttons & (1<<JOYPAD_L_DOWN))
     {
-        global.player.playgrid.x++;
         global.player.playgrid.y++;
         SetPlayerAnim(PLAYERSPR_D+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
         return;
