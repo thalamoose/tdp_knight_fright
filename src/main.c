@@ -14,6 +14,7 @@
 #include "render.h"
 #include "memorymap.h"
 #include "copper.h"
+#include "hud.h"
 
 globals global;
 
@@ -28,6 +29,7 @@ extern void DebugAddParticle(void);
 
 extern u8 _BSS_head[];
 extern u8 _BSS_END_tail[];
+extern u8 _DATA_END_tail[];
 
 //---------------------------------------------------------
 void InitializeSystem(void)
@@ -43,6 +45,9 @@ void InitializeSystem(void)
     InitializeRender();
     x_printf("Booting Knight Fright...\n");
     x_printf("Built: %s, %s\n", __TIME__, __DATE__);
+    x_printf("VARS: 0x%x.\n", _BSS_END_tail);
+    x_printf("CODE: 0x%x\n", _DATA_END_tail);
+    x_printf("Globals: 0x%x bytes.\n", sizeof(globals));
 }
 
 extern play_area_template asset_PlayArea_01;
@@ -52,12 +57,12 @@ void InitializeGame(void)
 {
     InitializeSprites();
     InitializeTilemap();
+    InitializeHud();
     InitializePlayArea(&asset_PlayArea_01);
     InitializeParticles();
     InitializePlayer();
     InitializeNpcs();
     InitializeCopper();
-    global.debugMaxParticles = 64;
 }
 
 //---------------------------------------------------------
@@ -73,11 +78,6 @@ int main(void)
         {
             UpdateObjects();
             UpdateAudio();
-            while( global.particlesActive<global.debugMaxParticles )
-            {
-                //DebugAddParticle();
-                global.particlesActive++;
-            }
             port_out(ULA_PORT, ULA_COLOUR_BLACK);
             WaitVSync();
             port_out(ULA_PORT, ULA_COLOUR_CYAN);

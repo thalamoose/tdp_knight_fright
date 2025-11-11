@@ -56,9 +56,9 @@ def main(args):
     if group_height==-1:
         group_height=cropped_image.height
 
-    palette=cropped_image.getcolors()
-    if len(palette)>max_colors:
-        print("ERROR: Palette is too large. Expected",max_colors," got ",len(tile_colors))
+    szPalette = len(cropped_image.getcolors())
+    if szPalette>max_colors:
+        print(f"ERROR: Palette is too large. Expected {max_colors} got {szPalette}")
         sys.exit(-1)
 
     try:
@@ -89,7 +89,8 @@ def main(args):
         tile_palette=cropped_image.getpalette()
         output_palette = bytearray()
         index = 0
-        for c in range(0,len(palette)):
+        szPalette = int(len(tile_palette)/3)
+        for c in range(0, szPalette):
             r = tile_palette[index+0]>>5
             g = tile_palette[index+1]>>5
             b = tile_palette[index+2]>>5
@@ -97,7 +98,7 @@ def main(args):
             output_palette.append((target_color>>1)&0xff)
             output_palette.append(target_color&1)
             index = index+3;
-        for i in range(len(palette),max_colors):
+        for i in range(szPalette, max_colors):
             output_palette.append(0);
             output_palette.append(0);
         palette_file.write(bytes(output_palette))

@@ -167,6 +167,9 @@ _random8:
         xor b
         pop bc
         ld l,a
+        ld a,r
+        xor l
+        ld l,a
         ret                  ;10T
 
 

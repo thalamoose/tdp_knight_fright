@@ -27,7 +27,7 @@ void InitializePlayArea(const play_area_template* pTemplate);
 u8 GetPlayAreaContent(s8 x, s8 y);
 play_cell* GetPlayAreaCell(s8 x, s8 y);
 void DrawPlayArea(void);
-void RefreshPlayAreaBlock(s8 x, s8 y);
+void RefreshPlayAreaBlock(s8 x, s8 y, s8 palette);
 
 
 #endif

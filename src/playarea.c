@@ -42,7 +42,7 @@ void BuildPlayArea(const play_area_template* pTemplate)
 }
 
 //---------------------------------------------------------
-void RefreshPlayAreaBlock(s8 x, s8 y)
+void RefreshPlayAreaBlock(s8 x, s8 y, s8 palette)
 {
 	nextreg(MMU_SLOT_6, TILEMAP_PAGE+1);
 	s16 tx = (x+y)*2;
@@ -58,7 +58,7 @@ void RefreshPlayAreaBlock(s8 x, s8 y)
 			s8 tr = CalcIndex(pCell+1);
 			s8 tl = CalcIndex(pCell-PLAY_AREA_CELLS_WIDTH);
 			s8 br = CalcIndex(pCell+PLAY_AREA_CELLS_WIDTH);
-			PasteTilemapBlock(pTilemap, dark, tl, tr, bl, br);
+			PasteTilemapBlock(pTilemap, dark, tl, tr, bl, br, palette);
 		}
 	}
 }
@@ -73,7 +73,7 @@ void DrawPlayArea(void)
 		//x_printf("cell:0x%x\n", pCell);
 		for(s16 x=-4; x<5; x++)
 		{
-			RefreshPlayAreaBlock(x, y);
+			RefreshPlayAreaBlock(x, y, 0);
 		}
 	}
 }

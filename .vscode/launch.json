@@ -196,7 +196,7 @@
             "request" : "launch",
             "program" : "${file}",
             "console" : "integratedTerminal",
-            "args" : ["build/test_structs.asm.o","-output_file=build/test_structs.asm"]
+            "args" : ["assets/kfback.png","build/assets/kfback.bin", "--palette=build/assets/kfback.pal"]
         }
 
     ]

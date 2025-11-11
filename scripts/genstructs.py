@@ -69,7 +69,7 @@ def getType(CU, memberDef):
 			return getBaseType(CU, typeDef)
 		if typeDef.tag==DW_TAG_STRUCTURE_TYPE:
 			return getName(CU, memberDef)
-		error('ERROR: unknown type tag {typeDef.tag}')
+		error(f'ERROR: unknown type tag {typeDef.tag}')
 	if memberDef.tag==DW_TAG_POINTER_TYPE:
 		typeDef = getReference(CU, memberDef)
 		if typeDef==None:

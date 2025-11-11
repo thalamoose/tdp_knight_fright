@@ -34,55 +34,19 @@ DEFVARS 0
 
         global _particleObjects
 PARTICLE_ACTIVE equ 0
-F_4_4_TO_10_6 MACRO r1,r2
-        ld r2,r1
-        ld a,r1
-        rla
-        sbc a,a
-        ld r1,a
-        sla r2
-        rl  r1
-        ENDM
-
         global _RenderParticles
         global _UpdateParticles
-        global _DebugAddParticle
+        global _RemoveParticle
         extern _random8
 
-
-_DebugAddParticle:
-        call _random8
-        ld a,l
-        and 0x07
-        ld hl,160-16
-        add l
-        ld l,a
-        push hl
-        call _random8
-        ld a,l
-        ld de,64
-        and 0x07
-        add e
-        ld e,a
-
-        call _random8
-        ld a,l
-        sra a
-        sra a
-        inc a
-        ld b,a
-        call _random8
-        ld a,l
-        sra a
-        sra a
-        inc a
-        ld c,a
-        pop hl
-        call add_particle
-        ret
 _UpdateParticles:
         push ix
-        ld ix,_particleObjects
+        ld hl,4
+        add hl,sp
+        ld c,(hl)
+        inc hl
+        ld b,(hl)
+        ld ix,bc
         ld de,PARTICLE_sizeof
         ld b,MAX_PARTICLES
         ld l,0
@@ -155,72 +119,17 @@ update_particle:
         call remove_particle
         ret
 
-; in: HL = start X, DE = start Y
-; B = delta x (signed) 4.4 format
-; C = delta y (signed) 4.4 format
-; destroys: AF, BC
-add_particle:
-        exx
-        ld a,(_particle_index)
-        ld e,a
-        ld d,PARTICLE_sizeof
-        mul d,e
-        ld ix,_particleObjects
-        add ix,de
-        ld b,MAX_PARTICLES
-        ld de,PARTICLE_sizeof
-@find_slot:
-        bit PARTICLE_ACTIVE,(ix+PARTICLE_flags)
-        jr z,@found
-        add ix,de
-        inc a
-        cp MAX_PARTICLES
-        jr nz,@no_wrap
-        xor a
-        ld ix,_particleObjects
-@no_wrap:
-        djnz @find_slot
-        nop
-@found:
+_RemoveParticle:
+        push ix
+        ld hl,4
+        add hl,sp
+        ld c,(hl)
+        inc hl
+        ld b,(hl)
+        inc hl
+        ld ix,bc
         call remove_particle
-        exx
-        push de
-
-        F_4_4_TO_10_6 b,d
-        ld (ix+PARTICLE_VX),d
-        ld (ix+PARTICLE_VX+1),b
-
-        F_4_4_TO_10_6 c,d
-        ld (ix+PARTICLE_VY),d
-        ld (ix+PARTICLE_VY+1),c
-
-        ld de,hl
-        ld b,FIXED_POINT_BITS
-        bsla de,b
-        ld (ix+PARTICLE_X),de
-        pop de
-        bsla de,b
-        ld (ix+PARTICLE_Y),de
-        call _random8
-        ld (ix+PARTICLE_colour),l
-
-        call _random8
-        ld a,l
-        and %00000011
-        inc a
-        ld (ix+PARTICLE_width),a
-        ; Give it some initial velocity
-        call _random8
-        ld a,l
-        and %01111111
-        add 100
-        ld (ix+PARTICLE_life),a    ; frames of life - 5 seconds for testing
-        ld a,b
-        set PARTICLE_ACTIVE,(ix+PARTICLE_flags)
-        ld a,(_particle_index)
-        inc a
-        and MAX_PARTICLES-1
-        ld (_particle_index),a
+        pop ix
         ret
 
 remove_particle:
@@ -238,12 +147,17 @@ remove_particle:
 
 _RenderParticles:
         push ix
-        ld ix,_particleObjects
+        ld hl,4
+        add hl,sp
+        ld c,(hl)
+        inc hl
+        ld b,(hl)
+        ld ix,bc
         ld b,MAX_PARTICLES
         ld c,0
         ld de,PARTICLE_sizeof
         xor a
-        ld (_particle_slot),a
+        ld (particle_mmu_page),a
 @render_loop:
         bit PARTICLE_ACTIVE,(ix+PARTICLE_flags)
         jr z,@not_active
@@ -260,7 +174,6 @@ _RenderParticles:
 ; alternate set.
 render_particle:
         exx
-        ex af,af'
         ; Remove previous occurance.
         call remove_particle
         ld a,(ix+PARTICLE_colour)
@@ -270,36 +183,29 @@ render_particle:
         ld de,(ix+PARTICLE_Y)
         ld b,FIXED_POINT_BITS
         bsra de,b
-        ld a,e
-        cp (PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1)&$ff        ; 7
-        jp c,@clipped                                            ; 12
+
+        ld a,e                                                  ; Checks for <0 as well as lower byte
+        or d
+        cp (PARTICLE_LAYER_HEIGHT-PARTICLE_SAFE_AREA-1)&$ff        ; 7
+        jp nc,@clipped_y                                           ; 12
         ld hl,de
         ld de,(ix+PARTICLE_X)
         bsra de,b
-        ; here, HL = X coordinate
-        ;       DE = Y coordinate
+        ; here, HL = X coordinate (FLIPPED FROM PARTICLE Y, SO IS 0..255)
+        ;       DE = Y coordinate (FLIPPED FROM PARTICLE X, SO IS 0..319)
 
-        ;call _random8
-        ;ld (ix+PARTICLE_colour),a        ; **DEBUG**
         ; Now calculate screen position
         ; Page in the correct bank. Each bank is 8KB, but we page it in to
         ; SWAP_BANK_0 and SWAP_BANK_1; this allows us to not have to worry
         ; about crossing a bank boundary when rendering.
-        ld a,d
-        sub (PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1)>>8
-        jr c,@not_clipped
-        ld a,e        
-        cp (PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1)&$ff
-        jr nc,@clipped
+        ld bc,hl
+        ld hl,PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1
+        sbc hl,de
+        ld hl,bc
+        jr c,@clipped_x
         ; Here, DE holds X coordinate, which has been clipped.
-@not_clipped:
         ; PIXELADDR = (x*256)+y (240x320 mode)
 
-        ; Either x or y negative, then they're clipped.
-        ld a,h
-        or d
-        rlc a
-        jr c,@clipped
         ;
         ; DE - x coordinate
         ; HL - y coordinate
@@ -346,11 +252,11 @@ render_particle:
         ld (ix+PARTICLE_prev_page),a                        ; Set up for restore
         ld (ix+PARTICLE_prev_address),de
         call xor_particle
-        ex af,af'
         exx
         ret
-@clipped:
-        ex af,af'
+@clipped_y:
+        nop
+@clipped_x:
         ld (ix+PARTICLE_flags),0
         exx
         ret
@@ -398,11 +304,11 @@ DO_PIXELS MACRO hpixels,vpixels
 ; h,l only available
 xor_particle:
         ld l,a
-        ld a,(_particle_slot)
+        ld a,(particle_mmu_page)
         cp l
         jr z,@same_slot
         ld a,l
-        ld (_particle_slot),a
+        ld (particle_mmu_page),a
         nextreg MMU_SLOT_6,a
         inc a
         nextreg MMU_SLOT_7,a
@@ -449,8 +355,6 @@ xor_particle:
         dw @one_pixel,@two_pixel,@three_pixel,@four_pixel,@five_pixel,@six_pixel,@seven_pixel,@eight_pixel
 
         SECTION data_user
-_particle_slot:
-        dw 0
-_particle_index:
+particle_mmu_page:
         dw 0
 

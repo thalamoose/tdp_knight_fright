@@ -8,6 +8,8 @@
 #include "sprites.h"
 #include "memorymap.h"
 #include "copper.h"
+#include "globals.h"
+#include "hud.h"
 
 void InitializeRender(void)
 {
@@ -48,7 +50,8 @@ void Render(void)
     UpdateTilemap();
 	RenderPlayer();
 	RenderSprites();
+    RenderHud();
 	port_out(ULA_PORT, ULA_COLOUR_BLACK);
-	RenderParticles();
+	RenderParticles(&global.particles[0]);
 	port_out(ULA_PORT, ULA_COLOUR_WHITE);
 }

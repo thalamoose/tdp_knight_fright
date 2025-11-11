@@ -21,6 +21,7 @@ typedef struct s_object
     s16 gravity;
     u8 frameIndex;
     u8 baseIndex;
+	u8 lastIndex;
     s8 animDelay;
     u8 animSpeed;
     u8 totalFrames;

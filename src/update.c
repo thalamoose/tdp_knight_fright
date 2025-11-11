@@ -10,5 +10,5 @@ void UpdateObjects(void)
 	UpdateNpcs();
 	UpdatePlayer();
 	UpdateSprites();
-	global.particlesActive = UpdateParticles();
+	global.particlesActive = UpdateParticles(&global.particles[0]);
 }		

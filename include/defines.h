@@ -46,7 +46,16 @@ enum consts
 
     PLAYERSPR_RUN_ANIM=0,
     PLAYERSPR_IDLE_ANIM=32,
+    //
+    // Palette masks
+    //
+    RED_SHIFT=6,
+    GRN_SHIFT=3,
+    BLU_SHIFT=0,
 
+    RED_MASK=(0x07<<RED_SHIFT),
+    GRN_MASK=(0x07<<GRN_SHIFT),
+    BLU_MASK=(0x07<<BLU_SHIFT)
 };
 
 #endif

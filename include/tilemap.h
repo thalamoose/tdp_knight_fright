@@ -20,14 +20,13 @@ typedef struct s_tile
 typedef struct s_tilemap_cell
 {
 	u8 value;
-	u8 attribute;
+	u8 attr;
 } tilemap_cell;
 
 void InitializeTilemap(void);
 void UpdateTilemap(void);
 void ClearTilemap(void);
-void PasteTilemapBlock(tilemap_cell* pTile, s8 dark, s8 tl, s8 tr, s8 bl, s8 br);
-void ClearTilemapBlock(tilemap_cell* pTile);
+void PasteTilemapBlock(tilemap_cell* pTile, s8 dark, s8 tl, s8 tr, s8 bl, s8 br, s8 palette);
 tilemap_cell* GetTilemapCell(s8 x, s8 y);
 
 #endif
