@@ -7,6 +7,7 @@
 
 void InitializeNpcs(void)
 {
+    #if false
         objects[0].position.x = 128;
         objects[0].position.y = 96;
         objects[0].baseIndex = 8;
@@ -28,6 +29,7 @@ void InitializeNpcs(void)
         objects[2].flags.active = true;
         objects[2].flags.pingpong = true;
         objects[2].animSpeed = 10;
+#endif
 }
 
 void UpdateNpcs(void)

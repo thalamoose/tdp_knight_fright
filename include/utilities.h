@@ -16,4 +16,6 @@ u16 BlendColour(u16 current, u16 target);
 s16 random16(void);
 s8 random8(void);
 
+s16 fp_mul_f88(s16 a, s16 b);
+
 #endif

@@ -20,8 +20,8 @@ player_object player;
 //---------------------------------------------------------
 void SnapToGrid(void)
 {
-    s16 x = player.playgrid.x-global.playArea.position.x;
-    s16 y = player.playgrid.y-global.playArea.position.y;
+    s16 x = player.playgrid.x-playArea.position.x;
+    s16 y = player.playgrid.y-playArea.position.y;
 
     s16 sx = (x+y)*16+LAYER_2_WIDTH/2;
     s16 sy = (y-x)*24+LAYER_2_HEIGHT/2;
@@ -150,10 +150,8 @@ void HandleDeath(bool fallThrough)
 void HandleControllerInput(void)
 {
     u8 buttons = ReadController();
-    if (buttons & 0x0f)
-    {
-
-    }
+    if (hud.transitionIsRunning)
+        return;
     if (buttons & (1<<JOYPAD_L_LEFT))
     {
         player.playgrid.x--;
@@ -222,6 +220,14 @@ void MovePlayer(void)
             if (tileFull)
             {
                 x_printf("Tile full bonus.\n");
+            }
+            playArea.tilesToFlip--;
+            if (playArea.tilesToFlip==0)
+            {
+                x_printf("No more tiles. Restart.\n");
+                // End of map, needs to go on to the next
+                hud.gameIsRunning = false;
+                StartTransition(50, 0, 0, I_TO_F(5), I_TO_F(-1), I_TO_F(1)/4);
             }
         }
         return;

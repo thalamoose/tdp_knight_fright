@@ -6,11 +6,12 @@
 #include "tilemap.h"
 #include "hardware.h"
 
+play_area playArea;
 
 //---------------------------------------------------------
 void ClearPlayArea(void)
 {
-	memset(global.playArea.cells, 0, sizeof(global.playArea.cells));
+	memset(playArea.cells, 0, sizeof(playArea.cells));
 }
 
 //---------------------------------------------------------
@@ -29,6 +30,7 @@ void BuildPlayArea(const play_area_template* pTemplate)
 	s8 px = -pTemplate->width/2;
 	s8 py = -pTemplate->height/2;
 
+	playArea.tilesToFlip = 0;
 	const u8* pData = pTemplate->data;
 	for (u8 y=0; y<pTemplate->height; y++)
 	{
@@ -36,6 +38,11 @@ void BuildPlayArea(const play_area_template* pTemplate)
 		for (u8 x=0; x<pTemplate->width; x++)
 		{
 			pCell->type = *pData++;
+			// If the cell is not empty, then it must be flippable.
+			// This should be expanded to handle the case where the
+			// tile block is fatal.
+			if (pCell->type)
+				playArea.tilesToFlip++;
 			pCell++;
 		}
 	}
@@ -48,7 +55,7 @@ void RefreshPlayAreaBlock(s8 x, s8 y, s8 palette)
 	s16 tx = (x+y)*2;
 	s16 ty = (y-x)*3;
 	tilemap_cell* pTilemap = GetTilemapCell(tx, ty);
-	const play_cell* pCell = GetPlayAreaCell(global.playArea.position.x+x, global.playArea.position.y+y);
+	const play_cell* pCell = GetPlayAreaCell(playArea.position.x+x, playArea.position.y+y);
 	if (pTilemap)
 	{
 		if (pCell->type)
@@ -81,8 +88,8 @@ void DrawPlayArea(void)
 //---------------------------------------------------------
 void InitializePlayArea(const play_area_template* pTemplate)
 {
-	global.playArea.position.x = 0;
-	global.playArea.position.y = 0;
+	playArea.position.x = 0;
+	playArea.position.y = 0;
 	ClearPlayArea();
 	nextreg(MMU_SLOT_6, PALETTE_PAGE);
 	BuildPlayArea(pTemplate);
@@ -95,5 +102,5 @@ play_cell* GetPlayAreaCell(s8 x, s8 y)
 	x = x+PLAY_AREA_CELLS_WIDTH/2;
 	y = y+PLAY_AREA_CELLS_HEIGHT/2;
 
-	return &global.playArea.cells[y][x];
+	return &playArea.cells[y][x];
 }

@@ -4,6 +4,7 @@
 #include "utilities.h"
 #include "assets.h"
 #include "hud.h"
+#include "lerp.h"
 
 hud_t hud;
 
@@ -17,6 +18,8 @@ void InitializeHud(void)
 	hud.inactiveColour[0] = asset_BackdropPalette[0xe2];
 	hud.inactiveColour[1] = asset_BackdropPalette[0xe3];
 	ResetHudTiles();
+	hud.gameIsRunning = true;
+	StartTransition(85, I_TO_F(-240), I_TO_F(-191), I_TO_F(51)/18, I_TO_F(-3), I_TO_F(1)/8);
 }
 
 void BeginShake(u8 duration, u8 amplitude)
@@ -26,8 +29,49 @@ void BeginShake(u8 duration, u8 amplitude)
 	hud.shakeDecayRate = (duration*4)/amplitude;
 }
 
+coord testSpline[4] =
+{
+	{I_TO_F(50),I_TO_F(50)},
+	{I_TO_F(100),I_TO_F(100)},
+	{I_TO_F(150),I_TO_F(0)},
+	{I_TO_F(200),I_TO_F(100)}
+};
+
+void UpdateTransition(void)
+{
+	if (hud.transitionIsRunning==false)
+	{
+		return;
+	}
+	hud.transDuration--;
+
+	hud.transPosition.x += hud.transVelocity.x;
+	hud.transPosition.y += hud.transVelocity.y;
+	hud.transVelocity.y += hud.transGravity;
+
+	hud.shake.x = F_TO_I(hud.transPosition.x);
+	hud.shake.y = F_TO_I(hud.transPosition.y);
+
+	//x_printf("dur:%d, shake: %d,%d\n", hud.transDuration, hud.shake.x, hud.shake.y);
+	if (hud.transDuration==0)
+	{
+		hud.transitionIsRunning = false;
+		hud.shake.x = 0;
+		hud.shake.y = 0;
+		if (hud.gameIsRunning)
+		{
+			x_printf("End transition. Start game.\n");
+		}
+		else
+		{
+			x_printf("End transition. Game over.\n");
+		}
+	}
+}
+
 void UpdateShake(void)
 {
+
 	if (hud.shakeDuration==0)
 	{
 		return;
@@ -45,11 +89,26 @@ void UpdateShake(void)
 	}
 	hud.shake.x = random8()%(hud.shakeAmplitude*2)-hud.shakeAmplitude;
 	hud.shake.y = random8()%(hud.shakeAmplitude*2)-hud.shakeAmplitude;
-	x_printf("shake x:%d, y:%d\n", hud.shake.x, hud.shake.y);
+}
+
+void StartTransition(u8 duration, s16 x, s16 y, s16 vx, s16 vy, s16 gravity)
+{
+	hud.transitionIsRunning = true;
+	hud.transDuration = duration;
+	hud.transPosition.x = x;
+	hud.transPosition.y = y;
+	hud.transVelocity.x = vx;
+	hud.transVelocity.y = vy;
+	hud.transGravity = gravity;
+
+	hud.shakeDuration = 0;
+	hud.shake.x = F_TO_I(x);
+	hud.shake.y = F_TO_I(y);
 }
 
 void RenderHud(void)
 {
+	UpdateTransition();
 	UpdateShake();
 	if (hud.pulseColour[0]!=hud.pulseTarget[0])
 	{
