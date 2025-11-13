@@ -19,8 +19,38 @@ void InitializeHud(void)
 	ResetHudTiles();
 }
 
+void BeginShake(u8 duration, u8 amplitude)
+{
+	hud.shakeAmplitude = amplitude;
+	hud.shakeDuration = duration;
+	hud.shakeDecayRate = (duration*4)/amplitude;
+}
+
+void UpdateShake(void)
+{
+	if (hud.shakeDuration==0)
+	{
+		return;
+	}
+	hud.shakeDuration--;
+	if ((hud.shakeDuration % hud.shakeDecayRate)==0)
+	{
+		hud.shakeAmplitude--;
+	}
+	if (hud.shakeDuration==0 || hud.shakeAmplitude==0)
+	{
+		hud.shake.x = 0;
+		hud.shake.y = 0;
+		return;
+	}
+	hud.shake.x = random8()%(hud.shakeAmplitude*2)-hud.shakeAmplitude;
+	hud.shake.y = random8()%(hud.shakeAmplitude*2)-hud.shakeAmplitude;
+	x_printf("shake x:%d, y:%d\n", hud.shake.x, hud.shake.y);
+}
+
 void RenderHud(void)
 {
+	UpdateShake();
 	if (hud.pulseColour[0]!=hud.pulseTarget[0])
 	{
 		hud.pulseColour[0] = BlendColour(hud.pulseColour[0], hud.pulseTarget[0]);
@@ -42,6 +72,7 @@ bool IncrementHudTileCount(void)
 	if (hud.segmentsLit>=MAX_HUD_SEGMENTS)
 	{
 		ResetHudTiles();
+		BeginShake(20, 3);
 		return true;
 	}
 	hud.pulseColourIndex = 0xe0+(segment*2);

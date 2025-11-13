@@ -7,6 +7,7 @@
 #include "assets.h"
 #include "globals.h"
 #include "playarea.h"
+#include "hud.h"
 
 //---------------------------------------------------------
 void InitializeTilemap(void)
@@ -81,9 +82,12 @@ tilemap_cell* GetTilemapCell(s8 x, s8 y)
 //---------------------------------------------------------
 void UpdateTilemap(void)
 {
-	nextreg(TILEMAP_OFFSET_X_H,(-global.tileMap.x>>8) & 0x1);
-	nextreg(TILEMAP_OFFSET_X_L,-global.tileMap.x);
-	nextreg(TILEMAP_OFFSET_Y,-global.tileMap.y);
+	s16 x = -global.tileMap.x+hud.shake.x;
+	s16 y = -global.tileMap.y+hud.shake.y;
+	
+	nextreg(TILEMAP_OFFSET_X_H,(x>>8) & 0x1);
+	nextreg(TILEMAP_OFFSET_X_L, x);
+	nextreg(TILEMAP_OFFSET_Y, y);
 }
 
 //---------------------------------------------------------
