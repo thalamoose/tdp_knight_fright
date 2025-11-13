@@ -1,6 +1,7 @@
 #include "kftypes.h"
 #include "objects.h"
 
+#define SCORE_BCD_DIGITS 8
 typedef struct s_hud
 {
 	bool gameIsRunning;
@@ -13,6 +14,12 @@ typedef struct s_hud
 	u16 shakeDuration;
 	u8 shakeAmplitude;
 	u8 shakeDecayRate;
+	// We'll store this bcd, because why not?
+	// 2 digits per byte.
+	u8 tilesBCD[SCORE_BCD_DIGITS/2];
+	u8 coinsBCD[SCORE_BCD_DIGITS/2];
+	u8 tilesDigitsShown[SCORE_BCD_DIGITS/2];
+	u8 coinsDigitsShown[SCORE_BCD_DIGITS/2];
 	coord shake;
 	u8 segmentsLit;
 	u8 unflippedTiles;

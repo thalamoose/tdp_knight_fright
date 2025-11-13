@@ -18,4 +18,6 @@ s8 random8(void);
 
 s16 fp_mul_f88(s16 a, s16 b);
 
+void bcd_add(u8 bcd_array[], u8 value);
+
 #endif

@@ -13,6 +13,7 @@
         global _WaitVSync
         global _SetColour
         global _fp_mul_f88
+        global _bcd_add
 check_reset:
         xor a
         ret
@@ -188,6 +189,31 @@ _fp_mul_f88:
 
         pop ix
         ret
+
+_bcd_add:
+        ld hl,2
+        add hl,sp
+        ld c,(hl)
+        inc hl
+        ld b,(hl)
+        inc hl
+        ld a,(hl)
+        ld l,c
+        ld h,b
+        add (hl)
+        daa
+        ld (hl),a
+        inc hl
+@digit:
+        ld a,0
+        adc (hl)
+        daa
+        ld (hl),a
+        inc hl
+        ret nc
+        djnz @digit
+        ret
+        
 
 
 ; 16-bit Galois LFSR using polynomial 0xB400

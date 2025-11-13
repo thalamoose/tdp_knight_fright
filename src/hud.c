@@ -13,6 +13,8 @@ void InitializeHud(void)
 	nextreg(MMU_SLOT_6, PALETTE_PAGE);
 
 	memset(&hud,0,sizeof(hud));
+	memset(&hud.coinsDigitsShown,0xff, sizeof(hud.coinsDigitsShown));
+	memset(&hud.tilesDigitsShown,0xff, sizeof(hud.tilesDigitsShown));
 	hud.activeColour[0] = asset_BackdropPalette[0xe0];
 	hud.activeColour[1] = asset_BackdropPalette[0xe1];
 	hud.inactiveColour[0] = asset_BackdropPalette[0xe2];
@@ -122,12 +124,60 @@ void RenderHud(void)
 	}
 }
 
+void DrawHudDigit(u8* bitmap, u8 value)
+{
+	u8* digitData = &asset_GameDigits[value*9];
+
+	for (u8 y=0; y<9; y++)
+	{
+		u8* pLine = bitmap;
+		u8 digitLine = *digitData++;
+		for (u8 x=0; x<7; x++)
+		{
+			*pLine = (digitLine & 128)?254:0;
+			digitLine=digitLine<<1;
+			pLine += 256;
+		}
+		bitmap++;
+	}
+}
+void UpdateHudCount(s16 x, s16 y, u8 bcdDigits[], u8 bcdShown[])
+{
+	u8 i=0;
+	nextreg(MMU_SLOT_6, LAYER_2_PAGE+2);
+	nextreg(MMU_SLOT_7, LAYER_2_PAGE+3);
+	u8* charBase = (u8*)SWAP_BANK_0+(x&63)*256+y;
+
+	while (i<4)
+	{
+		u8 digit = bcdDigits[i]>>4;
+		u8 shown = bcdShown[i]>>4;
+
+		if (digit!=shown)
+		{
+			DrawHudDigit(charBase, digit);
+		}
+		digit = bcdDigits[i] & 0x0f;
+		shown = bcdShown[i] & 0x0f;
+		charBase += 256*7;
+		if (digit!=shown)
+		{
+			DrawHudDigit(charBase, digit);
+		}
+		bcdShown[i]=bcdDigits[i];
+		i++;
+		charBase -= 256*7*2;
+	}
+}
+
 #define MAX_HUD_SEGMENTS 9
 
 bool IncrementHudTileCount(void)
 {
 	u8 segment = hud.segmentsLit;
 	hud.segmentsLit++;
+	bcd_add(hud.tilesBCD, 1);
+	UpdateHudCount(42, 40, hud.tilesBCD, hud.tilesDigitsShown);
 	if (hud.segmentsLit>=MAX_HUD_SEGMENTS)
 	{
 		ResetHudTiles();
