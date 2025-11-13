@@ -1,8 +1,18 @@
 #include "kftypes.h"
 
+typedef struct s_hud
+{
+	u16 activeColour[2];
+	u16 inactiveColour[2];
+	u16 pulseColour[2];
+	u16 pulseTarget[2];
+	u8 pulseColourIndex;
+	u8 segmentsLit;
+} hud_t;
+
 void InitializeHud(void);
 void RenderHud(void);
 void EnableHudProgressTile(u8 tile);
-void UpdateProgressTileCount(u16 tileCount);
-void UpdateProgressCoinCount(u16 coinCount);
-void ResetProgressTiles(void);
+bool IncrementHudTileCount(void);
+bool IncrementHudCoinCount(void);
+void ResetHudTiles(void);

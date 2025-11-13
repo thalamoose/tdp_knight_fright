@@ -60,6 +60,7 @@ void InitializeGame(void)
     InitializeHud();
     InitializePlayArea(&asset_PlayArea_01);
     InitializeParticles();
+    InitializeObjects();
     InitializePlayer();
     InitializeNpcs();
     InitializeCopper();

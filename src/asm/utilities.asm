@@ -11,6 +11,7 @@
         global _port_in
         global _port_out
         global _WaitVSync
+        global _SetColour
 check_reset:
         xor a
         ret
@@ -122,6 +123,26 @@ _WaitVSync:
         halt
         ld a,1                              ; blue border
         out (ULA_PORT),a
+        ret
+
+_SetColour:
+        ld hl, 2
+        add hl,sp
+        ld a,(hl)                               ; Palette type
+        inc hl
+        add a
+        add a
+        add a
+        add a
+        nextreg PALETTE_CONTROL, a
+        ld a,(hl)                               ; Colour Index
+        nextreg PALETTE_INDEX, a
+        inc hl
+        ld a,(hl)                               ; Colour Value
+        nextreg PALETTE_VALUE_9,a
+        inc hl
+        ld a,(hl)
+        nextreg PALETTE_VALUE_9,a
         ret
 
 ; 16-bit Galois LFSR using polynomial 0xB400

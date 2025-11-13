@@ -19,19 +19,7 @@ typedef struct s_globals
 	u16 pulseTarget;
 	coord pulseCoord;
 	u8 particleIndex;
-	struct
-	{
-		u16 activeColours[2];
-		u16 inactiveColours[2];8
-		u16 pulseColours[2];
-		u16 pulseTarget[2];
-		u8 segmentsLit;
-	} hud;
-	
-	player_object player;
-	object objects[MAX_OBJECTS];
 	play_area playArea;
-	particle particles[MAX_PARTICLES];
 } globals;
 
 extern globals global;

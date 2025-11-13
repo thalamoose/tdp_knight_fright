@@ -52,6 +52,6 @@ void Render(void)
 	RenderSprites();
     RenderHud();
 	port_out(ULA_PORT, ULA_COLOUR_BLACK);
-	RenderParticles(&global.particles[0]);
+	RenderParticles(&particles[0]);
 	port_out(ULA_PORT, ULA_COLOUR_WHITE);
 }

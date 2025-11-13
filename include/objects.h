@@ -35,6 +35,9 @@ typedef struct s_object
 	
 } object;
 
+extern object objects[];
+
+void InitializeObjects(void);
 void RenderObjects(void);
 void UpdateObjects(void);
 void AnimateObject(object* pObj);

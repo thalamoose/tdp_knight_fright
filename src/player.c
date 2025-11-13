@@ -10,61 +10,65 @@
 #include "globals.h"
 #include "particles.h"
 #include "assets.h"
+#include "hud.h"
 
 #define PLAYER_TO_TILE_X_OFFSET (-1)
 #define PLAYER_TO_TILE_Y_OFFSET (-22)
+
+player_object player;
+
 //---------------------------------------------------------
 void SnapToGrid(void)
 {
-    s16 x = global.player.playgrid.x-global.playArea.position.x;
-    s16 y = global.player.playgrid.y-global.playArea.position.y;
+    s16 x = player.playgrid.x-global.playArea.position.x;
+    s16 y = player.playgrid.y-global.playArea.position.y;
 
     s16 sx = (x+y)*16+LAYER_2_WIDTH/2;
     s16 sy = (y-x)*24+LAYER_2_HEIGHT/2;
     sx += global.tileMap.x+PLAYER_TO_TILE_X_OFFSET;
     sy += global.tileMap.y+PLAYER_TO_TILE_Y_OFFSET;
 
-    global.player.object.position.x = sx<<FIXED_POINT_BITS;
-    global.player.object.position.y = sy<<FIXED_POINT_BITS;
+    player.object.position.x = sx<<FIXED_POINT_BITS;
+    player.object.position.y = sy<<FIXED_POINT_BITS;
 
 }
 
 //---------------------------------------------------------
 void SetPlayerAnimIdle(u8 baseIndex, s16 vx, s16 vy)
 {
-    global.player.object.velocity.x = vx;
-    global.player.object.velocity.y = vy;
-    global.player.object.baseIndex = baseIndex;
-    global.player.object.totalFrames = 8;
-    global.player.object.frameIndex = 0;
-    global.player.object.animDelay = 4;
-    global.player.object.animSpeed = 4;
+    player.object.velocity.x = vx;
+    player.object.velocity.y = vy;
+    player.object.baseIndex = baseIndex;
+    player.object.totalFrames = 8;
+    player.object.frameIndex = 0;
+    player.object.animDelay = 4;
+    player.object.animSpeed = 4;
 }
 
 //---------------------------------------------------------
 void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy)
 {
-    global.player.moveSteps = 16;
-    global.player.direction = direction;
+    player.moveSteps = 16;
+    player.direction = direction;
     SetPlayerAnimIdle(baseIndex, vx, vy);
 }
 
 //---------------------------------------------------------
 void InitializePlayer(void)
 {
-    global.player.object.position.x = 0;
-    global.player.object.position.y = 0;
-    global.player.object.flags.direction = 0;
-    global.player.object.frameIndex = 0;
-    global.player.object.baseIndex = 32;
-    global.player.object.lastIndex = 0xff;
-    global.player.object.animDelay = 4;
-    global.player.object.animSpeed = 4;
-    global.player.object.totalFrames = 8;
-    global.player.object.gravity = FIXED_POINT_HALF;
-	global.player.playgrid.x = 0;
-	global.player.playgrid.y = 0;
-    global.player.moveSteps = 0;
+    player.object.position.x = 0;
+    player.object.position.y = 0;
+    player.object.flags.direction = 0;
+    player.object.frameIndex = 0;
+    player.object.baseIndex = 32;
+    player.object.lastIndex = 0xff;
+    player.object.animDelay = 4;
+    player.object.animSpeed = 4;
+    player.object.totalFrames = 8;
+    player.object.gravity = FIXED_POINT_HALF;
+	player.playgrid.x = 0;
+	player.playgrid.y = 0;
+    player.moveSteps = 0;
 //
 // Set up sprites 64..67, so that only the minimum needs to be set up below. 
 //
@@ -85,15 +89,6 @@ void InitializePlayer(void)
 //---------------------------------------------------------
 
 //---------------------------------------------------------
-void SetColour(const u16 colour)
-{
-    nextreg(PALETTE_CONTROL, PALETTE_TILE_PRIMARY<<4);
-    nextreg(PALETTE_INDEX, 4+16);
-    nextreg(PALETTE_VALUE_9, colour>>1);
-    nextreg(PALETTE_VALUE_9, colour&1);
-}
-
-//---------------------------------------------------------
 void BeginPulsePalette(void)
 {
     nextreg(MMU_SLOT_6, PALETTE_PAGE);
@@ -104,9 +99,9 @@ void BeginPulsePalette(void)
     }
     global.pulseColour = 0x1ff;
     global.pulseTarget = asset_TilemapPalette[4];
-    global.pulseCoord = global.player.playgrid;
-    RefreshPlayAreaBlock(global.player.playgrid.x, global.player.playgrid.y, 1);
-    SetColour(global.pulseColour);
+    global.pulseCoord = player.playgrid;
+    RefreshPlayAreaBlock(player.playgrid.x, player.playgrid.y, 1);
+    SetColour(PALETTE_TILE_PRIMARY, 16+4, global.pulseColour);
 }
 
 //---------------------------------------------------------
@@ -115,15 +110,8 @@ void PulsePalette(void)
     if (global.pulseColour==global.pulseTarget)
         return;
 
-    nextreg(MMU_SLOT_6, PALETTE_PAGE);
-    if ((global.pulseColour & RED_MASK) < (global.pulseTarget & RED_MASK)) global.pulseColour += (1<<RED_SHIFT);
-    if ((global.pulseColour & RED_MASK) > (global.pulseTarget & RED_MASK)) global.pulseColour -= (1<<RED_SHIFT);
-    if ((global.pulseColour & GRN_MASK) < (global.pulseTarget & GRN_MASK)) global.pulseColour += (1<<GRN_SHIFT);
-    if ((global.pulseColour & GRN_MASK) > (global.pulseTarget & GRN_MASK)) global.pulseColour -= (1<<GRN_SHIFT);
-    if ((global.pulseColour & BLU_MASK) < (global.pulseTarget & BLU_MASK)) global.pulseColour += (1<<BLU_SHIFT);
-    if ((global.pulseColour & BLU_MASK) > (global.pulseTarget & BLU_MASK)) global.pulseColour -= (1<<BLU_SHIFT);
-
-    SetColour(global.pulseColour);
+    global.pulseColour = BlendColour(global.pulseColour, global.pulseTarget);
+    SetColour(PALETTE_TILE_PRIMARY, 16+4, global.pulseColour);
     if (global.pulseColour==global.pulseTarget)
     {
         RefreshPlayAreaBlock(global.pulseCoord.x, global.pulseCoord.y, 0);
@@ -133,13 +121,13 @@ void PulsePalette(void)
 //---------------------------------------------------------
 void HandlePickup(void)
 {
-    SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
+    SetPlayerAnimIdle(player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
     u8 vxlz=0, vxgz=0, vylz=0, vygz=0;
     for (int i=0; i<32; i++)
     {
-        s16 px = global.player.object.position.x+(16<<FIXED_POINT_BITS)+((s16)random8()<<3);
-        s16 py = global.player.object.position.y+(8<<FIXED_POINT_BITS)+((s16)random8()<<3);
-        x_printf("px:%d, py:%d\n", px>>FIXED_POINT_BITS, py>>FIXED_POINT_BITS);
+        s16 px = player.object.position.x+(16<<FIXED_POINT_BITS)+((s16)random8()<<3);
+        s16 py = player.object.position.y+(8<<FIXED_POINT_BITS)+((s16)random8()<<3);
+        //x_printf("px:%d, py:%d\n", px>>FIXED_POINT_BITS, py>>FIXED_POINT_BITS);
         s16 vx = random8();
         s16 vy = random8();
         s8 width = random8()&3+1;
@@ -153,9 +141,9 @@ void HandlePickup(void)
 void HandleDeath(bool fallThrough)
 {
     (void)fallThrough;
-    SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,-FIXED_POINT_ONE*2);
-    global.player.moveSteps = 64;
-    global.player.object.gravity = FIXED_POINT_HALF/2;
+    SetPlayerAnimIdle(player.direction*8+PLAYERSPR_IDLE_ANIM,0,-FIXED_POINT_ONE*2);
+    player.moveSteps = 64;
+    player.object.gravity = FIXED_POINT_HALF/2;
 }
 
 //---------------------------------------------------------
@@ -168,25 +156,25 @@ void HandleControllerInput(void)
     }
     if (buttons & (1<<JOYPAD_L_LEFT))
     {
-        global.player.playgrid.x--;
+        player.playgrid.x--;
         SetPlayerAnim(PLAYERSPR_L+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
         return;
     }
     if (buttons & (1<<JOYPAD_L_RIGHT))
     {
-        global.player.playgrid.x++;
+        player.playgrid.x++;
         SetPlayerAnim(PLAYERSPR_R+PLAYERSPR_RUN_ANIM,PLAYERDIR_BR,FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
         return;
     }
     if (buttons & (1<<JOYPAD_L_UP))
     {
-        global.player.playgrid.y--;
+        player.playgrid.y--;
         SetPlayerAnim(PLAYERSPR_U+PLAYERSPR_RUN_ANIM,PLAYERDIR_TL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
         return;
     }
     if (buttons & (1<<JOYPAD_L_DOWN))
     {
-        global.player.playgrid.y++;
+        player.playgrid.y++;
         SetPlayerAnim(PLAYERSPR_D+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
         return;
     }
@@ -196,15 +184,15 @@ void HandleControllerInput(void)
 void MovePlayer(void)
 {
     PulsePalette();
-    if (global.player.moveSteps)
+    if (player.moveSteps)
     {
-        global.player.object.position.x += global.player.object.velocity.x;
-        global.player.object.position.y += global.player.object.velocity.y;
-        global.player.object.velocity.y += global.player.object.gravity;
-        global.player.moveSteps--;
-        if (global.player.moveSteps!=0)
+        player.object.position.x += player.object.velocity.x;
+        player.object.position.y += player.object.velocity.y;
+        player.object.velocity.y += player.object.gravity;
+        player.moveSteps--;
+        if (player.moveSteps!=0)
         {
-            if (global.player.object.position.y>(240<<FIXED_POINT_BITS))
+            if (player.object.position.y>(240<<FIXED_POINT_BITS))
             {
                 // We must have been in a die. Respawn now.
                 InitializePlayer();
@@ -212,8 +200,8 @@ void MovePlayer(void)
             return;
         }
         SnapToGrid();
-        play_cell* pCell = GetPlayAreaCell(global.player.playgrid.x, global.player.playgrid.y);
-        //x_printf("Coord:(%d,%d), content:%c\n", global.player.playgrid.x, global.player.playgrid.y, content);
+        play_cell* pCell = GetPlayAreaCell(player.playgrid.x, player.playgrid.y);
+        //x_printf("Coord:(%d,%d), content:%c\n", player.playgrid.x, player.playgrid.y, content);
         if (pCell->type==2)
         {
             HandlePickup();
@@ -224,12 +212,17 @@ void MovePlayer(void)
         }
         else
         {
-            SetPlayerAnimIdle(global.player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
+            SetPlayerAnimIdle(player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
         }
         if (pCell->type && !pCell->dark)
         {
             pCell->dark = 1;
             BeginPulsePalette();
+            bool tileFull = IncrementHudTileCount();
+            if (tileFull)
+            {
+                x_printf("Tile full bonus.\n");
+            }
         }
         return;
     }
@@ -240,14 +233,14 @@ void MovePlayer(void)
 //---------------------------------------------------------
 void AnimatePlayer(void)
 {
-    global.player.object.animDelay--;
-    if (global.player.object.animDelay<0)
+    player.object.animDelay--;
+    if (player.object.animDelay<0)
     {
-        global.player.object.animDelay = global.player.object.animSpeed;
-        global.player.object.frameIndex++;
-        if (global.player.object.frameIndex!=global.player.object.totalFrames)
+        player.object.animDelay = player.object.animSpeed;
+        player.object.frameIndex++;
+        if (player.object.frameIndex!=player.object.totalFrames)
             return;
-        global.player.object.frameIndex = 0;
+        player.object.frameIndex = 0;
     }
 }
 
@@ -261,18 +254,18 @@ void UpdatePlayer(void)
 //---------------------------------------------------------
 void RenderPlayer(void)
 {
-    u8 animIndex = global.player.object.baseIndex+global.player.object.frameIndex;
-    if (animIndex!=global.player.object.lastIndex)
+    u8 animIndex = player.object.baseIndex+player.object.frameIndex;
+    if (animIndex!=player.object.lastIndex)
     {
-        global.player.object.lastIndex = animIndex;
+        player.object.lastIndex = animIndex;
         u8 page = (animIndex>>3)+PLAYER_ANIM_PAGE;
         nextreg(MMU_SLOT_6,page);
         u8* pPattern = (u8*)SWAP_BANK_0+((animIndex&7)<<10);
         CopySprite(pPattern, PLAYER_SPRITE_PATTERN, 4);
     }
     nextreg(SPRITE_INDEX, PLAYER_SPRITE_SLOT);
-    s16 x = global.player.object.position.x>>FIXED_POINT_BITS;
-    s16 y = global.player.object.position.y>>FIXED_POINT_BITS;
+    s16 x = player.object.position.x>>FIXED_POINT_BITS;
+    s16 y = player.object.position.y>>FIXED_POINT_BITS;
     nextreg(SPRITE_ATTR_0, x&0xff);
     nextreg(SPRITE_ATTR_1, y);
     nextreg(SPRITE_ATTR_2, (x>>8)&1);

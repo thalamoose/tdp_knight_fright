@@ -7,34 +7,32 @@
 
 void InitializeNpcs(void)
 {
-        memset(global.objects,0,sizeof(global.objects));
+        objects[0].position.x = 128;
+        objects[0].position.y = 96;
+        objects[0].baseIndex = 8;
+        objects[0].totalFrames = 1;
+        objects[0].flags.active = true;
+        objects[0].animSpeed = 5;
 
-        global.objects[0].position.x = 128;
-        global.objects[0].position.y = 96;
-        global.objects[0].baseIndex = 8;
-        global.objects[0].totalFrames = 1;
-        global.objects[0].flags.active = true;
-        global.objects[0].animSpeed = 5;
+        objects[1].position.x = 160;
+        objects[1].position.y = 120;
+        objects[1].baseIndex = 16;
+        objects[1].totalFrames = 8;
+        objects[1].flags.active = true;
+        objects[1].animSpeed = 5;
 
-        global.objects[1].position.x = 160;
-        global.objects[1].position.y = 120;
-        global.objects[1].baseIndex = 16;
-        global.objects[1].totalFrames = 8;
-        global.objects[1].flags.active = true;
-        global.objects[1].animSpeed = 5;
-
-        global.objects[2].position.x = 120;
-        global.objects[2].position.y = 160;
-        global.objects[1].baseIndex = 24;
-        global.objects[2].totalFrames = 8;
-        global.objects[2].flags.active = true;
-        global.objects[2].flags.pingpong = true;
-        global.objects[2].animSpeed = 10;
+        objects[2].position.x = 120;
+        objects[2].position.y = 160;
+        objects[1].baseIndex = 24;
+        objects[2].totalFrames = 8;
+        objects[2].flags.active = true;
+        objects[2].flags.pingpong = true;
+        objects[2].animSpeed = 10;
 }
 
 void UpdateNpcs(void)
 {
-    object* npc = global.objects;
+    object* npc = objects;
 
     for( u8 i=0; i<MAX_OBJECTS; i++)
     {
