@@ -1,10 +1,10 @@
 #include "hardware.h"
-#include "sprites.h"
-#include "utilities.h"
 #include "defines.h"
+#include "memorymap.h"
+#include "utilities.h"
+#include "sprites.h"
 #include "objects.h"
 #include "globals.h"
-#include "memorymap.h"
 
 void UploadSprites(void)
 {
@@ -41,7 +41,7 @@ void UpdateSprites(void)
 //
 void RenderSprites(void)
 {
-	object* obj = global.objects;
+	object* obj =objects;
 	u8 activeSpriteCount = 0;
 	for (u8 i=0; i<MAX_OBJECTS; i++)
 	{

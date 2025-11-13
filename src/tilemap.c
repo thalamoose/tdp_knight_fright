@@ -7,6 +7,7 @@
 #include "assets.h"
 #include "globals.h"
 #include "playarea.h"
+#include "hud.h"
 
 //---------------------------------------------------------
 void InitializeTilemap(void)
@@ -48,8 +49,8 @@ void InitializeTilemap(void)
 	ClearTilemap();
 
 	// Tilemap templates are in the same bank as the palette
-	global.playArea.position.x = 0;
-	global.playArea.position.y = 0;
+	playArea.position.x = 0;
+	playArea.position.y = 0;
 	global.tileMap.x = -24;
 	global.tileMap.y = 32;
 }
@@ -81,9 +82,12 @@ tilemap_cell* GetTilemapCell(s8 x, s8 y)
 //---------------------------------------------------------
 void UpdateTilemap(void)
 {
-	nextreg(TILEMAP_OFFSET_X_H,(-global.tileMap.x>>8) & 0x1);
-	nextreg(TILEMAP_OFFSET_X_L,-global.tileMap.x);
-	nextreg(TILEMAP_OFFSET_Y,-global.tileMap.y);
+	s16 x = -(global.tileMap.x+hud.shake.x);
+	s16 y = -(global.tileMap.y+hud.shake.y);
+	
+	nextreg(TILEMAP_OFFSET_X_H,(x>>8) & 0x1);
+	nextreg(TILEMAP_OFFSET_X_L, x);
+	nextreg(TILEMAP_OFFSET_Y, y);
 }
 
 //---------------------------------------------------------

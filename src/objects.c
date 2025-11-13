@@ -1,6 +1,13 @@
 #include "objects.h"
 #include "defines.h"
+#include "utilities.h"
 
+object objects[MAX_OBJECTS];
+
+void InitializeObjects(void)
+{
+	memset(&objects, 0, sizeof(objects));
+}
 
 void AnimateObject(object* pObj)
 {

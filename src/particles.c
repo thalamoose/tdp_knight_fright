@@ -5,18 +5,19 @@
 #include "globals.h"
 
 
+particle particles[MAX_PARTICLES];
 // Update and render functions in particles.asm
 
 void InitializeParticles(void)
 {
-	memset( global.particles, 0, sizeof(global.particles));
+	memset(particles, 0, sizeof(particles));
 	global.particleIndex = 0;
 }
 
 u8 AddParticle(s16 x, s16 y, s16 vx, s16 vy, s8 life, s8 colour, s8 width, s8 flags)
 {
 	u8 index = global.particleIndex;
-	particle* pParticle = &global.particles[index];
+	particle* pParticle = &particles[index];
 	do
 	{
 		if (!(pParticle->flags & PARTICLE_ACTIVE))
@@ -26,7 +27,7 @@ u8 AddParticle(s16 x, s16 y, s16 vx, s16 vy, s8 life, s8 colour, s8 width, s8 fl
 		index = (index+1) & (MAX_PARTICLES-1);
 		if (index==0)
 		{
-			pParticle = &global.particles[0];
+			pParticle = &particles[0];
 		}
 	} while (index!=global.particleIndex);
 	if (pParticle->prevPage) 

@@ -60,13 +60,16 @@ void InitializeGame(void)
     InitializeHud();
     InitializePlayArea(&asset_PlayArea_01);
     InitializeParticles();
+    InitializeObjects();
     InitializePlayer();
     InitializeNpcs();
     InitializeCopper();
+    x_printf("Game is running\n");
 }
 
 //---------------------------------------------------------
 //---------------------------------------------------------
+u8 c=0;
 int main(void)
 {
     InitializeSystem();
@@ -74,7 +77,11 @@ int main(void)
     while(true)
     {
         InitializeGame();
-        while (CheckReset()==false)
+        // Game mode is derived from these two flags.
+        // Begin game   - intro transitions     - gameIsRunning = true,  transitionIsRunning = true
+        // Play game    - main body of game     - gameIsRunning = true,  transitionIsRunning = false
+        // Game complete- exit game transition  - gameIsRunning = false, transitionIsRunninf = true
+        while (hud.gameIsRunning||hud.transitionIsRunning)
         {
             UpdateObjects();
             UpdateAudio();
@@ -83,12 +90,12 @@ int main(void)
             port_out(ULA_PORT, ULA_COLOUR_CYAN);
             Render();
             port_out(ULA_PORT, ULA_COLOUR_YELLOW);
+            c++;
+            if (c>50)
+            {
+                x_printf("\n");
+                c=0;
+            }
         }
     }
-}
-
-//---------------------------------------------------------
-bool CheckReset(void)
-{
-    return false;
 }
