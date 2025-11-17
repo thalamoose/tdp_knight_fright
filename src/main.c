@@ -93,7 +93,7 @@ int main(void)
             c++;
             if (c>50)
             {
-                x_printf("\n");
+                //x_printf("\n");
                 c=0;
             }
         }
