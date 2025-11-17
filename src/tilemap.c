@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "playarea.h"
 #include "hud.h"
+#include "input.h"
 
 //---------------------------------------------------------
 void InitializeTilemap(void)
@@ -21,10 +22,6 @@ void InitializeTilemap(void)
 	nextreg(TILEMAP_CHAR_ADDRESS,0);     // Start character data right after tilemap
 	nextreg(TILEMAP_BASE_ADDRESS,0x2000>>8);
 	
-	nextreg(TILEMAP_CLIP_WINDOW,8>>1);
-	nextreg(TILEMAP_CLIP_WINDOW,(320-8)>>1);
-	nextreg(TILEMAP_CLIP_WINDOW,8);
-	nextreg(TILEMAP_CLIP_WINDOW,(u8)(256-8));
 	//
 	// Copy tilemap character data to tilemap area
 	//
@@ -53,6 +50,7 @@ void InitializeTilemap(void)
 	playArea.position.y = 0;
 	global.tileMap.x = -24;
 	global.tileMap.y = 32;
+	UpdateTilemap();
 }
 
 //---------------------------------------------------------
@@ -79,15 +77,74 @@ tilemap_cell* GetTilemapCell(s8 x, s8 y)
 
 }
 
+s16 lastL;
+s16 lastT;
+s16 lastR;
+s16 lastB;
+u8 c2;
 //---------------------------------------------------------
 void UpdateTilemap(void)
 {
-	s16 x = -(global.tileMap.x+hud.shake.x);
-	s16 y = -(global.tileMap.y+hud.shake.y);
-	
+	s16 x = global.tileMap.x+hud.shake.x;
+	s16 y = global.tileMap.y+hud.shake.y;
+	s16 lClip = x;
+	s16 rClip = lClip+319;
+	s16 tClip = y;
+	s16 bClip = tClip+255;
+	if (lClip<0) lClip = 0;
+	if (rClip>319) rClip = 319;
+	if (tClip<0) tClip = 0;
+	if (bClip>255) bClip=255;
+#if false
+	if (lClip!=lastL || tClip!=lastT || rClip!=lastR || bClip!=lastB)
+	{
+		lastL = lClip;
+		lastT = tClip;
+		lastR = rClip;
+		lastB = bClip;
+		x_printf("x:%d,y:%d,l:%d,r:%d,t:%d,b:%d\n", x, y, lClip, rClip, tClip, bClip);
+	}
+#endif
+	x = -x;
+	y = -y;
+	if (x<0) x=320+x;
+	if (y<0) y=256+y;
 	nextreg(TILEMAP_OFFSET_X_H,(x>>8) & 0x1);
 	nextreg(TILEMAP_OFFSET_X_L, x);
 	nextreg(TILEMAP_OFFSET_Y, y);
+	nextreg(TILEMAP_CLIP_WINDOW, lClip>>1);
+	nextreg(TILEMAP_CLIP_WINDOW, rClip>>1);
+	nextreg(TILEMAP_CLIP_WINDOW, tClip);
+	nextreg(TILEMAP_CLIP_WINDOW, bClip);
+#if 0
+	c2++;
+	if (c2>1)
+	{
+		u8 buttons = ReadController();
+		if (buttons & (1<<JOYPAD_R_LEFT))
+		{
+			global.tileMap.x--;
+			if (global.tileMap.x<=-320) global.tileMap.x = 320;
+		}
+		if (buttons & (1<<JOYPAD_R_RIGHT))
+		{
+			global.tileMap.x++;
+			if (global.tileMap.x>=320) global.tileMap.x = -320;
+		}
+		if (buttons & (1<<JOYPAD_R_UP))
+		{
+			global.tileMap.y--;
+			if (global.tileMap.y<=-256) global.tileMap.y = 256;
+		}
+		if (buttons & (1<<JOYPAD_R_DOWN))
+		{
+			global.tileMap.y++;
+			if (global.tileMap.y>=256) global.tileMap.y = -256;
+		}
+
+		c2=0;
+	}
+#endif
 }
 
 //---------------------------------------------------------

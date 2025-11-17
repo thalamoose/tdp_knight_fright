@@ -176,6 +176,10 @@ void HandleControllerInput(void)
         SetPlayerAnim(PLAYERSPR_D+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
         return;
     }
+    if (buttons & (1<<JOYPAD_R_DOWN))
+    {
+        playArea.tilesToFlip = 1;
+    }
 }
 
 //---------------------------------------------------------
@@ -272,6 +276,12 @@ void RenderPlayer(void)
     nextreg(SPRITE_INDEX, PLAYER_SPRITE_SLOT);
     s16 x = (player.object.position.x>>FIXED_POINT_BITS)+hud.shake.x;
     s16 y = (player.object.position.y>>FIXED_POINT_BITS)+hud.shake.y;
+    if ((x<0) || (x>=320) || (y<0) || (y>=256))
+    {
+        // Hide the sprite if clipped
+        nextreg(SPRITE_ATTR_3, 0);
+        return;
+    }
     nextreg(SPRITE_ATTR_0, x&0xff);
     nextreg(SPRITE_ATTR_1, y);
     nextreg(SPRITE_ATTR_2, (x>>8)&1);
