@@ -104,20 +104,11 @@ void UpdateTilemap(void)
 	if (rClip>319) rClip = 319;
 	if (tClip<0) tClip = 0;
 	if (bClip>255) bClip=255;
-#if false
-	if (lClip!=lastL || tClip!=lastT || rClip!=lastR || bClip!=lastB)
-	{
-		lastL = lClip;
-		lastT = tClip;
-		lastR = rClip;
-		lastB = bClip;
-		x_printf("x:%d,y:%d,l:%d,r:%d,t:%d,b:%d\n", x, y, lClip, rClip, tClip, bClip);
-	}
-#endif
 	x = -x;
 	y = -y;
 	if (x<0) x=320+x;
 	if (y<0) y=256+y;
+	x -= 2;
 	nextreg(TILEMAP_OFFSET_X_H,(x>>8) & 0x1);
 	nextreg(TILEMAP_OFFSET_X_L, x);
 	nextreg(TILEMAP_OFFSET_Y, y);
@@ -125,35 +116,6 @@ void UpdateTilemap(void)
 	nextreg(TILEMAP_CLIP_WINDOW, rClip>>1);
 	nextreg(TILEMAP_CLIP_WINDOW, tClip);
 	nextreg(TILEMAP_CLIP_WINDOW, bClip);
-#if 0
-	c2++;
-	if (c2>1)
-	{
-		u8 buttons = ReadController();
-		if (buttons & (1<<JOYPAD_R_LEFT))
-		{
-			global.tileMap.x--;
-			if (global.tileMap.x<=-320) global.tileMap.x = 320;
-		}
-		if (buttons & (1<<JOYPAD_R_RIGHT))
-		{
-			global.tileMap.x++;
-			if (global.tileMap.x>=320) global.tileMap.x = -320;
-		}
-		if (buttons & (1<<JOYPAD_R_UP))
-		{
-			global.tileMap.y--;
-			if (global.tileMap.y<=-256) global.tileMap.y = 256;
-		}
-		if (buttons & (1<<JOYPAD_R_DOWN))
-		{
-			global.tileMap.y++;
-			if (global.tileMap.y>=256) global.tileMap.y = -256;
-		}
-
-		c2=0;
-	}
-#endif
 }
 
 //---------------------------------------------------------

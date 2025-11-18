@@ -31,7 +31,15 @@ _asset_MapShape_01:
 	include "build/assets/shape_01.map"
 _asset_MapShape_02:
 	include "build/assets/shape_02.map"
-_asset_PlayArea_01:
+
+___=0		; Blank
+BLK=1		; Normal block
+SPK=3		; Spikes
+TRE=4		; Cacti or tree, not sure
+TMB=5		; Tomb
+GRV=6		; Gravestone
+
+	_asset_PlayArea_01:
 	db 8,6
 	db 0,0,0,1,1,1,2,0
 	db 0,0,0,1,1,1,1,1
@@ -39,18 +47,6 @@ _asset_PlayArea_01:
 	db 0,0,2,1,1,1,0,1
 	db 0,0,1,1,1,1,1,2
 	db 0,0,0,1,0,0,0,0
-
-	;; 0,1,2,3,4,5,6,7,8,9
-	db 0,0,1,1,0	; 0
-	db 0,1,1,1,0	; 1
-	db 0,1,1,1,1	; 2
-	db 1,1,1,0,1	; 3
-	db 0,1,1,1,1	; 4
-	db 0,2,1,1,0	; 5
-	db 0,0,1,1,0	; 6
-	db 0,1,1,0,0	; 7
-	db 0,0,1,1,0	; 8
-	db 0,0,1,0,0	; 9
 
 _asset_PlayArea_02:
 	db 7,7
@@ -61,13 +57,6 @@ _asset_PlayArea_02:
 	db 0, 0, 0, 1, 2, 2 ,1
 	db 0, 0, 0, 1, 2, 1, 1
 	db 0, 0, 0, 1, 1, 1 ,1
-
-#define ___ 0		; Blank
-#define BLK 1		; Normal block
-#define SPK 3		; Spikes
-#define TRE 4		; Cacti or tree, not sure
-#define TMB 5		; Tomb
-#define GRV 6		; Gravestone
 
 _asset_PlayArea_03:
 	db 10,10
