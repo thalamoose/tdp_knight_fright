@@ -50,7 +50,12 @@ void InitializeTilemap(void)
 	playArea.position.y = 0;
 	global.tileMap.x = -24;
 	global.tileMap.y = 32;
-	UpdateTilemap();
+	// Just clip the entire tilemap. It'll get reset after the first update.
+	nextreg(TILEMAP_CLIP_WINDOW, 255);
+	nextreg(TILEMAP_CLIP_WINDOW, 255);
+	nextreg(TILEMAP_CLIP_WINDOW, 255);
+	nextreg(TILEMAP_CLIP_WINDOW, 255);
+
 }
 
 //---------------------------------------------------------
