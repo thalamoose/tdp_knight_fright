@@ -8,10 +8,13 @@
 
 hud_t hud;
 
+void CopyBackgroundBitmap(u8 srcPage);
+
+
+//---------------------------------------------------------
 void InitializeHud(void)
 {
 	nextreg(MMU_SLOT_6, PALETTE_PAGE);
-
 	memset(&hud,0,sizeof(hud));
 	memset(&hud.coinsDigitsShown,0xff, sizeof(hud.coinsDigitsShown));
 	memset(&hud.tilesDigitsShown,0xff, sizeof(hud.tilesDigitsShown));
@@ -19,11 +22,36 @@ void InitializeHud(void)
 	hud.activeColour[1] = asset_BackdropPalette[0xe1];
 	hud.inactiveColour[0] = asset_BackdropPalette[0xe2];
 	hud.inactiveColour[1] = asset_BackdropPalette[0xe3];
+	CopyBackgroundBitmap(BACKDROP_PAGE);
 	ResetHudTiles();
 	hud.gameIsRunning = true;
 	StartTransition(85, I_TO_F(-240), I_TO_F(-191), I_TO_F(51)/18, I_TO_F(-3), I_TO_F(1)/8);
 }
 
+void ResetHud(void)
+{
+	InitializeHud();
+}
+//---------------------------------------------------------
+void CopyBackgroundBitmap(u8 srcPage)
+{
+	u8 dstPage = LAYER_2_PAGE;
+	u8 totalPages = 10;
+	for (int i=0; i<totalPages; i++)
+	{
+		nextreg(MMU_SLOT_6,srcPage);
+		nextreg(MMU_SLOT_7,dstPage);
+		memcpy_dma(SWAP_BANK_1,SWAP_BANK_0,8192);
+		srcPage++;
+		dstPage++;
+	}
+	nextreg(MMU_SLOT_6, PALETTE_PAGE);
+	nextreg(MMU_SLOT_7, PALETTE_PAGE+1);
+	CopyPalette(asset_BackdropPalette,PALETTE_LAYER_2_PRIMARY);
+}
+
+
+//---------------------------------------------------------
 void BeginShake(u8 duration, u8 amplitude)
 {
 	hud.shakeAmplitude = amplitude;
@@ -39,6 +67,7 @@ coord testSpline[4] =
 	{I_TO_F(200),I_TO_F(100)}
 };
 
+//---------------------------------------------------------
 void UpdateTransition(void)
 {
 	if (hud.transitionIsRunning==false)
@@ -71,6 +100,7 @@ void UpdateTransition(void)
 	}
 }
 
+//---------------------------------------------------------
 void UpdateShake(void)
 {
 
@@ -93,6 +123,7 @@ void UpdateShake(void)
 	hud.shake.y = random8()%(hud.shakeAmplitude*2)-hud.shakeAmplitude;
 }
 
+//---------------------------------------------------------
 void StartTransition(u8 duration, s16 x, s16 y, s16 vx, s16 vy, s16 gravity)
 {
 	hud.transitionIsRunning = true;
@@ -108,6 +139,7 @@ void StartTransition(u8 duration, s16 x, s16 y, s16 vx, s16 vy, s16 gravity)
 	hud.shake.y = F_TO_I(y);
 }
 
+//---------------------------------------------------------
 void RenderHud(void)
 {
 	UpdateTransition();
@@ -124,6 +156,7 @@ void RenderHud(void)
 	}
 }
 
+//---------------------------------------------------------
 void DrawHudDigit(u8* bitmap, u8 value)
 {
 	u8* digitData = &asset_GameDigits[value*9];
@@ -141,6 +174,8 @@ void DrawHudDigit(u8* bitmap, u8 value)
 		bitmap++;
 	}
 }
+
+//---------------------------------------------------------
 void UpdateHudCount(s16 x, s16 y, u8 bcdDigits[], u8 bcdShown[])
 {
 	u8 i=0;
@@ -172,6 +207,7 @@ void UpdateHudCount(s16 x, s16 y, u8 bcdDigits[], u8 bcdShown[])
 
 #define MAX_HUD_SEGMENTS 9
 
+//---------------------------------------------------------
 bool IncrementHudTileCount(void)
 {
 	u8 segment = hud.segmentsLit;
@@ -194,6 +230,7 @@ bool IncrementHudTileCount(void)
 	return false;
 }
 
+//---------------------------------------------------------
 void ResetHudTiles(void)
 {
 	u8 colour=0xe0;

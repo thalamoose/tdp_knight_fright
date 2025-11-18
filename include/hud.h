@@ -31,6 +31,7 @@ typedef struct s_hud
 } hud_t;
 
 void InitializeHud(void);
+void ResetHud(void);
 void StartTransition(u8 duration, s16 x, s16 y, s16 vx, s16 vy, s16 gravity);
 void RenderHud(void);
 void EnableHudProgressTile(u8 tile);

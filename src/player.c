@@ -3,7 +3,6 @@
 #include "hardware.h"
 #include "memorymap.h"
 #include "utilities.h"
-#include "objects.h"
 #include "player.h"
 #include "sprites.h"
 #include "input.h"
@@ -194,7 +193,7 @@ void MovePlayer(void)
         player.moveSteps--;
         if (player.moveSteps!=0)
         {
-            if (player.object.position.y>(240<<FIXED_POINT_BITS))
+            if (player.object.position.y>>FIXED_POINT_BITS>(256+32))
             {
                 // We must have been in a die. Respawn now.
                 InitializePlayer();
@@ -203,7 +202,7 @@ void MovePlayer(void)
         }
         SnapToGrid();
         play_cell* pCell = GetPlayAreaCell(player.playgrid.x, player.playgrid.y);
-        //x_printf("Coord:(%d,%d), content:%c\n", player.playgrid.x, player.playgrid.y, content);
+        x_printf("Coord:(%d,%d), content:%c\n", player.playgrid.x, player.playgrid.y, *(u8*)pCell);
         if (pCell->type==2)
         {
             HandlePickup();
@@ -226,6 +225,7 @@ void MovePlayer(void)
                 x_printf("Tile full bonus.\n");
             }
             playArea.tilesToFlip--;
+            x_printf("%d tiles remaining.", (s16)playArea.tilesToFlip);
             if (playArea.tilesToFlip==0)
             {
                 x_printf("No more tiles. Restart.\n");
@@ -274,9 +274,9 @@ void RenderPlayer(void)
         CopySprite(pPattern, PLAYER_SPRITE_PATTERN, 4);
     }
     nextreg(SPRITE_INDEX, PLAYER_SPRITE_SLOT);
-    s16 x = (player.object.position.x>>FIXED_POINT_BITS)+hud.shake.x;
+    s16 x = (player.object.position.x>>FIXED_POINT_BITS)+hud.shake.x+3;
     s16 y = (player.object.position.y>>FIXED_POINT_BITS)+hud.shake.y;
-    if ((x<0) || (x>=320) || (y<0) || (y>=256))
+    if ((x<-32) || (x>=320) || (y<-32) || (y>=256))
     {
         // Hide the sprite if clipped
         nextreg(SPRITE_ATTR_3, 0);
@@ -286,4 +286,5 @@ void RenderPlayer(void)
     nextreg(SPRITE_ATTR_1, y);
     nextreg(SPRITE_ATTR_2, (x>>8)&1);
     nextreg(SPRITE_ATTR_3, 0xc0);
+    nextreg(SPRITE_ATTR_4, (y>>8)&1);
 }

@@ -1,31 +1,19 @@
 #include "kftypes.h"
 #include "globals.h"
-#include "tilemap.h"
-#include "objects.h"
 #include "utilities.h"
 #include "hardware.h"
 #include "audio.h"
-#include "input.h"
-#include "sprites.h"
-#include "player.h"
-#include "npcs.h"
-#include "particles.h"
 #include "assets.h"
 #include "render.h"
 #include "memorymap.h"
 #include "copper.h"
 #include "hud.h"
+#include "game.h"
 
 globals global;
 
-extern void ConfigureMemory(void);
 extern void InitializeInterrupts(void);
 extern void ClearScreen(void);
-extern void PrintStr(const char* fmt,...);
-
-extern void InitializeParticles(void);
-
-extern void DebugAddParticle(void);
 
 extern u8 _BSS_head[];
 extern u8 _BSS_END_tail[];
@@ -50,23 +38,6 @@ void InitializeSystem(void)
     x_printf("Globals: 0x%x bytes.\n", sizeof(globals));
 }
 
-extern play_area_template asset_PlayArea_01;
-
-//---------------------------------------------------------
-void InitializeGame(void)
-{
-    InitializeSprites();
-    InitializeTilemap();
-    InitializeHud();
-    InitializePlayArea(&asset_PlayArea_01);
-    InitializeParticles();
-    InitializeObjects();
-    InitializePlayer();
-    InitializeNpcs();
-    InitializeCopper();
-    x_printf("Game is running\n");
-}
-
 //---------------------------------------------------------
 //---------------------------------------------------------
 u8 c=0;
@@ -74,9 +45,10 @@ int main(void)
 {
     InitializeSystem();
     LoadInitialAssets();
+    InitializeGame();
     while(true)
     {
-        InitializeGame();
+        ResetGame();
         // Game mode is derived from these two flags.
         // Begin game   - intro transitions     - gameIsRunning = true,  transitionIsRunning = true
         // Play game    - main body of game     - gameIsRunning = true,  transitionIsRunning = false
@@ -93,9 +65,10 @@ int main(void)
             c++;
             if (c>50)
             {
-                //x_printf("\n");
+                x_printf("\n");
                 c=0;
             }
         }
+        EndGame();
     }
 }

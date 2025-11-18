@@ -5,15 +5,23 @@
 #include "globals.h"
 
 
-particle particles[MAX_PARTICLES];
+extern particle particles[MAX_PARTICLES];
 // Update and render functions in particles.asm
 
+//---------------------------------------------------------
 void InitializeParticles(void)
 {
 	memset(particles, 0, sizeof(particles));
 	global.particleIndex = 0;
 }
 
+//---------------------------------------------------------
+void ResetParticles(void)
+{
+	InitializeParticles();
+}
+
+//---------------------------------------------------------
 u8 AddParticle(s16 x, s16 y, s16 vx, s16 vy, s8 life, s8 colour, s8 width, s8 flags)
 {
 	u8 index = global.particleIndex;

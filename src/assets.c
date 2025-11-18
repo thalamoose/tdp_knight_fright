@@ -4,29 +4,8 @@
 #include "memorymap.h"
 #include "hardware.h"
 
-void CopyBackgroundBitmap(void);
-
 void LoadInitialAssets(void)
 {
-	CopyBackgroundBitmap();
-}
-
-void CopyBackgroundBitmap(void)
-{
-	u8 srcPage = BACKDROP_PAGE;
-	u8 dstPage = LAYER_2_PAGE;
-	u8 totalPages = 10;
-	for (int i=0; i<totalPages; i++)
-	{
-		nextreg(MMU_SLOT_6,srcPage);
-		nextreg(MMU_SLOT_7,dstPage);
-		memcpy_dma(SWAP_BANK_1,SWAP_BANK_0,8192);
-		srcPage++;
-		dstPage++;
-	}
-	nextreg(MMU_SLOT_6, PALETTE_PAGE);
-	nextreg(MMU_SLOT_7, PALETTE_PAGE+1);
-	CopyPalette(asset_BackdropPalette,PALETTE_LAYER_2_PRIMARY);
 }
 
 void allAssets(void)
@@ -38,6 +17,7 @@ __asm
 	global _asset_TilemapPalette, _asset_TileData
 	global _asset_MapShape_01,_asset_MapShape_02
 	global _asset_PlayArea_01,_asset_PlayArea_02
+	global _asset_PlayArea_03
 
 	include "build/assets/kfplayer.bin.s"
 	include "build/assets/kfback.bin.s"
@@ -51,7 +31,15 @@ _asset_MapShape_01:
 	include "build/assets/shape_01.map"
 _asset_MapShape_02:
 	include "build/assets/shape_02.map"
-_asset_PlayArea_01:
+
+___=0		; Blank
+BLK=1		; Normal block
+SPK=3		; Spikes
+TRE=4		; Cacti or tree, not sure
+TMB=5		; Tomb
+GRV=6		; Gravestone
+
+	_asset_PlayArea_01:
 	db 8,6
 	db 0,0,0,1,1,1,2,0
 	db 0,0,0,1,1,1,1,1
@@ -59,18 +47,6 @@ _asset_PlayArea_01:
 	db 0,0,2,1,1,1,0,1
 	db 0,0,1,1,1,1,1,2
 	db 0,0,0,1,0,0,0,0
-
-	;; 0,1,2,3,4,5,6,7,8,9
-	db 0,0,1,1,0	; 0
-	db 0,1,1,1,0	; 1
-	db 0,1,1,1,1	; 2
-	db 1,1,1,0,1	; 3
-	db 0,1,1,1,1	; 4
-	db 0,2,1,1,0	; 5
-	db 0,0,1,1,0	; 6
-	db 0,1,1,0,0	; 7
-	db 0,0,1,1,0	; 8
-	db 0,0,1,0,0	; 9
 
 _asset_PlayArea_02:
 	db 7,7
@@ -81,6 +57,20 @@ _asset_PlayArea_02:
 	db 0, 0, 0, 1, 2, 2 ,1
 	db 0, 0, 0, 1, 2, 1, 1
 	db 0, 0, 0, 1, 1, 1 ,1
+
+_asset_PlayArea_03:
+	db 10,10
+	db BLK,BLK,BLK,BLK,BLK,BLK,___,___,___,___
+	db BLK,BLK,TRE,___,BLK,BLK,___,___,___,___
+	db BLK,BLK,BLK,BLK,BLK,___,BLK,BLK,___,___
+	db SPK,BLK,BLK,BLK,SPK,BLK,BLK,BLK,___,___
+	db BLK,BLK,BLK,___,BLK,BLK,TMB,SPK,BLK,BLK
+	db BLK,BLK,BLK,SPK,BLK,BLK,TMB,BLK,___,BLK
+	db ___,___,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK
+	db ___,___,BLK,BLK,GRV,BLK,BLK,TRE,BLK,BLK
+	db ___,___,___,___,BLK,BLK,BLK,GRV,BLK,BLK
+	db ___,___,___,BLK,BLK,BLK,BLK,BLK,BLK,___
+
 
 _asset_BackdropPalette:
 	incbin "build/assets/kfback.pal"

@@ -215,6 +215,7 @@ skip_sub:
 print_char:
         push hl
         push de
+        push bc
         cp '\n'
         jr z,@crlf
         sub ' '
@@ -291,6 +292,7 @@ print_char:
 @not_eos:
         ld (char_screen_y),a
 @same_line:
+        pop bc
         pop de
         pop hl
         ret
@@ -300,6 +302,7 @@ print_char:
         ld a,(char_screen_x)
         and a
         jr nz,@crlf
+        pop bc
         pop de
         pop hl
         ret
