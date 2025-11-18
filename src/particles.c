@@ -5,7 +5,7 @@
 #include "globals.h"
 
 
-particle particles[MAX_PARTICLES];
+extern particle particles[MAX_PARTICLES];
 // Update and render functions in particles.asm
 
 void InitializeParticles(void)

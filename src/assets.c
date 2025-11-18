@@ -4,29 +4,8 @@
 #include "memorymap.h"
 #include "hardware.h"
 
-void CopyBackgroundBitmap(void);
-
 void LoadInitialAssets(void)
 {
-	CopyBackgroundBitmap();
-}
-
-void CopyBackgroundBitmap(void)
-{
-	u8 srcPage = BACKDROP_PAGE;
-	u8 dstPage = LAYER_2_PAGE;
-	u8 totalPages = 10;
-	for (int i=0; i<totalPages; i++)
-	{
-		nextreg(MMU_SLOT_6,srcPage);
-		nextreg(MMU_SLOT_7,dstPage);
-		memcpy_dma(SWAP_BANK_1,SWAP_BANK_0,8192);
-		srcPage++;
-		dstPage++;
-	}
-	nextreg(MMU_SLOT_6, PALETTE_PAGE);
-	nextreg(MMU_SLOT_7, PALETTE_PAGE+1);
-	CopyPalette(asset_BackdropPalette,PALETTE_LAYER_2_PRIMARY);
 }
 
 void allAssets(void)

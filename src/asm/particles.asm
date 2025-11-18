@@ -32,11 +32,11 @@ DEFVARS 0
         PARTICLE_sizeof         ds.b 0
 }
 
-        global _particleObjects
 PARTICLE_ACTIVE equ 0
         global _RenderParticles
         global _UpdateParticles
         global _RemoveParticle
+        global _particles
         extern _random8
 
 _UpdateParticles:
@@ -183,29 +183,36 @@ render_particle:
         ld de,(ix+PARTICLE_Y)
         ld b,FIXED_POINT_BITS
         bsra de,b
-
-        ld a,e                                                  ; Checks for <0 as well as lower byte
-        or d
-        cp (PARTICLE_LAYER_HEIGHT-PARTICLE_SAFE_AREA-1)&$ff        ; 7
-        jp nc,@clipped_y                                           ; 12
+        ld a,e
+        cp (PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1)&$ff        ; 7
+        jp c,@clipped                                            ; 12
         ld hl,de
         ld de,(ix+PARTICLE_X)
         bsra de,b
-        ; here, HL = X coordinate (FLIPPED FROM PARTICLE Y, SO IS 0..255)
-        ;       DE = Y coordinate (FLIPPED FROM PARTICLE X, SO IS 0..319)
+        ; here, HL = X coordinate
+        ;       DE = Y coordinate
 
+        ;call _get_random
+        ;ld (ix+PARTICLE_colour),a        ; **DEBUG**
         ; Now calculate screen position
         ; Page in the correct bank. Each bank is 8KB, but we page it in to
         ; SWAP_BANK_0 and SWAP_BANK_1; this allows us to not have to worry
         ; about crossing a bank boundary when rendering.
-        ld bc,hl
-        ld hl,PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1
-        sbc hl,de
-        ld hl,bc
-        jr c,@clipped_x
+        ld a,d
+        sub (PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1)>>8
+        jr c,@not_clipped
+        ld a,e        
+        cp (PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1)&$ff
+        jr nc,@clipped
         ; Here, DE holds X coordinate, which has been clipped.
+@not_clipped:
         ; PIXELADDR = (x*256)+y (240x320 mode)
 
+        ; Either x or y negative, then they're clipped.
+        ld a,h
+        or d
+        rlc a
+        jr c,@clipped
         ;
         ; DE - x coordinate
         ; HL - y coordinate
@@ -254,9 +261,7 @@ render_particle:
         call xor_particle
         exx
         ret
-@clipped_y:
-        nop
-@clipped_x:
+@clipped:
         ld (ix+PARTICLE_flags),0
         exx
         ret
@@ -358,3 +363,7 @@ xor_particle:
 particle_mmu_page:
         dw 0
 
+        SECTION bss_align_256
+        ALIGN 256
+_particles:
+        ds PARTICLE_sizeof*MAX_PARTICLES
