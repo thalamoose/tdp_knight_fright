@@ -28,6 +28,10 @@ void InitializeHud(void)
 	StartTransition(85, I_TO_F(-240), I_TO_F(-191), I_TO_F(51)/18, I_TO_F(-3), I_TO_F(1)/8);
 }
 
+void ResetHud(void)
+{
+	InitializeHud();
+}
 //---------------------------------------------------------
 void CopyBackgroundBitmap(u8 srcPage)
 {

@@ -4,11 +4,19 @@
 
 object objects[MAX_OBJECTS];
 
+//---------------------------------------------------------
 void InitializeObjects(void)
 {
 	memset(&objects, 0, sizeof(objects));
 }
 
+//---------------------------------------------------------
+void ResetObjects(void)
+{
+	InitializeObjects();
+}
+
+//---------------------------------------------------------
 void AnimateObject(object* pObj)
 {
 	if (!pObj->flags.active)

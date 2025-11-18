@@ -3,7 +3,6 @@
 #include "hardware.h"
 #include "memorymap.h"
 #include "utilities.h"
-#include "objects.h"
 #include "player.h"
 #include "sprites.h"
 #include "input.h"

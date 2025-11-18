@@ -25,6 +25,7 @@ enum
 };
 
 void InitializeParticles(void);
+void ResetParticles(void);
 u8  UpdateParticles(particle* particles);
 void RenderParticles(particle* particles);
 u8 AddParticle(s16 x, s16 y, s16 vx, s16 vy, s8 life, s8 colour, s8 width, s8 flags);

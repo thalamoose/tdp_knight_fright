@@ -24,6 +24,7 @@ typedef struct s_tilemap_cell
 } tilemap_cell;
 
 void InitializeTilemap(void);
+void ResetTilemap(void);
 void UpdateTilemap(void);
 void ClearTilemap(void);
 void PasteTilemapBlock(tilemap_cell* pTile, s8 dark, s8 tl, s8 tr, s8 bl, s8 br, s8 palette);

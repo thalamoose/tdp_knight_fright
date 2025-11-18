@@ -55,7 +55,11 @@ void InitializeTilemap(void)
 	nextreg(TILEMAP_CLIP_WINDOW, 255);
 	nextreg(TILEMAP_CLIP_WINDOW, 255);
 	nextreg(TILEMAP_CLIP_WINDOW, 255);
+}
 
+void ResetTilemap(void)
+{
+	InitializeTilemap();
 }
 
 //---------------------------------------------------------

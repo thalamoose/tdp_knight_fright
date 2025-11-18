@@ -6,6 +6,7 @@
 #include "objects.h"
 #include "globals.h"
 
+//---------------------------------------------------------
 void UploadSprites(void)
 {
 	nextreg(MMU_SLOT_6, SPRITES_PAGE);
@@ -13,6 +14,7 @@ void UploadSprites(void)
 	CopySprite(SWAP_BANK_0, 0, 64);
 }
 
+//---------------------------------------------------------
 void InitializeSprites(void)
 {
 	for( u8 i=0; i<MAX_SPRITES; i++)
@@ -22,6 +24,14 @@ void InitializeSprites(void)
 	}
 	UploadSprites();
 }
+
+//---------------------------------------------------------
+void ResetSprites(void)
+{
+	InitializeSprites();
+}
+
+//---------------------------------------------------------
 void SetupSprite(u8 slot, u8 pattern, u8 attr0, u8 attr1, u8 attr2, u8 attr3, u8 attr4)
 {
 	nextreg(SPRITE_INDEX, slot);
@@ -32,10 +42,13 @@ void SetupSprite(u8 slot, u8 pattern, u8 attr0, u8 attr1, u8 attr2, u8 attr3, u8
     nextreg(SPRITE_ATTR_4,attr4);                       // H  N6 T  X  X  Y  Y  Y8
 }
 
+//---------------------------------------------------------
 void UpdateSprites(void)
 {
 
 }
+
+//---------------------------------------------------------
 //
 // This is old, kinda crappy code.
 //

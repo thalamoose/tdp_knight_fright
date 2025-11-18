@@ -26,6 +26,7 @@ typedef struct s_object
 extern object objects[];
 
 void InitializeObjects(void);
+void ResetObjects(void);
 void RenderObjects(void);
 void UpdateObjects(void);
 void AnimateObject(object* pObj);
