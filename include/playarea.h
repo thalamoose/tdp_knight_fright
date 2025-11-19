@@ -5,10 +5,10 @@
 
 typedef struct s_play_cell
 {
-	unsigned char type:4;
-	unsigned char unused:2;
-	unsigned char lethal:1;
-	unsigned char dark:1;
+	unsigned char type : 4;
+	unsigned char unused : 2;
+	unsigned char lethal : 1;
+	unsigned char dark : 1;
 } play_cell;
 
 typedef struct s_play_area
@@ -26,14 +26,13 @@ typedef struct s_play_area_template
 	u8 data[0];
 } play_area_template;
 
-void InitializePlayArea(const play_area_template* pTemplate);
+void InitializePlayArea(const play_area_template *pTemplate);
 
 u8 GetPlayAreaContent(s8 x, s8 y);
-play_cell* GetPlayAreaCell(s8 x, s8 y);
+play_cell *GetPlayAreaCell(s8 x, s8 y);
 void DrawPlayArea(s8 w, s8 h);
 void RefreshPlayAreaBlock(s8 x, s8 y, s8 palette);
 
 extern play_area playArea;
-
 
 #endif

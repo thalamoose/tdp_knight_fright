@@ -12,5 +12,3 @@ extern u16 asset_PlayerPalette[];
 extern u16 asset_SpritePalette[];
 extern u16 asset_TilemapPalette[];
 extern u8 asset_GameDigits[];
-
-

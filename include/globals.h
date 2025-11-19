@@ -24,4 +24,3 @@ typedef struct s_globals
 extern globals global;
 
 #endif
-

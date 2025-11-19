@@ -13,7 +13,7 @@
 extern play_area_template asset_PlayArea_01[];
 extern play_area_template asset_PlayArea_02[];
 extern play_area_template asset_PlayArea_03[];
-play_area_template* levelData[]=
+play_area_template *levelData[] =
 {
     asset_PlayArea_01,
     asset_PlayArea_02,
@@ -39,8 +39,8 @@ void ResetGame(void)
     ResetSprites();
     ResetTilemap();
     ResetHud();
-	ResetParticles();
-	ResetObjects();
+    ResetParticles();
+    ResetObjects();
     InitializePlayArea(levelData[global.playAreaIndex]);
     InitializePlayer();
     InitializeNpcs();
@@ -49,10 +49,9 @@ void ResetGame(void)
 
 void EndGame(void)
 {
-	global.playAreaIndex += 1;
-	if (levelData[global.playAreaIndex]==NULL)
-	{
-		global.playAreaIndex = 0;
-	}
+    global.playAreaIndex += 1;
+    if (levelData[global.playAreaIndex] == NULL)
+    {
+        global.playAreaIndex = 0;
+    }
 }
-

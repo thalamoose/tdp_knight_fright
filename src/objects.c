@@ -17,7 +17,7 @@ void ResetObjects(void)
 }
 
 //---------------------------------------------------------
-void AnimateObject(object* pObj)
+void AnimateObject(object *pObj)
 {
 	if (!pObj->flags.active)
 		return;
@@ -31,22 +31,21 @@ void AnimateObject(object* pObj)
 	if (pObj->flags.direction)
 	{
 		pObj->frameIndex--;
-		if( pObj->frameIndex==0)
+		if (pObj->frameIndex == 0)
 			pObj->flags.direction = false;
 	}
 	else
 	{
 		pObj->frameIndex++;
-		if (pObj->frameIndex==pObj->totalFrames)
+		if (pObj->frameIndex == pObj->totalFrames)
 		{
 			if (pObj->flags.pingpong)
 			{
 				pObj->flags.direction = true;
-				pObj->frameIndex = pObj->totalFrames-1;
+				pObj->frameIndex = pObj->totalFrames - 1;
 			}
 			else
-				pObj->frameIndex=0;
+				pObj->frameIndex = 0;
 		}
 	}
 }
-

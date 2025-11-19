@@ -1,6 +1,5 @@
 #include "kftypes.h"
 
-
 typedef struct s_mouse
 {
 	u8 x;
@@ -10,5 +9,4 @@ typedef struct s_mouse
 
 u8 ReadController(void);
 u8 ReadKeyboard(void);
-const mouse* ReadMouse(void);
-
+const mouse *ReadMouse(void);
