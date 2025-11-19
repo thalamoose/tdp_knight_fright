@@ -15,7 +15,6 @@ extern play_area_template asset_PlayArea_02[];
 extern play_area_template asset_PlayArea_03[];
 play_area_template* levelData[]=
 {
-    asset_PlayArea_03,
     asset_PlayArea_01,
     asset_PlayArea_02,
     asset_PlayArea_03,

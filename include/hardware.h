@@ -98,14 +98,14 @@ enum ULA_COLOR
 
 enum pad_buttons
 {
-	JOYPAD_L_RIGHT,
-	JOYPAD_L_LEFT,
-	JOYPAD_L_DOWN,
-	JOYPAD_L_UP,
-	JOYPAD_R_DOWN,
-	JOYPAD_R_RIGHT,
-	JOYPAD_R_LEFT,
-	JOYPAD_R_UP,
+	JOYPAD_L_RIGHT=(1<<0),
+	JOYPAD_L_LEFT=(1<<1),
+	JOYPAD_L_DOWN=(1<<2),
+	JOYPAD_L_UP=(1<<3),
+	JOYPAD_R_DOWN=(1<<4),
+	JOYPAD_R_RIGHT=(1<<5),
+	JOYPAD_R_LEFT=(1<<6),
+	JOYPAD_R_UP = (1<<7),
 };
 
 enum general_constants

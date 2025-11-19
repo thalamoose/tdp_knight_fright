@@ -125,7 +125,7 @@ $(ASM_OBJ_DIR)/%.o: $(ASM_SRC_DIR)/%.asm $(ASM_OBJ_DIR) makefile
 $(DEP_DIR): 
 	$(MKDIR) $(subst /,\,$@)
 
-##-include $(DEP_FILES)
+-include $(DEP_FILES)
 
 #
 # Build SD Card image

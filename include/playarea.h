@@ -13,15 +13,16 @@ typedef struct s_play_cell
 
 typedef struct s_play_area
 {
-	coord position;
+	coord_s8 position;
+	coord_s8 start;
 	u8 tilesToFlip;
 	play_cell cells[PLAY_AREA_CELLS_HEIGHT][PLAY_AREA_CELLS_WIDTH];
 } play_area;
 
 typedef struct s_play_area_template
 {
-	u8 width;
-	u8 height;
+	coord_s8 size;
+	coord_s8 start;
 	u8 data[0];
 } play_area_template;
 

@@ -4,10 +4,8 @@
 
 typedef struct s_tile_map
 {
-	s8 x;
-	s8 y;
-	s8 play_x;
-	s8 play_y;
+	coord position;
+	coord moveTarget;
 } tile_map;
 
 typedef struct s_tile
@@ -29,6 +27,8 @@ void UpdateTilemap(void);
 void ClearTilemap(void);
 void PasteTilemapBlock(tilemap_cell* pTile, s8 dark, s8 tl, s8 tr, s8 bl, s8 br, s8 palette);
 tilemap_cell* GetTilemapCell(s8 x, s8 y);
+
+extern tile_map tileMap;
 
 #endif
 

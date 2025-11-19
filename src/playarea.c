@@ -27,17 +27,15 @@ s8 CalcIndex(const play_cell* pCell)
 //---------------------------------------------------------
 void BuildPlayArea(const play_area_template* pTemplate)
 {
-	s8 px = -pTemplate->width/2;
-	s8 py = -pTemplate->height/2;
+	s8 px = -pTemplate->size.x/2;
+	s8 py = -pTemplate->size.y/2;
 	const u8* pData = pTemplate->data;
 	play_cell* pCell = NULL;
-	u8 x;
-	u8 y;
 	playArea.tilesToFlip = 0;
-	for (y=0; y<pTemplate->height; y++)
+	for (s8 y=0; y<pTemplate->size.y; y++)
 	{
 		pCell = GetPlayAreaCell(px, py+y);
-		for (x=0; x<pTemplate->width; x++)
+		for (s8 x=0; x<pTemplate->size.x; x++)
 		{
 			pCell->type = *pData++;
 			// If the cell is not empty, then it must be flippable.
@@ -93,10 +91,12 @@ void InitializePlayArea(const play_area_template* pTemplate)
 {
 	playArea.position.x = 0;
 	playArea.position.y = 0;
+	playArea.start.x = pTemplate->start.x;
+	playArea.start.y = pTemplate->start.y;
 	ClearPlayArea();
 	nextreg(MMU_SLOT_6, PALETTE_PAGE);
 	BuildPlayArea(pTemplate);
-	DrawPlayArea(pTemplate->width, pTemplate->height);
+	DrawPlayArea(pTemplate->size.x, pTemplate->size.y);
 }
 
 //---------------------------------------------------------

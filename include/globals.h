@@ -12,7 +12,6 @@ typedef struct s_globals
 {
 	u8 particlesActive;
 	u8 activeSpriteCount;
-	coord tileMap;
 	coord charScreen;
 	u16 pulseColour;
 	u16 pulseTarget;

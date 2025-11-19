@@ -11,19 +11,19 @@ u8 ReadController(void)
 	u8  buttons = port_in(KEMPSTON_JOYSTICK_PORT);
 	if ((scanCodes[1] & (1<<0))==0)
 	{
-		buttons |= (1<<JOYPAD_L_UP);
+		buttons |= JOYPAD_L_UP;
 	}
 	if ((scanCodes[0] & (1<<1))==0)
 	{
-		buttons |= (1<<JOYPAD_L_DOWN);
+		buttons |= JOYPAD_L_DOWN;
 	}
 	if ((scanCodes[6] & (1<<1))==0)
 	{
-		buttons |= (1<<JOYPAD_L_LEFT);
+		buttons |= JOYPAD_L_LEFT;
 	}
 	if ((scanCodes[5] & (1<<0))==0)
 	{
-		buttons |= (1<<JOYPAD_L_RIGHT);
+		buttons |= JOYPAD_L_RIGHT;
 	}
 	return buttons;
 }

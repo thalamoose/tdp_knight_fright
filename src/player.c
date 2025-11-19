@@ -24,8 +24,8 @@ void SnapToGrid(void)
 
     s16 sx = (x+y)*16+LAYER_2_WIDTH/2;
     s16 sy = (y-x)*24+LAYER_2_HEIGHT/2;
-    sx += global.tileMap.x+PLAYER_TO_TILE_X_OFFSET;
-    sy += global.tileMap.y+PLAYER_TO_TILE_Y_OFFSET;
+    sx += PLAYER_TO_TILE_X_OFFSET;
+    sy += tileMap.position.y+PLAYER_TO_TILE_Y_OFFSET;
 
     player.object.position.x = sx<<FIXED_POINT_BITS;
     player.object.position.y = sy<<FIXED_POINT_BITS;
@@ -65,8 +65,8 @@ void InitializePlayer(void)
     player.object.animSpeed = 4;
     player.object.totalFrames = 8;
     player.object.gravity = FIXED_POINT_HALF;
-	player.playgrid.x = 0;
-	player.playgrid.y = 0;
+	player.playgrid.x = playArea.start.x;
+	player.playgrid.y = playArea.start.y;
     player.moveSteps = 0;
 //
 // Set up sprites 64..67, so that only the minimum needs to be set up below. 
@@ -124,8 +124,8 @@ void HandlePickup(void)
     u8 vxlz=0, vxgz=0, vylz=0, vygz=0;
     for (int i=0; i<32; i++)
     {
-        s16 px = player.object.position.x+(16<<FIXED_POINT_BITS)+((s16)random8()<<3);
-        s16 py = player.object.position.y+(8<<FIXED_POINT_BITS)+((s16)random8()<<3);
+        s16 px = player.object.position.x+I_TO_F(16)+((s16)random8()<<3);
+        s16 py = player.object.position.y+I_TO_F(8)+((s16)random8()<<3);
         //x_printf("px:%d, py:%d\n", px>>FIXED_POINT_BITS, py>>FIXED_POINT_BITS);
         s16 vx = random8();
         s16 vy = random8();
@@ -151,31 +151,31 @@ void HandleControllerInput(void)
     u8 buttons = ReadController();
     if (hud.transitionIsRunning)
         return;
-    if (buttons & (1<<JOYPAD_L_LEFT))
+    if (buttons & JOYPAD_L_LEFT)
     {
         player.playgrid.x--;
         SetPlayerAnim(PLAYERSPR_L+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
         return;
     }
-    if (buttons & (1<<JOYPAD_L_RIGHT))
+    if (buttons & JOYPAD_L_RIGHT)
     {
         player.playgrid.x++;
         SetPlayerAnim(PLAYERSPR_R+PLAYERSPR_RUN_ANIM,PLAYERDIR_BR,FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
         return;
     }
-    if (buttons & (1<<JOYPAD_L_UP))
+    if (buttons & JOYPAD_L_UP)
     {
         player.playgrid.y--;
         SetPlayerAnim(PLAYERSPR_U+PLAYERSPR_RUN_ANIM,PLAYERDIR_TL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
         return;
     }
-    if (buttons & (1<<JOYPAD_L_DOWN))
+    if (buttons & JOYPAD_L_DOWN)
     {
         player.playgrid.y++;
         SetPlayerAnim(PLAYERSPR_D+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
         return;
     }
-    if (buttons & (1<<JOYPAD_R_DOWN))
+    if (buttons & JOYPAD_R_DOWN)
     {
         playArea.tilesToFlip = 1;
     }
@@ -193,7 +193,7 @@ void MovePlayer(void)
         player.moveSteps--;
         if (player.moveSteps!=0)
         {
-            if (player.object.position.y>>FIXED_POINT_BITS>(256+32))
+            if (F_TO_I(player.object.position.y)>(256+32))
             {
                 // We must have been in a die. Respawn now.
                 InitializePlayer();
@@ -261,6 +261,7 @@ void UpdatePlayer(void)
     AnimatePlayer();
 }
 
+s16 lx,ly;
 //---------------------------------------------------------
 void RenderPlayer(void)
 {
@@ -274,8 +275,18 @@ void RenderPlayer(void)
         CopySprite(pPattern, PLAYER_SPRITE_PATTERN, 4);
     }
     nextreg(SPRITE_INDEX, PLAYER_SPRITE_SLOT);
-    s16 x = (player.object.position.x>>FIXED_POINT_BITS)+hud.shake.x+3;
-    s16 y = (player.object.position.y>>FIXED_POINT_BITS)+hud.shake.y;
+    s16 tx = F_TO_I(tileMap.position.x) & 0xfffe;
+    s16 ty = F_TO_I(tileMap.position.y) & 0xfffe;
+
+    s16 x = F_TO_I(player.object.position.x)+tx+hud.shake.x+3;
+    s16 y = F_TO_I(player.object.position.y)+ty+hud.shake.y;
+    if (x!=lx||y!=ly)
+	{
+		x_printf("tx:%d, ty:%d\n", x, y);
+        lx = x;
+        ly = y;
+	}
+
     if ((x<-32) || (x>=320) || (y<-32) || (y>=256))
     {
         // Hide the sprite if clipped

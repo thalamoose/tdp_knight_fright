@@ -40,7 +40,6 @@ void InitializeSystem(void)
 
 //---------------------------------------------------------
 //---------------------------------------------------------
-u8 c=0;
 int main(void)
 {
     InitializeSystem();
@@ -62,12 +61,6 @@ int main(void)
             port_out(ULA_PORT, ULA_COLOUR_CYAN);
             Render();
             port_out(ULA_PORT, ULA_COLOUR_YELLOW);
-            c++;
-            if (c>50)
-            {
-                x_printf("\n");
-                c=0;
-            }
         }
         EndGame();
     }

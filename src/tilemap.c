@@ -10,6 +10,7 @@
 #include "hud.h"
 #include "input.h"
 
+tile_map tileMap;
 //---------------------------------------------------------
 void InitializeTilemap(void)
 {
@@ -48,8 +49,10 @@ void InitializeTilemap(void)
 	// Tilemap templates are in the same bank as the palette
 	playArea.position.x = 0;
 	playArea.position.y = 0;
-	global.tileMap.x = -24;
-	global.tileMap.y = 32;
+	tileMap.position.x = 0;
+	tileMap.position.y = 0;
+	tileMap.moveTarget.x = tileMap.position.x;
+	tileMap.moveTarget.y = tileMap.position.y;
 	// Just clip the entire tilemap. It'll get reset after the first update.
 	nextreg(TILEMAP_CLIP_WINDOW, 255);
 	nextreg(TILEMAP_CLIP_WINDOW, 255);
@@ -86,29 +89,44 @@ tilemap_cell* GetTilemapCell(s8 x, s8 y)
 
 }
 
-s16 lastL;
-s16 lastT;
-s16 lastR;
-s16 lastB;
-u8 c2;
 //---------------------------------------------------------
 void UpdateTilemap(void)
 {
-	s16 x = global.tileMap.x+hud.shake.x;
-	s16 y = global.tileMap.y+hud.shake.y;
+	u8 buttons = ReadController();
+	if (buttons & JOYPAD_R_DOWN)
+	{
+		tileMap.position.y += FIXED_POINT_ONE*2;
+	}
+	if (buttons & JOYPAD_R_UP)
+	{
+		tileMap.position.y -= FIXED_POINT_ONE*2;
+	}
+	if (buttons & JOYPAD_R_RIGHT)
+	{
+		tileMap.position.x += FIXED_POINT_ONE*2;
+	}
+	if (buttons & JOYPAD_R_LEFT)
+	{
+		tileMap.position.x -= FIXED_POINT_ONE*2;
+	}
+
+	//tileMap.position.x += (tileMap.position.x-tileMap.moveTarget.x)>>1;
+	//tileMap.position.y += (tileMap.position.y-tileMap.moveTarget.y)>>1;
+
+	s16 x = (tileMap.position.x>>FIXED_POINT_BITS)+hud.shake.x+2;
+	s16 y = (tileMap.position.y>>FIXED_POINT_BITS)+hud.shake.y;
 	s16 lClip = x;
-	s16 rClip = lClip+319;
+	s16 rClip = lClip+318;
 	s16 tClip = y;
 	s16 bClip = tClip+255;
 	if (lClip<0) lClip = 0;
-	if (rClip>319) rClip = 319;
+	if (rClip>318) rClip = 318;
 	if (tClip<0) tClip = 0;
 	if (bClip>255) bClip=255;
 	x = -x;
 	y = -y;
 	if (x<0) x=320+x;
 	if (y<0) y=256+y;
-	x -= 2;
 	nextreg(TILEMAP_OFFSET_X_H,(x>>8) & 0x1);
 	nextreg(TILEMAP_OFFSET_X_L, x);
 	nextreg(TILEMAP_OFFSET_Y, y);
