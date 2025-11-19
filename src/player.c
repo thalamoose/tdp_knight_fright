@@ -11,7 +11,7 @@
 #include "assets.h"
 #include "hud.h"
 
-#define PLAYER_TO_TILE_X_OFFSET (-1)
+#define PLAYER_TO_TILE_X_OFFSET ( 2)
 #define PLAYER_TO_TILE_Y_OFFSET (-22)
 
 player_object player;
@@ -19,16 +19,14 @@ player_object player;
 //---------------------------------------------------------
 void SnapToGrid(void)
 {
-    s16 x = player.playgrid.x - playArea.position.x;
-    s16 y = player.playgrid.y - playArea.position.y;
+    s16 x = player.playGrid.x - playArea.position.x;
+    s16 y = player.playGrid.y - playArea.position.y;
 
-    s16 sx = (x + y) * 16 + LAYER_2_WIDTH / 2;
-    s16 sy = (y - x) * 24 + LAYER_2_HEIGHT / 2;
-    sx += PLAYER_TO_TILE_X_OFFSET;
-    sy += tileMap.position.y + PLAYER_TO_TILE_Y_OFFSET;
+    s16 sx = (x + y) * 16;
+    s16 sy = (y - x) * 24;
 
-    player.object.position.x = sx << FIXED_POINT_BITS;
-    player.object.position.y = sy << FIXED_POINT_BITS;
+    player.object.position.x = I_TO_F(sx);
+    player.object.position.y = I_TO_F(sy);
 }
 
 //---------------------------------------------------------
@@ -64,8 +62,8 @@ void InitializePlayer(void)
     player.object.animSpeed = 4;
     player.object.totalFrames = 8;
     player.object.gravity = FIXED_POINT_HALF;
-    player.playgrid.x = playArea.start.x;
-    player.playgrid.y = playArea.start.y;
+    player.playGrid.x = playArea.start.x;
+    player.playGrid.y = playArea.start.y;
     player.moveSteps = 0;
     //
     // Set up sprites 64..67, so that only the minimum needs to be set up below.
@@ -97,8 +95,8 @@ void BeginPulsePalette(void)
     }
     global.pulseColour = 0x1ff;
     global.pulseTarget = asset_TilemapPalette[4];
-    global.pulseCoord = player.playgrid;
-    RefreshPlayAreaBlock(player.playgrid.x, player.playgrid.y, 1);
+    global.pulseCoord = player.playGrid;
+    RefreshPlayAreaBlock(player.playGrid.x, player.playGrid.y, 1);
     SetColour(PALETTE_TILE_PRIMARY, 16 + 4, global.pulseColour);
 }
 
@@ -125,7 +123,7 @@ void HandlePickup(void)
     {
         s16 px = player.object.position.x + I_TO_F(16) + ((s16)random8() << 3);
         s16 py = player.object.position.y + I_TO_F(8) + ((s16)random8() << 3);
-        // x_printf("px:%d, py:%d\n", px>>FIXED_POINT_BITS, py>>FIXED_POINT_BITS);
+        // x_printf("px:%d, py:%d\n", F_TO_I(px), F_TO_I(py));
         s16 vx = random8();
         s16 vy = random8();
         s8 width = random8() & 3 + 1;
@@ -152,25 +150,25 @@ void HandleControllerInput(void)
         return;
     if (buttons & JOYPAD_L_LEFT)
     {
-        player.playgrid.x--;
+        player.playGrid.x--;
         SetPlayerAnim(PLAYERSPR_L + PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
         return;
     }
     if (buttons & JOYPAD_L_RIGHT)
     {
-        player.playgrid.x++;
+        player.playGrid.x++;
         SetPlayerAnim(PLAYERSPR_R + PLAYERSPR_RUN_ANIM, PLAYERDIR_BR, FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
         return;
     }
     if (buttons & JOYPAD_L_UP)
     {
-        player.playgrid.y--;
+        player.playGrid.y--;
         SetPlayerAnim(PLAYERSPR_U + PLAYERSPR_RUN_ANIM, PLAYERDIR_TL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
         return;
     }
     if (buttons & JOYPAD_L_DOWN)
     {
-        player.playgrid.y++;
+        player.playGrid.y++;
         SetPlayerAnim(PLAYERSPR_D + PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
         return;
     }
@@ -192,7 +190,8 @@ void MovePlayer(void)
         player.moveSteps--;
         if (player.moveSteps != 0)
         {
-            if (F_TO_I(player.object.position.y) > (256 + 32))
+            s16 dy = F_TO_I(player.object.position.y+tileMap.position.y);
+            if (dy > 256+32)
             {
                 // We must have been in a die. Respawn now.
                 InitializePlayer();
@@ -200,8 +199,8 @@ void MovePlayer(void)
             return;
         }
         SnapToGrid();
-        play_cell *pCell = GetPlayAreaCell(player.playgrid.x, player.playgrid.y);
-        x_printf("Coord:(%d,%d), content:%c\n", player.playgrid.x, player.playgrid.y, *(u8 *)pCell);
+        play_cell *pCell = GetPlayAreaCell(player.playGrid.x, player.playGrid.y);
+        //x_printf("Coord:(%d,%d), content:%c\n", player.playGrid.x, player.playGrid.y, *(u8 *)pCell);
         if (pCell->type == 2)
         {
             HandlePickup();
@@ -224,7 +223,7 @@ void MovePlayer(void)
                 x_printf("Tile full bonus.\n");
             }
             playArea.tilesToFlip--;
-            x_printf("%d tiles remaining.", (s16)playArea.tilesToFlip);
+            //x_printf("%d tiles remaining.", (s16)playArea.tilesToFlip);
             if (playArea.tilesToFlip == 0)
             {
                 x_printf("No more tiles. Restart.\n");
@@ -259,7 +258,6 @@ void UpdatePlayer(void)
     AnimatePlayer();
 }
 
-s16 lx, ly;
 //---------------------------------------------------------
 void RenderPlayer(void)
 {
@@ -274,16 +272,13 @@ void RenderPlayer(void)
     }
     nextreg(SPRITE_INDEX, PLAYER_SPRITE_SLOT);
     s16 tx = F_TO_I(tileMap.position.x) & 0xfffe;
-    s16 ty = F_TO_I(tileMap.position.y) & 0xfffe;
+    s16 ty = F_TO_I(tileMap.position.y);
 
-    s16 x = F_TO_I(player.object.position.x) + tx + hud.shake.x + 3;
-    s16 y = F_TO_I(player.object.position.y) + ty + hud.shake.y;
-    if (x != lx || y != ly)
-    {
-        x_printf("tx:%d, ty:%d\n", x, y);
-        lx = x;
-        ly = y;
-    }
+    s16 px = F_TO_I(player.object.position.x);
+    s16 py = F_TO_I(player.object.position.y);
+     
+    s16 x = px + tx + hud.shake.x + TILEMAP_PIX_WIDTH/2 + PLAYER_TO_TILE_X_OFFSET;
+    s16 y = py + ty + hud.shake.y + TILEMAP_PIX_HEIGHT/2 + PLAYER_TO_TILE_Y_OFFSET;
 
     if ((x < -32) || (x >= 320) || (y < -32) || (y >= 256))
     {

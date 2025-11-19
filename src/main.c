@@ -54,12 +54,11 @@ int main(void)
         // Game complete- exit game transition  - gameIsRunning = false, transitionIsRunninf = true
         while (hud.gameIsRunning || hud.transitionIsRunning)
         {
-            UpdateObjects();
-            UpdateAudio();
+            UpdateGame();
             port_out(ULA_PORT, ULA_COLOUR_BLACK);
             WaitVSync();
             port_out(ULA_PORT, ULA_COLOUR_CYAN);
-            Render();
+            RenderGame();
             port_out(ULA_PORT, ULA_COLOUR_YELLOW);
         }
         EndGame();

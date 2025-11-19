@@ -31,6 +31,9 @@ enum consts
     TILEMAP_CHAR_WIDTH = 40,
     TILEMAP_CHAR_HEIGHT = 32,
     TILEMAP_SAFE_AREA = 8,
+    TILEMAP_PIX_WIDTH = 320,
+    TILEMAP_PIX_HEIGHT = 256,
+
 
     // These should match the player animation order
     PLAYERDIR_TL = 0, // left

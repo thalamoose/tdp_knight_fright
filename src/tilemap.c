@@ -7,6 +7,7 @@
 #include "assets.h"
 #include "globals.h"
 #include "playarea.h"
+#include "player.h"
 #include "hud.h"
 #include "input.h"
 
@@ -88,6 +89,7 @@ tilemap_cell *GetTilemapCell(s8 x, s8 y)
 	return (tilemap_cell *)SWAP_BANK_0 + (y * TILEMAP_CHAR_WIDTH + x);
 }
 
+coord lastPlayGrid;
 //---------------------------------------------------------
 void UpdateTilemap(void)
 {
@@ -109,11 +111,43 @@ void UpdateTilemap(void)
 		tileMap.position.x -= FIXED_POINT_ONE * 2;
 	}
 
-	// tileMap.position.x += (tileMap.position.x-tileMap.moveTarget.x)>>1;
-	// tileMap.position.y += (tileMap.position.y-tileMap.moveTarget.y)>>1;
+	s8 dgx = player.playGrid.x-lastPlayGrid.x;
+	s8 dgy = player.playGrid.y-lastPlayGrid.y;
+	if (dgx<-1 || dgx>1 || dgy<-1 || dgy>1)
+	{
+		lastPlayGrid.x = player.playGrid.x;
+		lastPlayGrid.y = player.playGrid.y;
+	
+		s16 px = playArea.position.x-player.playGrid.x;
+		s16 py = playArea.position.y-player.playGrid.y;
 
-	s16 x = (tileMap.position.x >> FIXED_POINT_BITS) + hud.shake.x + 2;
-	s16 y = (tileMap.position.y >> FIXED_POINT_BITS) + hud.shake.y;
+		s16 sx = (px + py) * 16-22;
+		s16 sy = (py - px) * 24+16;
+
+		tileMap.moveTarget.x = I_TO_F(sx);
+		tileMap.moveTarget.y = I_TO_F(sy);
+	}
+
+	tileMap.velocity.x = (tileMap.moveTarget.x-tileMap.position.x)/16;
+	tileMap.velocity.y = (tileMap.moveTarget.y-tileMap.position.y)/16;
+#if 0
+	if (tileMap.velocity.x || tileMap.velocity.y)
+	{
+		x_printf("pos:%d,%d,tgt:%d,%d,vel:%d,%d\n", 
+			F_TO_I(tileMap.position.x), F_TO_I(tileMap.position.y),
+			F_TO_I(tileMap.moveTarget.x), F_TO_I(tileMap.moveTarget.y),
+			F_TO_I(tileMap.velocity.x), F_TO_I(tileMap.velocity.y));
+	}
+#endif
+	tileMap.position.x += tileMap.velocity.x;
+	tileMap.position.y += tileMap.velocity.y;
+}
+
+//---------------------------------------------------------
+void RenderTilemap(void)
+{
+	s16 x = F_TO_I(tileMap.position.x) + hud.shake.x + 2;
+	s16 y = F_TO_I(tileMap.position.y) + hud.shake.y;
 	s16 lClip = x;
 	s16 rClip = lClip + 318;
 	s16 tClip = y;

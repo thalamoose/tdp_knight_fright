@@ -5,6 +5,8 @@
 
 void InitializeGame(void);
 void ResetGame(void);
+void UpdateGame(void);
+void RenderGame(void);
 void EndGame(void);
 
 #endif

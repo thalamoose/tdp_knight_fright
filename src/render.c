@@ -42,14 +42,3 @@ void InitializeRender(void)
     nextreg(SPRITE_CLIP_WINDOW, (255 - 4) & 0xff); // Y2
 }
 
-void Render(void)
-{
-    RenderCopper(); // Must be done first, just after vsync
-    UpdateTilemap();
-    RenderPlayer();
-    RenderSprites();
-    RenderHud();
-    port_out(ULA_PORT, ULA_COLOUR_BLACK);
-    RenderParticles(&particles[0]);
-    port_out(ULA_PORT, ULA_COLOUR_WHITE);
-}

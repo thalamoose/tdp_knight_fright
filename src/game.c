@@ -9,6 +9,10 @@
 #include "npcs.h"
 #include "copper.h"
 #include "tilemap.h"
+#include "hardware.h"
+#include "audio.h"
+#include "sprites.h"
+#include "npcs.h"
 
 extern play_area_template asset_PlayArea_01[];
 extern play_area_template asset_PlayArea_02[];
@@ -45,6 +49,30 @@ void ResetGame(void)
     InitializePlayer();
     InitializeNpcs();
     x_printf("Game is running\n");
+}
+
+//---------------------------------------------------------
+void UpdateGame(void)
+{
+    UpdateTilemap();
+	UpdateNpcs();
+	UpdatePlayer();
+	UpdateSprites();
+	global.particlesActive = UpdateParticles(&particles[0]);
+    UpdateAudio();
+}
+
+//---------------------------------------------------------
+void RenderGame(void)
+{
+    RenderCopper(); // Must be done first, just after vsync
+    RenderTilemap();
+    RenderPlayer();
+    RenderSprites();
+    RenderHud();
+    port_out(ULA_PORT, ULA_COLOUR_BLACK);
+    RenderParticles(&particles[0]);
+    port_out(ULA_PORT, ULA_COLOUR_WHITE);
 }
 
 void EndGame(void)
