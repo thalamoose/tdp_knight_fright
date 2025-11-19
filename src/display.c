@@ -9,4 +9,3 @@ void ClearScreen(void)
 	memset(SCREEN_BASE, 0, SCREEN_LENGTH);
 	memset(ATTR_BASE, 0x47, ATTR_LENGTH);
 }
-

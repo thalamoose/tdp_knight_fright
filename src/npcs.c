@@ -7,7 +7,7 @@
 
 void InitializeNpcs(void)
 {
-    #if false
+#if false
         objects[0].position.x = 128;
         objects[0].position.y = 96;
         objects[0].baseIndex = 8;
@@ -34,9 +34,9 @@ void InitializeNpcs(void)
 
 void UpdateNpcs(void)
 {
-    object* npc = objects;
+    object *npc = objects;
 
-    for( u8 i=0; i<MAX_OBJECTS; i++)
+    for (u8 i = 0; i < MAX_OBJECTS; i++)
     {
         AnimateObject(npc);
     }

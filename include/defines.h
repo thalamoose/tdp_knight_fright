@@ -4,56 +4,60 @@
 enum consts
 {
 
-	MAX_OBJECTS=16,			// MUST be power of 2
-	MAX_PARTICLES=128,      // MUST be power of 2
+    MAX_OBJECTS = 16,    // MUST be power of 2
+    MAX_PARTICLES = 128, // MUST be power of 2
 
-	GRAVITY=1, 				// About 0.5G
+    GRAVITY = 1, // About 0.5G
 
-	LAYER_2_HEIGHT=256,
-	LAYER_2_WIDTH=320,
+    LAYER_2_HEIGHT = 256,
+    LAYER_2_WIDTH = 320,
 
-	PARTICLE_LAYER_WIDTH=320,
+    PARTICLE_LAYER_WIDTH = 320,
 
-	PARTICLE_LAYER_HEIGHT=256,
-    PARTICLE_SAFE_AREA=8,
+    PARTICLE_LAYER_HEIGHT = 256,
+    PARTICLE_SAFE_AREA = 8,
 
-    LAYER_2_BORDER=8,
+    LAYER_2_BORDER = 8,
 
-    PLAYER_SPRITE_SLOT=64,
-    PLAYER_SPRITE_PATTERN=0,
+    PLAYER_SPRITE_SLOT = 64,
+    PLAYER_SPRITE_PATTERN = 0,
+    PLAYER_TARGET_CENTER_X = -128,
+    PLAYER_TARGET_CENTER_Y = -128,
 
-    PLAY_AREA_CELLS_WIDTH=32,
-    PLAY_AREA_CELLS_HEIGHT=32,
-    PLAY_AREA_CENTER_WIDTH=PLAY_AREA_CELLS_WIDTH/2,
-    PLAY_AREA_CENTER_HEIGHT=PLAY_AREA_CELLS_HEIGHT/2,
+    PLAY_AREA_CELLS_WIDTH = 32,
+    PLAY_AREA_CELLS_HEIGHT = 32,
+    PLAY_AREA_CENTER_WIDTH = PLAY_AREA_CELLS_WIDTH / 2,
+    PLAY_AREA_CENTER_HEIGHT = PLAY_AREA_CELLS_HEIGHT / 2,
     TILEMAP_CHAR_WIDTH = 40,
     TILEMAP_CHAR_HEIGHT = 32,
     TILEMAP_SAFE_AREA = 8,
-
-// These should match the player animation order
-    PLAYERDIR_TL=0,        // left
-    PLAYERDIR_TR=1,        // up
-    PLAYERDIR_BL=2,        // down 
-    PLAYERDIR_BR=3,        // right
+    TILEMAP_PIX_WIDTH = 320,
+    TILEMAP_PIX_HEIGHT = 256,
 
 
-    PLAYERSPR_U=0,
-    PLAYERSPR_R=8,
-    PLAYERSPR_D=16,
-    PLAYERSPR_L=24,
+    // These should match the player animation order
+    PLAYERDIR_TL = 0, // left
+    PLAYERDIR_TR = 1, // up
+    PLAYERDIR_BL = 2, // down
+    PLAYERDIR_BR = 3, // right
 
-    PLAYERSPR_RUN_ANIM=0,
-    PLAYERSPR_IDLE_ANIM=32,
+    PLAYERSPR_U = 0,
+    PLAYERSPR_R = 8,
+    PLAYERSPR_D = 16,
+    PLAYERSPR_L = 24,
+
+    PLAYERSPR_RUN_ANIM = 0,
+    PLAYERSPR_IDLE_ANIM = 32,
     //
     // Palette masks
     //
-    RED_SHIFT=6,
-    GRN_SHIFT=3,
-    BLU_SHIFT=0,
+    RED_SHIFT = 6,
+    GRN_SHIFT = 3,
+    BLU_SHIFT = 0,
 
-    RED_MASK=(0x07<<RED_SHIFT),
-    GRN_MASK=(0x07<<GRN_SHIFT),
-    BLU_MASK=(0x07<<BLU_SHIFT)
+    RED_MASK = (0x07 << RED_SHIFT),
+    GRN_MASK = (0x07 << GRN_SHIFT),
+    BLU_MASK = (0x07 << BLU_SHIFT)
 };
 
 #endif

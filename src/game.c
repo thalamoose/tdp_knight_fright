@@ -9,13 +9,16 @@
 #include "npcs.h"
 #include "copper.h"
 #include "tilemap.h"
+#include "hardware.h"
+#include "audio.h"
+#include "sprites.h"
+#include "npcs.h"
 
 extern play_area_template asset_PlayArea_01[];
 extern play_area_template asset_PlayArea_02[];
 extern play_area_template asset_PlayArea_03[];
-play_area_template* levelData[]=
+play_area_template *levelData[] =
 {
-    asset_PlayArea_03,
     asset_PlayArea_01,
     asset_PlayArea_02,
     asset_PlayArea_03,
@@ -40,20 +43,43 @@ void ResetGame(void)
     ResetSprites();
     ResetTilemap();
     ResetHud();
-	ResetParticles();
-	ResetObjects();
+    ResetParticles();
+    ResetObjects();
     InitializePlayArea(levelData[global.playAreaIndex]);
     InitializePlayer();
     InitializeNpcs();
     x_printf("Game is running\n");
 }
 
-void EndGame(void)
+//---------------------------------------------------------
+void UpdateGame(void)
 {
-	global.playAreaIndex += 1;
-	if (levelData[global.playAreaIndex]==NULL)
-	{
-		global.playAreaIndex = 0;
-	}
+    UpdateTilemap();
+	UpdateNpcs();
+	UpdatePlayer();
+	UpdateSprites();
+	global.particlesActive = UpdateParticles(&particles[0]);
+    UpdateAudio();
 }
 
+//---------------------------------------------------------
+void RenderGame(void)
+{
+    RenderCopper(); // Must be done first, just after vsync
+    RenderTilemap();
+    RenderPlayer();
+    RenderSprites();
+    RenderHud();
+    port_out(ULA_PORT, ULA_COLOUR_BLACK);
+    RenderParticles(&particles[0]);
+    port_out(ULA_PORT, ULA_COLOUR_WHITE);
+}
+
+void EndGame(void)
+{
+    global.playAreaIndex += 1;
+    if (levelData[global.playAreaIndex] == NULL)
+    {
+        global.playAreaIndex = 0;
+    }
+}

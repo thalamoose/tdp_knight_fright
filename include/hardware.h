@@ -2,74 +2,74 @@
 
 enum next_registers
 {
-	CLOCK_SEL               = 0x07,
-	PERIPHERAL_3_CONTROL    = 0x08,
-	LAYER_2_RAM_BANK        = 0x12,
-	LAYER_2_SHADOW_BANK     = 0x13,
-	GLOBAL_TRANSPARENCY     = 0x14,
-	SPRITE_AND_LAYERS       = 0x15,
-	LAYER_2_OFFSET_X        = 0x16,
-	LAYER_2_OFFSET_Y        = 0x17,
-	LAYER_2_CLIP_WINDOW     = 0x18,
-	SPRITE_CLIP_WINDOW      = 0x19,
-	ULA_CLIP_WINDOW         = 0x1a,
-	TILEMAP_CLIP_WINDOW     = 0x1b,
-	CLIP_WINDOW_CONTROL     = 0x1c,
-	TILEMAP_OFFSET_X_H      = 0x2f,
-	TILEMAP_OFFSET_X_L      = 0x30,
-	TILEMAP_OFFSET_Y        = 0x31,
-	ULA_OFFSET_X            = 0x32,
-	ULA_OFFSET_Y            = 0x33,
-	SPRITE_INDEX            = 0x34,
-	SPRITE_ATTR_0           = 0x35,
-	SPRITE_ATTR_1           = 0x36,
-	SPRITE_ATTR_2           = 0x37,
-	SPRITE_ATTR_3           = 0x38,
-	SPRITE_ATTR_4           = 0x39,
-	PALETTE_INDEX           = 0x40,
-	PALETTE_VALUE_8         = 0x41,
-	PALETTE_CONTROL         = 0x43,
-	PALETTE_VALUE_9         = 0x44,
-	TRANS_FALLBACK          = 0x4a,
-	TRANS_SPRITE_INDEX      = 0x4b,
-	TRANS_TILEMAP_INDEX     = 0x4c,
-	MMU_SLOT_0              = 0x50,  	// 0x0000-0x1fff
-	MMU_SLOT_1              = 0x51,   // 0x2000-0x3fff
-	MMU_SLOT_2              = 0x52,   // 0x4000-0x5fff
-	MMU_SLOT_3              = 0x53,   // 0x6000-0x7fff
-	MMU_SLOT_4              = 0x54,   // 0x8000-0x9fff
-	MMU_SLOT_5              = 0x55,   // 0xa000-0xbfff
-	MMU_SLOT_6              = 0x56,   // 0xc000-0xdfff
-	MMU_SLOT_7              = 0x57,   // 0xe000-0xffff
-	COPPER_DATA             = 0x60,
-	COPPER_CONTROL_L        = 0x61,
-	COPPER_CONTROL_H        = 0x62,
+	CLOCK_SEL = 0x07,
+	PERIPHERAL_3_CONTROL = 0x08,
+	LAYER_2_RAM_BANK = 0x12,
+	LAYER_2_SHADOW_BANK = 0x13,
+	GLOBAL_TRANSPARENCY = 0x14,
+	SPRITE_AND_LAYERS = 0x15,
+	LAYER_2_OFFSET_X = 0x16,
+	LAYER_2_OFFSET_Y = 0x17,
+	LAYER_2_CLIP_WINDOW = 0x18,
+	SPRITE_CLIP_WINDOW = 0x19,
+	ULA_CLIP_WINDOW = 0x1a,
+	TILEMAP_CLIP_WINDOW = 0x1b,
+	CLIP_WINDOW_CONTROL = 0x1c,
+	TILEMAP_OFFSET_X_H = 0x2f,
+	TILEMAP_OFFSET_X_L = 0x30,
+	TILEMAP_OFFSET_Y = 0x31,
+	ULA_OFFSET_X = 0x32,
+	ULA_OFFSET_Y = 0x33,
+	SPRITE_INDEX = 0x34,
+	SPRITE_ATTR_0 = 0x35,
+	SPRITE_ATTR_1 = 0x36,
+	SPRITE_ATTR_2 = 0x37,
+	SPRITE_ATTR_3 = 0x38,
+	SPRITE_ATTR_4 = 0x39,
+	PALETTE_INDEX = 0x40,
+	PALETTE_VALUE_8 = 0x41,
+	PALETTE_CONTROL = 0x43,
+	PALETTE_VALUE_9 = 0x44,
+	TRANS_FALLBACK = 0x4a,
+	TRANS_SPRITE_INDEX = 0x4b,
+	TRANS_TILEMAP_INDEX = 0x4c,
+	MMU_SLOT_0 = 0x50, // 0x0000-0x1fff
+	MMU_SLOT_1 = 0x51, // 0x2000-0x3fff
+	MMU_SLOT_2 = 0x52, // 0x4000-0x5fff
+	MMU_SLOT_3 = 0x53, // 0x6000-0x7fff
+	MMU_SLOT_4 = 0x54, // 0x8000-0x9fff
+	MMU_SLOT_5 = 0x55, // 0xa000-0xbfff
+	MMU_SLOT_6 = 0x56, // 0xc000-0xdfff
+	MMU_SLOT_7 = 0x57, // 0xe000-0xffff
+	COPPER_DATA = 0x60,
+	COPPER_CONTROL_L = 0x61,
+	COPPER_CONTROL_H = 0x62,
 
-	ULA_CONTROL             = 0x68,
-	DISPLAY_CONTROL_1       = 0x69,
-	TILEMAP_CONTROL         = 0x6b,
-	DEFAULT_TILEMAP_ATTR    = 0x6c,
-	TILEMAP_BASE_ADDRESS    = 0x6e,
-	TILEMAP_CHAR_ADDRESS    = 0x6f,
-	LAYER_2_CONTROL         = 0x70,
+	ULA_CONTROL = 0x68,
+	DISPLAY_CONTROL_1 = 0x69,
+	TILEMAP_CONTROL = 0x6b,
+	DEFAULT_TILEMAP_ATTR = 0x6c,
+	TILEMAP_BASE_ADDRESS = 0x6e,
+	TILEMAP_CHAR_ADDRESS = 0x6f,
+	LAYER_2_CONTROL = 0x70,
 
 };
 
 enum next_ports
 {
-	KEMPSTON_JOYSTICK_PORT  = 0x1f,
-	SPRITE_ATTRIB_PORT      = 0x57,
-	SPRITE_PATTERN_PORT     = 0x5b,
-	ULA_PORT                = 0xfe,
-	ZXN_DMA_PORT            = 0x6b,
-	LAYER_2_ACCESS_PORT     = 0x123b,
-	NEXTREG_SELECT_PORT		= 0x243b,
-	NEXTREG_VALUE_PORT		= 0x253b,
-	SPRITE_SLOT_PORT        = 0x303b,
+	KEMPSTON_JOYSTICK_PORT = 0x1f,
+	SPRITE_ATTRIB_PORT = 0x57,
+	SPRITE_PATTERN_PORT = 0x5b,
+	ULA_PORT = 0xfe,
+	ZXN_DMA_PORT = 0x6b,
+	LAYER_2_ACCESS_PORT = 0x123b,
+	NEXTREG_SELECT_PORT = 0x243b,
+	NEXTREG_VALUE_PORT = 0x253b,
+	SPRITE_SLOT_PORT = 0x303b,
 	MEM_PAGING_CONTROL_PORT = 0x7ffd,
 	KEMPSTON_MOUSE_BTN_PORT = (signed)0xfadf,
-	KEMPSTON_MOUSE_X_PORT   = (signed)0xfbdf,
-	KEMPSTON_MOUSE_Y_PORT   = (signed)0xffdf,
+	KEMPSTON_MOUSE_X_PORT = (signed)0xfbdf,
+	KEMPSTON_MOUSE_Y_PORT = (signed)0xffdf,
 };
 
 enum PALETTE_INDEX
@@ -98,41 +98,41 @@ enum ULA_COLOR
 
 enum pad_buttons
 {
-	JOYPAD_L_RIGHT,
-	JOYPAD_L_LEFT,
-	JOYPAD_L_DOWN,
-	JOYPAD_L_UP,
-	JOYPAD_R_DOWN,
-	JOYPAD_R_RIGHT,
-	JOYPAD_R_LEFT,
-	JOYPAD_R_UP,
+	JOYPAD_L_RIGHT = (1 << 0),
+	JOYPAD_L_LEFT = (1 << 1),
+	JOYPAD_L_DOWN = (1 << 2),
+	JOYPAD_L_UP = (1 << 3),
+	JOYPAD_R_DOWN = (1 << 4),
+	JOYPAD_R_RIGHT = (1 << 5),
+	JOYPAD_R_LEFT = (1 << 6),
+	JOYPAD_R_UP = (1 << 7),
 };
 
 enum general_constants
 {
-	MAX_SPRITES          	= 128,
+	MAX_SPRITES = 128,
 };
 
 enum dma_modes
 {
-	DMA_RESET                      = 0xc3,
-	DMA_RESET_PORT_A_TIMING        = 0xc7,
-	DMA_RESET_PORT_B_TIMING        = 0xcb,
-	DMA_LOAD                       = 0xcf, // %11001111
-	DMA_CONTINUE                   = 0xd3,
-	DMA_DISABLE_INTERUPTS          = 0xaf,
-	DMA_ENABLE_INTERUPTS           = 0xab,
-	DMA_RESET_DISABLE_INTERUPTS    = 0xa3,
-	DMA_ENABLE_AFTER_RETI          = 0xb7,
-	DMA_READ_STATUS_BYTE           = 0xbf,
-	DMA_REINIT_STATUS_BYTE         = 0x8b,
-	DMA_START_READ_SEQUENCE        = 0xa7,
-	DMA_FORCE_READY                = 0xb3,
-	DMA_DISABLE                    = 0x83,
-	DMA_ENABLE                     = 0x87,
-	DMA_WRITE_REGISTER_COMMAND     = 0xbb,
-	DMA_BURST                      = 0xcd,
-	DMA_CONTINUOUS                 = 0xad,
+	DMA_RESET = 0xc3,
+	DMA_RESET_PORT_A_TIMING = 0xc7,
+	DMA_RESET_PORT_B_TIMING = 0xcb,
+	DMA_LOAD = 0xcf, // %11001111
+	DMA_CONTINUE = 0xd3,
+	DMA_DISABLE_INTERUPTS = 0xaf,
+	DMA_ENABLE_INTERUPTS = 0xab,
+	DMA_RESET_DISABLE_INTERUPTS = 0xa3,
+	DMA_ENABLE_AFTER_RETI = 0xb7,
+	DMA_READ_STATUS_BYTE = 0xbf,
+	DMA_REINIT_STATUS_BYTE = 0x8b,
+	DMA_START_READ_SEQUENCE = 0xa7,
+	DMA_FORCE_READY = 0xb3,
+	DMA_DISABLE = 0x83,
+	DMA_ENABLE = 0x87,
+	DMA_WRITE_REGISTER_COMMAND = 0xbb,
+	DMA_BURST = 0xcd,
+	DMA_CONTINUOUS = 0xad,
 };
 
 extern u8 port_in(u16 port);

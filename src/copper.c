@@ -9,10 +9,10 @@ struct
 	u8 playerPriorityLine;
 } copper;
 
-#define CU_WAIT(ver,hor)  ((u16)((((ver) & 0xff) << 8) + 0x80 + (((hor) & 0x3f) << 1) + (((ver) & 0x100) >> 8)))
-#define CU_MOVE(reg,val)  ((u16)((((val) & 0xff) << 8) + ((reg) & 0x7f)))
-#define CU_NOP()          ((u16)0x0000)
-#define CU_STOP()         ((u16)0xffff)
+#define CU_WAIT(ver, hor) ((u16)((((ver) & 0xff) << 8) + 0x80 + (((hor) & 0x3f) << 1) + (((ver) & 0x100) >> 8)))
+#define CU_MOVE(reg, val) ((u16)((((val) & 0xff) << 8) + ((reg) & 0x7f)))
+#define CU_NOP() ((u16)0x0000)
+#define CU_STOP() ((u16)0xffff)
 
 void InitializeCopper(void)
 {

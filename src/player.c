@@ -11,7 +11,7 @@
 #include "assets.h"
 #include "hud.h"
 
-#define PLAYER_TO_TILE_X_OFFSET (-1)
+#define PLAYER_TO_TILE_X_OFFSET ( 2)
 #define PLAYER_TO_TILE_Y_OFFSET (-22)
 
 player_object player;
@@ -19,17 +19,14 @@ player_object player;
 //---------------------------------------------------------
 void SnapToGrid(void)
 {
-    s16 x = player.playgrid.x-playArea.position.x;
-    s16 y = player.playgrid.y-playArea.position.y;
+    s16 x = player.playGrid.x - playArea.position.x;
+    s16 y = player.playGrid.y - playArea.position.y;
 
-    s16 sx = (x+y)*16+LAYER_2_WIDTH/2;
-    s16 sy = (y-x)*24+LAYER_2_HEIGHT/2;
-    sx += global.tileMap.x+PLAYER_TO_TILE_X_OFFSET;
-    sy += global.tileMap.y+PLAYER_TO_TILE_Y_OFFSET;
+    s16 sx = (x + y) * 16;
+    s16 sy = (y - x) * 24;
 
-    player.object.position.x = sx<<FIXED_POINT_BITS;
-    player.object.position.y = sy<<FIXED_POINT_BITS;
-
+    player.object.position.x = I_TO_F(sx);
+    player.object.position.y = I_TO_F(sy);
 }
 
 //---------------------------------------------------------
@@ -65,23 +62,23 @@ void InitializePlayer(void)
     player.object.animSpeed = 4;
     player.object.totalFrames = 8;
     player.object.gravity = FIXED_POINT_HALF;
-	player.playgrid.x = 0;
-	player.playgrid.y = 0;
+    player.playGrid.x = playArea.start.x;
+    player.playGrid.y = playArea.start.y;
     player.moveSteps = 0;
-//
-// Set up sprites 64..67, so that only the minimum needs to be set up below. 
-//
+    //
+    // Set up sprites 64..67, so that only the minimum needs to be set up below.
+    //
     SetupSprite(PLAYER_SPRITE_SLOT, PLAYER_SPRITE_PATTERN, 0, 0, 0, 0xc0, 0);
-    SetupSprite(PLAYER_SPRITE_SLOT+1, PLAYER_SPRITE_PATTERN+1, 16, 0, 0, 0xc0, 0x60);
-    SetupSprite(PLAYER_SPRITE_SLOT+2, PLAYER_SPRITE_PATTERN+2, 0, 16, 0, 0xc0, 0x60);
-    SetupSprite(PLAYER_SPRITE_SLOT+3, PLAYER_SPRITE_PATTERN+3, 16,16, 0, 0xc0, 0x60);
+    SetupSprite(PLAYER_SPRITE_SLOT + 1, PLAYER_SPRITE_PATTERN + 1, 16, 0, 0, 0xc0, 0x60);
+    SetupSprite(PLAYER_SPRITE_SLOT + 2, PLAYER_SPRITE_PATTERN + 2, 0, 16, 0, 0xc0, 0x60);
+    SetupSprite(PLAYER_SPRITE_SLOT + 3, PLAYER_SPRITE_PATTERN + 3, 16, 16, 0, 0xc0, 0x60);
 
     nextreg(MMU_SLOT_6, PALETTE_PAGE);
     CopyPalette(asset_PlayerPalette, PALETTE_SPRITE_PRIMARY);
     // Grab whatever colour is the background colour. This will be our transparent
     // index.
-    nextreg(MMU_SLOT_6,PLAYER_ANIM_PAGE);
-    nextreg(TRANS_SPRITE_INDEX, *(u8*)SWAP_BANK_0);
+    nextreg(MMU_SLOT_6, PLAYER_ANIM_PAGE);
+    nextreg(TRANS_SPRITE_INDEX, *(u8 *)SWAP_BANK_0);
     SnapToGrid();
 }
 
@@ -92,26 +89,26 @@ void BeginPulsePalette(void)
 {
     nextreg(MMU_SLOT_6, PALETTE_PAGE);
     // A palette pulse was in progress, so cancel it.
-    if (global.pulseColour!=global.pulseTarget)
+    if (global.pulseColour != global.pulseTarget)
     {
         RefreshPlayAreaBlock(global.pulseCoord.x, global.pulseCoord.y, 0);
     }
     global.pulseColour = 0x1ff;
     global.pulseTarget = asset_TilemapPalette[4];
-    global.pulseCoord = player.playgrid;
-    RefreshPlayAreaBlock(player.playgrid.x, player.playgrid.y, 1);
-    SetColour(PALETTE_TILE_PRIMARY, 16+4, global.pulseColour);
+    global.pulseCoord = player.playGrid;
+    RefreshPlayAreaBlock(player.playGrid.x, player.playGrid.y, 1);
+    SetColour(PALETTE_TILE_PRIMARY, 16 + 4, global.pulseColour);
 }
 
 //---------------------------------------------------------
 void PulsePalette(void)
 {
-    if (global.pulseColour==global.pulseTarget)
+    if (global.pulseColour == global.pulseTarget)
         return;
 
     global.pulseColour = BlendColour(global.pulseColour, global.pulseTarget);
-    SetColour(PALETTE_TILE_PRIMARY, 16+4, global.pulseColour);
-    if (global.pulseColour==global.pulseTarget)
+    SetColour(PALETTE_TILE_PRIMARY, 16 + 4, global.pulseColour);
+    if (global.pulseColour == global.pulseTarget)
     {
         RefreshPlayAreaBlock(global.pulseCoord.x, global.pulseCoord.y, 0);
     }
@@ -120,18 +117,18 @@ void PulsePalette(void)
 //---------------------------------------------------------
 void HandlePickup(void)
 {
-    SetPlayerAnimIdle(player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
-    u8 vxlz=0, vxgz=0, vylz=0, vygz=0;
-    for (int i=0; i<32; i++)
+    SetPlayerAnimIdle(player.direction * 8 + PLAYERSPR_IDLE_ANIM, 0, 0);
+    u8 vxlz = 0, vxgz = 0, vylz = 0, vygz = 0;
+    for (int i = 0; i < 32; i++)
     {
-        s16 px = player.object.position.x+(16<<FIXED_POINT_BITS)+((s16)random8()<<3);
-        s16 py = player.object.position.y+(8<<FIXED_POINT_BITS)+((s16)random8()<<3);
-        //x_printf("px:%d, py:%d\n", px>>FIXED_POINT_BITS, py>>FIXED_POINT_BITS);
+        s16 px = player.object.position.x + I_TO_F(16) + ((s16)random8() << 3);
+        s16 py = player.object.position.y + I_TO_F(8) + ((s16)random8() << 3);
+        // x_printf("px:%d, py:%d\n", F_TO_I(px), F_TO_I(py));
         s16 vx = random8();
         s16 vy = random8();
-        s8 width = random8()&3+1;
-        s8 colour = random8()|0xf0;
-        s8 age = (random8()&31)+24;
+        s8 width = random8() & 3 + 1;
+        s8 colour = random8() | 0xf0;
+        s8 age = (random8() & 31) + 24;
         AddParticle(px, py, vx, vy, age, colour, width, 0);
     }
 }
@@ -140,9 +137,9 @@ void HandlePickup(void)
 void HandleDeath(bool fallThrough)
 {
     (void)fallThrough;
-    SetPlayerAnimIdle(player.direction*8+PLAYERSPR_IDLE_ANIM,0,-FIXED_POINT_ONE*2);
+    SetPlayerAnimIdle(player.direction * 8 + PLAYERSPR_IDLE_ANIM, 0, -FIXED_POINT_ONE * 2);
     player.moveSteps = 64;
-    player.object.gravity = FIXED_POINT_HALF/2;
+    player.object.gravity = FIXED_POINT_HALF / 2;
 }
 
 //---------------------------------------------------------
@@ -151,31 +148,31 @@ void HandleControllerInput(void)
     u8 buttons = ReadController();
     if (hud.transitionIsRunning)
         return;
-    if (buttons & (1<<JOYPAD_L_LEFT))
+    if (buttons & JOYPAD_L_LEFT)
     {
-        player.playgrid.x--;
-        SetPlayerAnim(PLAYERSPR_L+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
+        player.playGrid.x--;
+        SetPlayerAnim(PLAYERSPR_L + PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
         return;
     }
-    if (buttons & (1<<JOYPAD_L_RIGHT))
+    if (buttons & JOYPAD_L_RIGHT)
     {
-        player.playgrid.x++;
-        SetPlayerAnim(PLAYERSPR_R+PLAYERSPR_RUN_ANIM,PLAYERDIR_BR,FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
+        player.playGrid.x++;
+        SetPlayerAnim(PLAYERSPR_R + PLAYERSPR_RUN_ANIM, PLAYERDIR_BR, FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
         return;
     }
-    if (buttons & (1<<JOYPAD_L_UP))
+    if (buttons & JOYPAD_L_UP)
     {
-        player.playgrid.y--;
-        SetPlayerAnim(PLAYERSPR_U+PLAYERSPR_RUN_ANIM,PLAYERDIR_TL,-FIXED_POINT_ONE,-FIXED_POINT_ONE*5);
+        player.playGrid.y--;
+        SetPlayerAnim(PLAYERSPR_U + PLAYERSPR_RUN_ANIM, PLAYERDIR_TL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
         return;
     }
-    if (buttons & (1<<JOYPAD_L_DOWN))
+    if (buttons & JOYPAD_L_DOWN)
     {
-        player.playgrid.y++;
-        SetPlayerAnim(PLAYERSPR_D+PLAYERSPR_RUN_ANIM,PLAYERDIR_BL,FIXED_POINT_ONE,-FIXED_POINT_ONE*2);
+        player.playGrid.y++;
+        SetPlayerAnim(PLAYERSPR_D + PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
         return;
     }
-    if (buttons & (1<<JOYPAD_R_DOWN))
+    if (buttons & JOYPAD_R_DOWN)
     {
         playArea.tilesToFlip = 1;
     }
@@ -191,9 +188,10 @@ void MovePlayer(void)
         player.object.position.y += player.object.velocity.y;
         player.object.velocity.y += player.object.gravity;
         player.moveSteps--;
-        if (player.moveSteps!=0)
+        if (player.moveSteps != 0)
         {
-            if (player.object.position.y>>FIXED_POINT_BITS>(256+32))
+            s16 dy = F_TO_I(player.object.position.y+tileMap.position.y);
+            if (dy > 256+32)
             {
                 // We must have been in a die. Respawn now.
                 InitializePlayer();
@@ -201,19 +199,19 @@ void MovePlayer(void)
             return;
         }
         SnapToGrid();
-        play_cell* pCell = GetPlayAreaCell(player.playgrid.x, player.playgrid.y);
-        x_printf("Coord:(%d,%d), content:%c\n", player.playgrid.x, player.playgrid.y, *(u8*)pCell);
-        if (pCell->type==2)
+        play_cell *pCell = GetPlayAreaCell(player.playGrid.x, player.playGrid.y);
+        //x_printf("Coord:(%d,%d), content:%c\n", player.playGrid.x, player.playGrid.y, *(u8 *)pCell);
+        if (pCell->type == 2)
         {
             HandlePickup();
         }
-        else if (pCell->type==0)
+        else if (pCell->type == 0)
         {
             HandleDeath(true);
         }
         else
         {
-            SetPlayerAnimIdle(player.direction*8+PLAYERSPR_IDLE_ANIM,0,0);
+            SetPlayerAnimIdle(player.direction * 8 + PLAYERSPR_IDLE_ANIM, 0, 0);
         }
         if (pCell->type && !pCell->dark)
         {
@@ -225,13 +223,13 @@ void MovePlayer(void)
                 x_printf("Tile full bonus.\n");
             }
             playArea.tilesToFlip--;
-            x_printf("%d tiles remaining.", (s16)playArea.tilesToFlip);
-            if (playArea.tilesToFlip==0)
+            //x_printf("%d tiles remaining.", (s16)playArea.tilesToFlip);
+            if (playArea.tilesToFlip == 0)
             {
                 x_printf("No more tiles. Restart.\n");
                 // End of map, needs to go on to the next
                 hud.gameIsRunning = false;
-                StartTransition(50, 0, 0, I_TO_F(5), I_TO_F(-1), I_TO_F(1)/4);
+                StartTransition(50, 0, 0, I_TO_F(5), I_TO_F(-1), I_TO_F(1) / 4);
             }
         }
         return;
@@ -239,16 +237,15 @@ void MovePlayer(void)
     HandleControllerInput();
 }
 
-
 //---------------------------------------------------------
 void AnimatePlayer(void)
 {
     player.object.animDelay--;
-    if (player.object.animDelay<0)
+    if (player.object.animDelay < 0)
     {
         player.object.animDelay = player.object.animSpeed;
         player.object.frameIndex++;
-        if (player.object.frameIndex!=player.object.totalFrames)
+        if (player.object.frameIndex != player.object.totalFrames)
             return;
         player.object.frameIndex = 0;
     }
@@ -264,27 +261,34 @@ void UpdatePlayer(void)
 //---------------------------------------------------------
 void RenderPlayer(void)
 {
-    u8 animIndex = player.object.baseIndex+player.object.frameIndex;
-    if (animIndex!=player.object.lastIndex)
+    u8 animIndex = player.object.baseIndex + player.object.frameIndex;
+    if (animIndex != player.object.lastIndex)
     {
         player.object.lastIndex = animIndex;
-        u8 page = (animIndex>>3)+PLAYER_ANIM_PAGE;
-        nextreg(MMU_SLOT_6,page);
-        u8* pPattern = (u8*)SWAP_BANK_0+((animIndex&7)<<10);
+        u8 page = (animIndex >> 3) + PLAYER_ANIM_PAGE;
+        nextreg(MMU_SLOT_6, page);
+        u8 *pPattern = (u8 *)SWAP_BANK_0 + ((animIndex & 7) << 10);
         CopySprite(pPattern, PLAYER_SPRITE_PATTERN, 4);
     }
     nextreg(SPRITE_INDEX, PLAYER_SPRITE_SLOT);
-    s16 x = (player.object.position.x>>FIXED_POINT_BITS)+hud.shake.x+3;
-    s16 y = (player.object.position.y>>FIXED_POINT_BITS)+hud.shake.y;
-    if ((x<-32) || (x>=320) || (y<-32) || (y>=256))
+    s16 tx = F_TO_I(tileMap.position.x) & 0xfffe;
+    s16 ty = F_TO_I(tileMap.position.y);
+
+    s16 px = F_TO_I(player.object.position.x);
+    s16 py = F_TO_I(player.object.position.y);
+     
+    s16 x = px + tx + hud.shake.x + TILEMAP_PIX_WIDTH/2 + PLAYER_TO_TILE_X_OFFSET;
+    s16 y = py + ty + hud.shake.y + TILEMAP_PIX_HEIGHT/2 + PLAYER_TO_TILE_Y_OFFSET;
+
+    if ((x < -32) || (x >= 320) || (y < -32) || (y >= 256))
     {
         // Hide the sprite if clipped
         nextreg(SPRITE_ATTR_3, 0);
         return;
     }
-    nextreg(SPRITE_ATTR_0, x&0xff);
+    nextreg(SPRITE_ATTR_0, x & 0xff);
     nextreg(SPRITE_ATTR_1, y);
-    nextreg(SPRITE_ATTR_2, (x>>8)&1);
+    nextreg(SPRITE_ATTR_2, (x >> 8) & 1);
     nextreg(SPRITE_ATTR_3, 0xc0);
-    nextreg(SPRITE_ATTR_4, (y>>8)&1);
+    nextreg(SPRITE_ATTR_4, (y >> 8) & 1);
 }

@@ -41,6 +41,7 @@ GRV=6		; Gravestone
 
 	_asset_PlayArea_01:
 	db 8,6
+	db 0,0
 	db 0,0,0,1,1,1,2,0
 	db 0,0,0,1,1,1,1,1
 	db 0,0,0,1,1,1,1,1
@@ -50,6 +51,7 @@ GRV=6		; Gravestone
 
 _asset_PlayArea_02:
 	db 7,7
+	db 0,0
 	db 1, 1, 1, 1, 0, 0, 0
 	db 1, 2, 2, 1, 0, 0 ,0
 	db 1, 2, 2, 1, 0, 0 ,0
@@ -60,6 +62,7 @@ _asset_PlayArea_02:
 
 _asset_PlayArea_03:
 	db 10,10
+	db -3,-3
 	db BLK,BLK,BLK,BLK,BLK,BLK,___,___,___,___
 	db BLK,BLK,TRE,___,BLK,BLK,___,___,___,___
 	db BLK,BLK,BLK,BLK,BLK,___,BLK,BLK,___,___
