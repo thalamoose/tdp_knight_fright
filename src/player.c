@@ -27,6 +27,7 @@ void SnapToGrid(void)
 
     player.object.position.x = I_TO_F(sx);
     player.object.position.y = I_TO_F(sy);
+    player.object.gravity = FIXED_POINT_HALF;
 }
 
 //---------------------------------------------------------
@@ -52,8 +53,6 @@ void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy)
 //---------------------------------------------------------
 void InitializePlayer(void)
 {
-    player.object.position.x = 0;
-    player.object.position.y = 0;
     player.object.flags.direction = 0;
     player.object.frameIndex = 0;
     player.object.baseIndex = 32;
@@ -61,14 +60,12 @@ void InitializePlayer(void)
     player.object.animDelay = 4;
     player.object.animSpeed = 4;
     player.object.totalFrames = 8;
-    player.object.gravity = FIXED_POINT_HALF;
     player.playGrid.x = playArea.start.x;
     player.playGrid.y = playArea.start.y;
-    player.moveSteps = 0;
     //
     // Set up sprites 64..67, so that only the minimum needs to be set up below.
     //
-    SetupSprite(PLAYER_SPRITE_SLOT, PLAYER_SPRITE_PATTERN, 0, 0, 0, 0xc0, 0);
+    SetupSprite(PLAYER_SPRITE_SLOT, PLAYER_SPRITE_PATTERN, 0, 0, 0, 0x40, 0);
     SetupSprite(PLAYER_SPRITE_SLOT + 1, PLAYER_SPRITE_PATTERN + 1, 16, 0, 0, 0xc0, 0x60);
     SetupSprite(PLAYER_SPRITE_SLOT + 2, PLAYER_SPRITE_PATTERN + 2, 0, 16, 0, 0xc0, 0x60);
     SetupSprite(PLAYER_SPRITE_SLOT + 3, PLAYER_SPRITE_PATTERN + 3, 16, 16, 0, 0xc0, 0x60);
@@ -80,6 +77,11 @@ void InitializePlayer(void)
     nextreg(MMU_SLOT_6, PLAYER_ANIM_PAGE);
     nextreg(TRANS_SPRITE_INDEX, *(u8 *)SWAP_BANK_0);
     SnapToGrid();
+    player.moveSteps = 32;
+    player.object.position.y -= I_TO_F(TILEMAP_PIX_HEIGHT/2+64);
+    player.object.velocity.x = 0;
+    player.object.velocity.y = FIXED_POINT_HALF*4;
+    player.object.gravity = FIXED_POINT_HALF/2;
 }
 
 //---------------------------------------------------------
@@ -122,13 +124,14 @@ void HandlePickup(void)
     for (int i = 0; i < 32; i++)
     {
         s16 px = player.object.position.x + I_TO_F(16) + ((s16)random8() << 3);
-        s16 py = player.object.position.y + I_TO_F(8) + ((s16)random8() << 3);
-        // x_printf("px:%d, py:%d\n", F_TO_I(px), F_TO_I(py));
+        s16 py = player.object.position.y + I_TO_F(-16) + ((s16)random8() << 3);
         s16 vx = random8();
         s16 vy = random8();
         s8 width = random8() & 3 + 1;
         s8 colour = random8() | 0xf0;
         s8 age = (random8() & 31) + 24;
+        px += I_TO_F(TILEMAP_PIX_WIDTH/2)+tileMap.position.x;
+        py += I_TO_F(TILEMAP_PIX_HEIGHT/2)+tileMap.position.y;
         AddParticle(px, py, vx, vy, age, colour, width, 0);
     }
 }
@@ -271,14 +274,14 @@ void RenderPlayer(void)
         CopySprite(pPattern, PLAYER_SPRITE_PATTERN, 4);
     }
     nextreg(SPRITE_INDEX, PLAYER_SPRITE_SLOT);
-    s16 tx = F_TO_I(tileMap.position.x) & 0xfffe;
-    s16 ty = F_TO_I(tileMap.position.y);
+    s16 tx = tileMap.position.x & I_TO_F(0xfffe);
+    s16 ty = tileMap.position.y;
 
-    s16 px = F_TO_I(player.object.position.x);
-    s16 py = F_TO_I(player.object.position.y);
+    s16 px = F_TO_I(tx+player.object.position.x);
+    s16 py = F_TO_I(ty+player.object.position.y);
      
-    s16 x = px + tx + hud.shake.x + TILEMAP_PIX_WIDTH/2 + PLAYER_TO_TILE_X_OFFSET;
-    s16 y = py + ty + hud.shake.y + TILEMAP_PIX_HEIGHT/2 + PLAYER_TO_TILE_Y_OFFSET;
+    s16 x = px + hud.shake.x + TILEMAP_PIX_WIDTH/2 + PLAYER_TO_TILE_X_OFFSET;
+    s16 y = py + hud.shake.y + TILEMAP_PIX_HEIGHT/2 + PLAYER_TO_TILE_Y_OFFSET;
 
     if ((x < -32) || (x >= 320) || (y < -32) || (y >= 256))
     {

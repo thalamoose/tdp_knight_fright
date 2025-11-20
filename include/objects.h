@@ -2,6 +2,13 @@
 #define __OBJECT_H
 #include "kftypes.h"
 
+/*
+	All coordinates are internally held as signed 10.6 fixed point.
+	Coordinate origin is (0,0), this matches the center of the
+	screen.
+	The dynamic range is -512 to 511
+*/
+
 typedef struct s_object
 {
 	coord position;
@@ -15,10 +22,10 @@ typedef struct s_object
 	u8 totalFrames;
 	struct
 	{
-		u8 active : 1;
-		u8 pingpong : 1;
-		u8 is4bit : 1;
-		u8 direction : 1;
+		bool active;
+		bool pingpong;
+		bool is4bit;
+		bool direction;
 	} flags;
 
 } object;
