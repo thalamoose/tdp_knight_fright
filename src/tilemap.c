@@ -52,8 +52,7 @@ void InitializeTilemap(void)
 	playArea.position.y = 0;
 	tileMap.position.x = 0;
 	tileMap.position.y = 0;
-	tileMap.moveTarget.x = tileMap.position.x;
-	tileMap.moveTarget.y = tileMap.position.y;
+	SetTilemapMoveTarget();
 	// Just clip the entire tilemap. It'll get reset after the first update.
 	nextreg(TILEMAP_CLIP_WINDOW, 255);
 	nextreg(TILEMAP_CLIP_WINDOW, 255);
@@ -61,9 +60,11 @@ void InitializeTilemap(void)
 	nextreg(TILEMAP_CLIP_WINDOW, 255);
 }
 
+//---------------------------------------------------------
 void ResetTilemap(void)
 {
 	InitializeTilemap();
+
 }
 
 //---------------------------------------------------------
@@ -89,7 +90,22 @@ tilemap_cell *GetTilemapCell(s8 x, s8 y)
 	return (tilemap_cell *)SWAP_BANK_0 + (y * TILEMAP_CHAR_WIDTH + x);
 }
 
-coord lastPlayGrid;
+//---------------------------------------------------------
+void SetTilemapMoveTarget(void)
+{
+	tileMap.lastPlayGrid.x = player.playGrid.x;
+	tileMap.lastPlayGrid.y = player.playGrid.y;
+
+	s16 px = playArea.position.x-player.playGrid.x;
+	s16 py = playArea.position.y-player.playGrid.y;
+
+	s16 sx = (px + py) * 16-22;
+	s16 sy = (py - px) * 24+16;
+
+	tileMap.moveTarget.x = I_TO_F(sx);
+	tileMap.moveTarget.y = I_TO_F(sy);
+}
+
 //---------------------------------------------------------
 void UpdateTilemap(void)
 {
@@ -111,21 +127,11 @@ void UpdateTilemap(void)
 		tileMap.position.x -= FIXED_POINT_ONE * 2;
 	}
 
-	s8 dgx = player.playGrid.x-lastPlayGrid.x;
-	s8 dgy = player.playGrid.y-lastPlayGrid.y;
+	s8 dgx = player.playGrid.x-tileMap.lastPlayGrid.x;
+	s8 dgy = player.playGrid.y-tileMap.lastPlayGrid.y;
 	if (dgx<-1 || dgx>1 || dgy<-1 || dgy>1)
 	{
-		lastPlayGrid.x = player.playGrid.x;
-		lastPlayGrid.y = player.playGrid.y;
-	
-		s16 px = playArea.position.x-player.playGrid.x;
-		s16 py = playArea.position.y-player.playGrid.y;
-
-		s16 sx = (px + py) * 16-22;
-		s16 sy = (py - px) * 24+16;
-
-		tileMap.moveTarget.x = I_TO_F(sx);
-		tileMap.moveTarget.y = I_TO_F(sy);
+		SetTilemapMoveTarget();
 	}
 
 	tileMap.velocity.x = (tileMap.moveTarget.x-tileMap.position.x)/16;

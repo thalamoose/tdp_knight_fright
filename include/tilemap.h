@@ -7,6 +7,7 @@ typedef struct s_tile_map
 	coord position;
 	coord velocity;
 	coord moveTarget;
+	coord lastPlayGrid;
 } tile_map;
 
 typedef struct s_tile
@@ -28,6 +29,7 @@ void UpdateTilemap(void);
 void RenderTilemap(void);
 void ClearTilemap(void);
 void PasteTilemapBlock(tilemap_cell *pTile, s8 dark, s8 tl, s8 tr, s8 bl, s8 br, s8 palette);
+void SetTilemapMoveTarget(void);
 tilemap_cell *GetTilemapCell(s8 x, s8 y);
 
 extern tile_map tileMap;
