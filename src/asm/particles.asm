@@ -50,6 +50,8 @@ _UpdateParticles:
         ld de,PARTICLE_sizeof
         ld b,MAX_PARTICLES
         ld l,0
+        ld a,l
+        ld (particle_mmu_page),a
 @update_loop:
         bit PARTICLE_ACTIVE,(ix+PARTICLE_flags)
         jr z,@not_active
@@ -120,6 +122,8 @@ update_particle:
         ret
 
 _RemoveParticle:
+        xor a
+        ld (particle_mmu_page),a
         push ix
         ld hl,4
         add hl,sp
@@ -184,8 +188,8 @@ render_particle:
         ld b,FIXED_POINT_BITS
         bsra de,b
         ld a,e
-        cp (PARTICLE_LAYER_WIDTH-PARTICLE_SAFE_AREA-1)&$ff        ; 7
-        jp c,@clipped                                            ; 12
+        cp (PARTICLE_LAYER_HEIGHT-PARTICLE_SAFE_AREA-1)&$ff      ; 7
+        jp nc,@clipped                                            ; 12
         ld hl,de
         ld de,(ix+PARTICLE_X)
         bsra de,b
