@@ -9,7 +9,13 @@
 hud_t hud;
 
 void CopyBackgroundBitmap(u8 srcPage);
+void UpdateHudCount(s16 x, s16 y, u8* bcdDigits, u8* bcdShown);
 
+#define MAX_HUD_SEGMENTS 9
+#define TILE_COUNT_X 8
+#define TILE_COUNT_Y 4
+#define COIN_COUNT_X 23
+#define COIN_COUNT_Y 4
 //---------------------------------------------------------
 void InitializeHud(void)
 {
@@ -23,8 +29,12 @@ void InitializeHud(void)
 	hud.inactiveColour[1] = asset_BackdropPalette[0xe3];
 	CopyBackgroundBitmap(BACKDROP_PAGE);
 	ResetHudTiles();
+ 
+	UpdateHudCount(TILE_COUNT_X, TILE_COUNT_Y, hud.tilesBCD, hud.tilesDigitsShown);
+	UpdateHudCount(COIN_COUNT_X, COIN_COUNT_Y, hud.coinsBCD, hud.coinsDigitsShown);
 	hud.gameIsRunning = true;
 	StartTransition(85, I_TO_F(-240), I_TO_F(-191), I_TO_F(51) / 18, I_TO_F(-3), I_TO_F(1) / 8);
+
 }
 
 void ResetHud(void)
@@ -45,8 +55,8 @@ void CopyBackgroundBitmap(u8 srcPage)
 		dstPage++;
 	}
 	nextreg(MMU_SLOT_6, PALETTE_PAGE);
-	nextreg(MMU_SLOT_7, PALETTE_PAGE + 1);
 	CopyPalette(asset_BackdropPalette, PALETTE_LAYER_2_PRIMARY);
+	CopyPalettePartial(asset_GameDigitsPalette, PALETTE_LAYER_2_PRIMARY, 0xd0, 16);
 }
 
 //---------------------------------------------------------
@@ -80,7 +90,6 @@ void UpdateTransition(void)
 	hud.shake.x = F_TO_I(hud.transPosition.x);
 	hud.shake.y = F_TO_I(hud.transPosition.y);
 
-	// x_printf("dur:%d, shake: %d,%d\n", hud.transDuration, hud.shake.x, hud.shake.y);
 	if (hud.transDuration == 0)
 	{
 		hud.transitionIsRunning = false;
@@ -100,7 +109,6 @@ void UpdateTransition(void)
 //---------------------------------------------------------
 void UpdateShake(void)
 {
-
 	if (hud.shakeDuration == 0)
 	{
 		return;
@@ -156,16 +164,18 @@ void RenderHud(void)
 //---------------------------------------------------------
 void DrawHudDigit(u8 *bitmap, u8 value)
 {
-	u8 *digitData = &asset_GameDigits[value * 9];
+	u8 *digitData = &asset_GameDigits[value*10*4]; // 10 pixels high, 8 pixels wide (packed)
 
-	for (u8 y = 0; y < 9; y++)
+	for (u8 y = 0; y < 10; y++)
 	{
 		u8 *pLine = bitmap;
-		u8 digitLine = *digitData++;
-		for (u8 x = 0; x < 7; x++)
+		
+		for (u8 x = 0; x < 4; x++)
 		{
-			*pLine = (digitLine & 128) ? 254 : 0;
-			digitLine = digitLine << 1;
+			u8 digitLine = *digitData++;
+			*pLine = (digitLine >> 4) | 0xd0;
+			pLine += 256;
+			*pLine = (digitLine & 0x0f) | 0xd0;
 			pLine += 256;
 		}
 		bitmap++;
@@ -173,36 +183,29 @@ void DrawHudDigit(u8 *bitmap, u8 value)
 }
 
 //---------------------------------------------------------
-void UpdateHudCount(s16 x, s16 y, u8 bcdDigits[], u8 bcdShown[])
+void UpdateHudCount(s16 x, s16 y, u8* bcdDigits, u8* bcdShown)
 {
-	u8 i = 0;
-	nextreg(MMU_SLOT_6, LAYER_2_PAGE + 2);
-	nextreg(MMU_SLOT_7, LAYER_2_PAGE + 3);
-	u8 *charBase = (u8 *)SWAP_BANK_0 + (x & 63) * 256 + y;
-
-	while (i < 4)
+	// Need access to the font.
+	nextreg(MMU_SLOT_6, PALETTE_PAGE);
+	for (s8 i=3; i>=0; i--)
 	{
-		u8 digit = bcdDigits[i] >> 4;
-		u8 shown = bcdShown[i] >> 4;
-
-		if (digit != shown)
+		if (bcdDigits[i]!=bcdShown[i])
 		{
-			DrawHudDigit(charBase, digit);
+			s16 dx = x;
+			bcdShown[i] = bcdDigits[i];
+			u16 page= LAYER_2_PAGE+(dx>>2);
+			nextreg(MMU_SLOT_7, page);
+			u8 *charBase = (u8 *)SWAP_BANK_1 + ((dx & 3)<<11) + y*10;
+			DrawHudDigit(charBase, bcdDigits[i]>>4);
+			dx++;
+			charBase = (u8 *)SWAP_BANK_1 + ((dx & 3)<<11) + y*10;
+			page= LAYER_2_PAGE+((dx)>>2);
+			nextreg(MMU_SLOT_7, page);
+			DrawHudDigit(charBase, bcdDigits[i] & 0x0f);
 		}
-		digit = bcdDigits[i] & 0x0f;
-		shown = bcdShown[i] & 0x0f;
-		charBase += 256 * 7;
-		if (digit != shown)
-		{
-			DrawHudDigit(charBase, digit);
-		}
-		bcdShown[i] = bcdDigits[i];
-		i++;
-		charBase -= 256 * 7 * 2;
+		x += 2;
 	}
 }
-
-#define MAX_HUD_SEGMENTS 9
 
 //---------------------------------------------------------
 bool IncrementHudTileCount(void)
@@ -210,7 +213,8 @@ bool IncrementHudTileCount(void)
 	u8 segment = hud.segmentsLit;
 	hud.segmentsLit++;
 	bcd_add(hud.tilesBCD, 1);
-	UpdateHudCount(42, 40, hud.tilesBCD, hud.tilesDigitsShown);
+	UpdateHudCount(TILE_COUNT_X, TILE_COUNT_Y, hud.tilesBCD, hud.tilesDigitsShown);
+	UpdateHudCount(COIN_COUNT_X, COIN_COUNT_Y, hud.coinsBCD, hud.coinsDigitsShown);
 	if (hud.segmentsLit >= MAX_HUD_SEGMENTS)
 	{
 		ResetHudTiles();

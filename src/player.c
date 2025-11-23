@@ -216,7 +216,7 @@ void MovePlayer(void)
         {
             SetPlayerAnimIdle(player.direction * 8 + PLAYERSPR_IDLE_ANIM, 0, 0);
         }
-        if (pCell->type && !pCell->dark)
+        if (pCell->type && !pCell->dark && hud.transitionIsRunning==false)
         {
             pCell->dark = 1;
             BeginPulsePalette();
