@@ -66,11 +66,13 @@ void UpdateGame(void)
 void RenderGame(void)
 {
     RenderCopper(); // Must be done first, just after vsync
+    port_out(ULA_PORT, ULA_COLOUR_MAGENTA);
     RenderTilemap();
     RenderPlayer();
     RenderSprites();
+    port_out(ULA_PORT, ULA_COLOUR_BLUE);
     RenderHud();
-    port_out(ULA_PORT, ULA_COLOUR_BLACK);
+    port_out(ULA_PORT, ULA_COLOUR_GREEN);
     RenderParticles(&particles[0]);
     port_out(ULA_PORT, ULA_COLOUR_WHITE);
 }

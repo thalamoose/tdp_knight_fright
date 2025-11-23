@@ -196,7 +196,7 @@
             "request" : "launch",
             "program" : "${file}",
             "console" : "integratedTerminal",
-            "args" : ["assets/kfback.png","build/assets/kfback.bin", "--palette=build/assets/kfback.pal"]
+            "args" : ["assets/numbers.png","build/assets/numbers.bin", "--palette=build/assets/numbers.pal", "--size=8,10", "--tile"]
         }
 
     ]

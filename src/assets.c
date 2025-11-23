@@ -15,6 +15,7 @@ __asm
 	global _asset_BackdropPalette,_asset_PlayerPalette
 	global _asset_SpritePalette,_asset_SpriteData
 	global _asset_TilemapPalette, _asset_TileData
+	global _asset_GameDigitsPalette, _asset_GameDigits
 	global _asset_MapShape_01,_asset_MapShape_02
 	global _asset_PlayArea_01,_asset_PlayArea_02
 	global _asset_PlayArea_03
@@ -75,6 +76,7 @@ _asset_PlayArea_03:
 	db ___,___,___,BLK,BLK,BLK,BLK,BLK,BLK,___
 
 
+	ALIGN 256
 _asset_BackdropPalette:
 	incbin "build/assets/kfback.pal"
 _asset_PlayerPalette:
@@ -83,6 +85,14 @@ _asset_SpritePalette:
 	incbin "build/assets/kfsprites.pal"
 _asset_TilemapPalette:
 	incbin "build/assets/kftiles.pal"
+_tmpe:
+	// We need this space since we will be copying over the palettes
+	// from one slot to another.
+	defs 512-(_tmpe-_asset_TilemapPalette),0
+_asset_GameDigitsPalette:
+	incbin "build/assets/numbers.pal"
+_asset_GameDigits:
+	incbin "build/assets/numbers.bin"
 
 	;
 	;// We need the tile data to be in its own page. The tile data is exactly 8KB so it makes sense
