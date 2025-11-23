@@ -19,27 +19,26 @@ void UpdateHudCount(s16 x, s16 y, u8* bcdDigits, u8* bcdShown);
 //---------------------------------------------------------
 void InitializeHud(void)
 {
-	nextreg(MMU_SLOT_6, PALETTE_PAGE);
 	memset(&hud, 0, sizeof(hud));
+	ResetHud();
+}
+
+void ResetHud(void)
+{
+	CopyBackgroundBitmap(BACKDROP_PAGE);
+	nextreg(MMU_SLOT_6, PALETTE_PAGE);
 	memset(&hud.coinsDigitsShown, 0xff, sizeof(hud.coinsDigitsShown));
 	memset(&hud.tilesDigitsShown, 0xff, sizeof(hud.tilesDigitsShown));
+	ResetHudTiles();
 	hud.activeColour[0] = asset_BackdropPalette[0xe0];
 	hud.activeColour[1] = asset_BackdropPalette[0xe1];
 	hud.inactiveColour[0] = asset_BackdropPalette[0xe2];
 	hud.inactiveColour[1] = asset_BackdropPalette[0xe3];
-	CopyBackgroundBitmap(BACKDROP_PAGE);
-	ResetHudTiles();
  
 	UpdateHudCount(TILE_COUNT_X, TILE_COUNT_Y, hud.tilesBCD, hud.tilesDigitsShown);
 	UpdateHudCount(COIN_COUNT_X, COIN_COUNT_Y, hud.coinsBCD, hud.coinsDigitsShown);
 	hud.gameIsRunning = true;
 	StartTransition(85, I_TO_F(-240), I_TO_F(-191), I_TO_F(51) / 18, I_TO_F(-3), I_TO_F(1) / 8);
-
-}
-
-void ResetHud(void)
-{
-	InitializeHud();
 }
 //---------------------------------------------------------
 void CopyBackgroundBitmap(u8 srcPage)
