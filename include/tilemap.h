@@ -8,6 +8,7 @@ typedef struct s_tile_map
 	coord velocity;
 	coord moveTarget;
 	coord lastPlayGrid;
+	coord lastTilemapPos;
 } tile_map;
 
 typedef struct s_tile

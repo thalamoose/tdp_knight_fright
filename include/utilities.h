@@ -13,6 +13,7 @@ void x_printf(const char *format, ...);
 
 void SetColour(u8 palette, u8 index, u16 colour);
 u16 BlendColour(u16 current, u16 target);
+void DebugTiming(s8 colour);
 
 s16 random16(void);
 s8 random8(void);
@@ -20,5 +21,9 @@ s8 random8(void);
 s16 fp_mul_f88(s16 a, s16 b);
 
 void bcd_add(u8 bcd_array[], u8 value);
+
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 #endif

@@ -15,6 +15,7 @@
         global _SetColour
         global _fp_mul_f88
         global _bcd_add
+        global _DebugTiming
 check_reset:
         xor a
         ret
@@ -156,12 +157,20 @@ _CopyPalettePartial:
         djnz @next_palette
         ret
 
+_DebugTiming:
+        ret
+        ld hl,2
+        add hl,sp
+        ld a,(hl)
+        out (ULA_PORT),a
+        ret
+
 _WaitVSync:
         ld a,0                              ; black border
-        out (ULA_PORT),a
+        ;out (ULA_PORT),a
         halt
         ld a,1                              ; blue border
-        out (ULA_PORT),a
+        ;out (ULA_PORT),a
         ret
 
 _SetColour:
