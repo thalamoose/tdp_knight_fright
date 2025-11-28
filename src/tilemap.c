@@ -28,30 +28,32 @@ void InitializeTilemap(void)
 	// Copy tilemap character data to tilemap area
 	//
 	nextreg(MMU_SLOT_6, TILES_PAGE);
-	nextreg(MMU_SLOT_7, TILEMAP_PAGE);
+	nextreg(MMU_SLOT_7, TILEMAP_CHARS_PAGE);
 	// Copy tile bitmap data
 	memcpy_dma(SWAP_BANK_1, SWAP_BANK_0, 0x2000);
 	//
 	// This is copying characters 1...255 to 0...254 (test purposes). We need character 0 to be blank.
 	//
-	memcpy_dma(SWAP_BANK_1 + 32, SWAP_BANK_0, 0x1fe0);
+	memcpy_dma(SWAP_BANK_1+32, SWAP_BANK_0, 0x1fe0);
 	// Make the first character 0
 	memset(SWAP_BANK_1, 0, 32);
 
 	nextreg(MMU_SLOT_6, PALETTE_PAGE);
 	// Copy slot 0 palette to slot 1, this will be used for pulsing
 	// colours on a block switch.
-	memcpy_dma(asset_TilemapPalette + 16, asset_TilemapPalette, 16 * sizeof(u16));
+	memcpy_dma(asset_TilemapPalette+16, asset_TilemapPalette, 16*sizeof(u16));
 	CopyPalette(asset_TilemapPalette, PALETTE_TILE_PRIMARY);
 
-	nextreg(MMU_SLOT_6, TILEMAP_PAGE + 1);
+	nextreg(MMU_SLOT_6, VIRTUAL_TILEMAP_PAGE);
 	ClearTilemap();
 
 	// Tilemap templates are in the same bank as the palette
-	playArea.position.x = 0;
-	playArea.position.y = 0;
-	tileMap.position.x = 0;
-	tileMap.position.y = 0;
+	playArea.position.x=0;
+	playArea.position.y=0;
+	tileMap.position.x=0;
+	tileMap.position.y=0;
+	tileMap.lastTilemapPos.x=-1;
+	tileMap.lastTilemapPos.y=-1;
 	SetTilemapMoveTarget();
 	// Just clip the entire tilemap. It'll get reset after the first update.
 	nextreg(TILEMAP_CLIP_WINDOW, 255);
@@ -70,138 +72,153 @@ void ResetTilemap(void)
 //---------------------------------------------------------
 void ClearTilemap(void)
 {
-	u8 *pTileTable = SWAP_BANK_0;
-	pTileTable[0] = 0x00;
-	pTileTable[1] = 0x01;
+	u8 *pTileTable=SWAP_BANK_0;
+	pTileTable[0]=0x00;
+	pTileTable[1]=0x01;
 	// Since I know this copies forward, I can copy the first 2 bytes
 	// to the rest with a DMA memcpy. It's a lot faster.
-	memcpy_dma(pTileTable + 2, pTileTable, TILEMAP_CHAR_WIDTH * TILEMAP_CHAR_HEIGHT * sizeof(tilemap_cell) - 2);
+	u16 szTilemap = VIRTUAL_TILEMAP_WIDTH*VIRTUAL_TILEMAP_HEIGHT*sizeof(tilemap_cell);
+	memcpy_dma(pTileTable+2, pTileTable, szTilemap-sizeof(tilemap_cell));
 }
 
 //---------------------------------------------------------
 tilemap_cell *GetTilemapCell(s8 x, s8 y)
 {
-	x += TILEMAP_CHAR_WIDTH / 2;
-	y += TILEMAP_CHAR_HEIGHT / 2;
-	if ((x < 0) || (x >= TILEMAP_CHAR_WIDTH))
+	x += VIRTUAL_TILEMAP_WIDTH/2;
+	y += VIRTUAL_TILEMAP_HEIGHT/2;
+	if ((x<0) || (x>=VIRTUAL_TILEMAP_WIDTH))
 		return NULL;
-	if ((y < 0) || (y >= TILEMAP_CHAR_HEIGHT))
+	if ((y<0) || (y>=VIRTUAL_TILEMAP_HEIGHT))
 		return NULL;
-	return (tilemap_cell *)SWAP_BANK_0 + (y * TILEMAP_CHAR_WIDTH + x);
+	return (tilemap_cell*)SWAP_BANK_0+(y*VIRTUAL_TILEMAP_WIDTH)+x;
 }
 
 //---------------------------------------------------------
 void SetTilemapMoveTarget(void)
 {
-	tileMap.lastPlayGrid.x = player.playGrid.x;
-	tileMap.lastPlayGrid.y = player.playGrid.y;
+	tileMap.lastPlayGrid.x=player.playGrid.x;
+	tileMap.lastPlayGrid.y=player.playGrid.y;
 
-	s16 px = playArea.position.x-player.playGrid.x;
-	s16 py = playArea.position.y-player.playGrid.y;
+	s16 px=playArea.position.x-player.playGrid.x;
+	s16 py=playArea.position.y-player.playGrid.y;
 
-	s16 sx = (px + py) * 16-22;
-	s16 sy = (py - px) * 24+16;
+	s16 sx=(px+py)*16-22;
+	s16 sy=(py-px)*24+16;
 
-	tileMap.moveTarget.x = I_TO_F(sx);
-	tileMap.moveTarget.y = I_TO_F(sy);
+	tileMap.moveTarget.x=I_TO_F(sx);
+	tileMap.moveTarget.y=I_TO_F(sy);
 }
 
 //---------------------------------------------------------
 void UpdateTilemap(void)
 {
-	u8 buttons = ReadController();
+	u8 buttons=ReadController();
 	if (buttons & JOYPAD_R_DOWN)
 	{
-		tileMap.position.y += FIXED_POINT_ONE * 2;
+		tileMap.position.y += FIXED_POINT_ONE*2;
 	}
 	if (buttons & JOYPAD_R_UP)
 	{
-		tileMap.position.y -= FIXED_POINT_ONE * 2;
+		tileMap.position.y -= FIXED_POINT_ONE*2;
 	}
 	if (buttons & JOYPAD_R_RIGHT)
 	{
-		tileMap.position.x += FIXED_POINT_ONE * 2;
+		tileMap.position.x += FIXED_POINT_ONE*2;
 	}
 	if (buttons & JOYPAD_R_LEFT)
 	{
-		tileMap.position.x -= FIXED_POINT_ONE * 2;
+		tileMap.position.x -= FIXED_POINT_ONE*2;
 	}
 
-	s8 dgx = player.playGrid.x-tileMap.lastPlayGrid.x;
-	s8 dgy = player.playGrid.y-tileMap.lastPlayGrid.y;
+	s8 dgx=player.playGrid.x-tileMap.lastPlayGrid.x;
+	s8 dgy=player.playGrid.y-tileMap.lastPlayGrid.y;
 	if (dgx<-1 || dgx>1 || dgy<-1 || dgy>1)
 	{
 		SetTilemapMoveTarget();
 	}
 
-	tileMap.velocity.x = (tileMap.moveTarget.x-tileMap.position.x)/16;
-	tileMap.velocity.y = (tileMap.moveTarget.y-tileMap.position.y)/16;
-#if 0
-	if (tileMap.velocity.x || tileMap.velocity.y)
-	{
-		x_printf("pos:%d,%d,tgt:%d,%d,vel:%d,%d\n", 
-			F_TO_I(tileMap.position.x), F_TO_I(tileMap.position.y),
-			F_TO_I(tileMap.moveTarget.x), F_TO_I(tileMap.moveTarget.y),
-			F_TO_I(tileMap.velocity.x), F_TO_I(tileMap.velocity.y));
-	}
-#endif
+	tileMap.velocity.x=(tileMap.moveTarget.x-tileMap.position.x)/16;
+	tileMap.velocity.y=(tileMap.moveTarget.y-tileMap.position.y)/16;
 	tileMap.position.x += tileMap.velocity.x;
 	tileMap.position.y += tileMap.velocity.y;
 }
 
 //---------------------------------------------------------
+void BlitTilemap(tilemap_cell* src, tilemap_cell* dst)
+{
+	DebugTiming(ULA_COLOUR_MAGENTA);
+	for (u8 i=0; i<TILEMAP_CHAR_HEIGHT; i++)
+	{
+		memcpy_dma(dst, src, TILEMAP_CHAR_WIDTH*sizeof(tilemap_cell));
+		src += VIRTUAL_TILEMAP_WIDTH;
+		dst += TILEMAP_CHAR_WIDTH;
+	}
+	DebugTiming(ULA_COLOUR_BLACK);
+}
+
+//---------------------------------------------------------
 void RenderTilemap(void)
 {
-	s16 x = F_TO_I(tileMap.position.x) + hud.shake.x + 2;
-	s16 y = F_TO_I(tileMap.position.y) + hud.shake.y;
-	s16 lClip = x;
-	s16 rClip = lClip + 318;
-	s16 tClip = y;
-	s16 bClip = tClip + 255;
-	if (lClip < 0) lClip = 0;
-	if (rClip > 318) rClip = 318;
-	if (tClip < 0) tClip = 0;
-	if (bClip > 255) bClip = 255;
-	x = -x;
-	y = -y;
-	if (x < 0) x = 320 + x;
-	if (y < 0) y = 256 + y;
-	nextreg(TILEMAP_OFFSET_X_H, (x >> 8) & 0x1);
-	nextreg(TILEMAP_OFFSET_X_L, x);
-	nextreg(TILEMAP_OFFSET_Y, y);
-	nextreg(TILEMAP_CLIP_WINDOW, lClip >> 1);
-	nextreg(TILEMAP_CLIP_WINDOW, rClip >> 1);
+	s16 x=F_TO_I(tileMap.position.x)+hud.shake.x+2;
+	s16 y=F_TO_I(tileMap.position.y)+hud.shake.y;
+	if (x==tileMap.lastTilemapPos.x && y==tileMap.lastTilemapPos.y)
+	{
+		return;
+	}
+	tileMap.lastTilemapPos.x = x;
+	tileMap.lastTilemapPos.y = y;
+	s16 lClip=x+(TILEMAP_PIX_WIDTH-VIRTUAL_TILEMAP_PIX_WIDTH)/2;
+	s16 rClip=lClip+VIRTUAL_TILEMAP_PIX_WIDTH-1;
+	s16 tClip=y+(TILEMAP_PIX_HEIGHT-VIRTUAL_TILEMAP_PIX_HEIGHT)/2;
+	s16 bClip=tClip+VIRTUAL_TILEMAP_PIX_HEIGHT-1;
+	lClip = MAX(lClip, TILEMAP_SAFE_AREA);
+	rClip = MIN(rClip, TILEMAP_PIX_WIDTH-TILEMAP_SAFE_AREA-1);
+	tClip = MAX(tClip,TILEMAP_SAFE_AREA);
+	bClip = MIN(bClip, TILEMAP_PIX_HEIGHT-TILEMAP_SAFE_AREA-1);
+	s16 sx = -x;
+	s16 sy = -y;
+	nextreg(TILEMAP_OFFSET_X_H, 0);
+	nextreg(TILEMAP_OFFSET_X_L, sx&7);
+	nextreg(TILEMAP_OFFSET_Y, sy&7);
+	nextreg(TILEMAP_CLIP_WINDOW, lClip>>1);
+	nextreg(TILEMAP_CLIP_WINDOW, rClip>>1);
 	nextreg(TILEMAP_CLIP_WINDOW, tClip);
 	nextreg(TILEMAP_CLIP_WINDOW, bClip);
+	s16 tmapx=(sx>>3)+4;
+	s16 tmapy=(sy>>3)+8;
+	tilemap_cell* pCell = ((tilemap_cell*)SWAP_BANK_0)+tmapx+(tmapy*VIRTUAL_TILEMAP_WIDTH);
+	nextreg(MMU_SLOT_6, VIRTUAL_TILEMAP_PAGE);
+	nextreg(MMU_SLOT_7, TILEMAP_PAGE);
+	BlitTilemap(pCell, (tilemap_cell*)SWAP_BANK_1);
 }
 
 //---------------------------------------------------------
 void PasteTilemapEdge(tilemap_cell *pTile, u8 baseBlock, u8 attr, u8 l, u8 r)
 {
-	u8 blk = baseBlock + l * 4;
+	u8 blk=baseBlock+l*4;
 
-	pTile->value = blk++;
-	pTile->attr = attr;
+	pTile->value=blk++;
+	pTile->attr=attr;
 	pTile++;
-	pTile->value = blk;
-	pTile->attr = attr;
+	pTile->value=blk;
+	pTile->attr=attr;
 	pTile++;
-	blk = baseBlock + r * 4 + 2;
+	blk=baseBlock+r*4+2;
 	// TR
-	pTile->value = blk++;
-	pTile->attr = attr;
+	pTile->value=blk++;
+	pTile->attr=attr;
 	pTile++;
-	pTile->value = blk;
-	pTile->attr = attr;
+	pTile->value=blk;
+	pTile->attr=attr;
 }
 
 //---------------------------------------------------------
 static void PasteTilemapMiddle(tilemap_cell *pTile, u8 baseBlock, u8 attr)
 {
-	for (u8 i = 0; i < 4; i++)
+	for (u8 i=0; i<4; i++)
 	{
-		pTile->value = baseBlock++;
-		pTile->attr = attr;
+		pTile->value=baseBlock++;
+		pTile->attr=attr;
 		pTile++;
 	}
 }
@@ -211,10 +228,11 @@ void PasteTilemapBlock(tilemap_cell *pTile, s8 dark, s8 tl, s8 tr, s8 bl, s8 br,
 {
 	// The +1 is because block 0 is the blank block. We're leaving that for now. But we'll
 	// sort it out when the tilemap is properly laid out.
-	u8 attr = (palette << 4) | 1;
-	u8 darkOffset = dark * 12 + 1;
+	tileMap.lastTilemapPos.x = -1;		// Invalidate tilemap so it'll get updated
+	u8 attr=(palette << 4) | 1;
+	u8 darkOffset=dark*12+1;
 	PasteTilemapEdge(pTile, darkOffset, attr, tl, tr);
-	PasteTilemapMiddle(pTile + TILEMAP_CHAR_WIDTH, darkOffset + 24, attr);
-	PasteTilemapMiddle(pTile + TILEMAP_CHAR_WIDTH * 2, darkOffset + 48, attr);
-	PasteTilemapEdge(pTile + TILEMAP_CHAR_WIDTH * 3, darkOffset + 72, 1, bl, br);
+	PasteTilemapMiddle(pTile+VIRTUAL_TILEMAP_WIDTH, darkOffset+24, attr);
+	PasteTilemapMiddle(pTile+VIRTUAL_TILEMAP_WIDTH*2, darkOffset+48, attr);
+	PasteTilemapEdge(pTile+VIRTUAL_TILEMAP_WIDTH*3, darkOffset+72, 1, bl, br);
 }

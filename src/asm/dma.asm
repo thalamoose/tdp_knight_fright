@@ -17,8 +17,6 @@ _memcpy_dma:
         push ix
         ld ix,0
         add ix,sp
-        ld a,6
-        out (ULA_PORT),a
         ld de,(ix+4)
         ld (memcpy_dst),de
         ld de,(ix+6)
@@ -28,11 +26,7 @@ _memcpy_dma:
         ld hl,memcpy_dma_xfer
         ld b,memcpy_dma_len
         ld c,ZXN_DMA_PORT
-        ld a,5
-        out (ULA_PORT),a
         otir
-        ld a,0
-        out (ULA_PORT),a
         pop ix
         ret
 
@@ -50,7 +44,7 @@ _CopySprite:
         ld bc,SPRITE_SLOT_PORT
         out (c),a
         ld a,6
-        out (ULA_PORT),a
+        ;out (ULA_PORT),a
         ld a,e
         ld (sprcpy_len+1),a
         xor a
@@ -60,7 +54,7 @@ _CopySprite:
         ld b,sprcpy_dma_len
         ld c,ZXN_DMA_PORT
         ld a,5
-        out (ULA_PORT),a
+        ;out (ULA_PORT),a
         otir
         ld a,0
         out (ULA_PORT),a

@@ -56,17 +56,17 @@ int main(void)
         while (hud.gameIsRunning || hud.transitionIsRunning)
         {
             UpdateGame();
-            port_out(ULA_PORT, ULA_COLOUR_BLACK);
-            WaitVSync();
-            port_out(ULA_PORT, ULA_COLOUR_CYAN);
-            RenderGame();
-            port_out(ULA_PORT, ULA_COLOUR_YELLOW);
+            DebugTiming(ULA_COLOUR_BLACK);
             c++;
             if (c>50)
             {
                 c=0;
                 x_printf("\n");
             }
+            WaitVSync();
+            DebugTiming(ULA_COLOUR_CYAN);
+            RenderGame();
+            DebugTiming(ULA_COLOUR_YELLOW);
         }
         EndGame();
     }
