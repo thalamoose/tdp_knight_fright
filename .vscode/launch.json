@@ -196,7 +196,7 @@
             "request" : "launch",
             "program" : "${file}",
             "console" : "integratedTerminal",
-            "args" : ["assets/numbers.png","build/assets/numbers.bin", "--palette=build/assets/numbers.pal", "--size=8,10", "--tile"]
+            "args" : ["--size=16,16","--sprite", "--packed", "assets/coins.png", "build/assets/coins.bin", "--palette=build/assets/coins.pal"]
         }
 
     ]

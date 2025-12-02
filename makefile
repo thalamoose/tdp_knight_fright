@@ -44,7 +44,7 @@ DEP_FILES := $(C_SRCS:src/%.c=$(DEP_DIR)/%.d)
 ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
 		$(OUT)/kfback.bin $(OUT)/kftiles.bin \
 		$(OUT)/shape_01.map $(OUT)/shape_02.map $(OUT)/charset.bin \
-		$(OUT)/numbers.bin \
+		$(OUT)/numbers.bin $(OUT)/coins.bin \
 		makefile
 
 ##ASM_SRCS := $(wildcard $(ASM_SRC_DIR)/*.asm)
@@ -82,6 +82,9 @@ $(OUT)/kftiles.bin: assets/kftiles.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) $< $@ --tile --palette=$(@:.bin=.pal)
 
+$(OUT)/coins.bin: assets/coins.png makefile
+	$(ECHO) Slicing $<...
+	$(SLICER) --size=16,16 --packed --sprite $< $@ --palette=$(@:.bin=.pal)
 
 $(OUT)/numbers.bin: assets/numbers.png makefile
 	$(ECHO) Slicing $<...
