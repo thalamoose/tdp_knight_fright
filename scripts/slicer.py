@@ -41,6 +41,8 @@ def main(args):
         block_width=16
         block_height=16
         max_colors=256
+        if args.packed:
+            max_colors=16
     else:
         block_width=cropped_image.width
         block_height=cropped_image.height
@@ -109,6 +111,7 @@ parser.add_argument('--sprite',dest='sprites',action='store_true',help='Assume 1
 parser.add_argument('--tile',dest='tiled',action='store_true',help='Assume 8x8 blocks, 4 bit palette')
 parser.add_argument('--size',dest='size', type=str, default='-1,-1', help='Size of a tile/sprite group. For tiles, this defines a block with the same 16 color palette')
 parser.add_argument('--palette', dest='palette', type=str, help='name of palette file')
+parser.add_argument('--packed', dest='packed', action='store_true', help='Force 4 bit palette (typically for sprites)')
 parser.add_argument('input_file', type=str, help='Input filename')
 parser.add_argument('output_file',type=str, help='Output filename')
 args=parser.parse_args()
