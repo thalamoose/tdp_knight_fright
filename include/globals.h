@@ -1,8 +1,6 @@
 #if !defined(__GLOBALS_H)
 #define __GLOBALS_H
 
-#include "kftypes.h"
-#include "defines.h"
 #include "objects.h"
 #include "player.h"
 #include "playarea.h"
@@ -17,7 +15,7 @@ typedef struct s_globals
 	u16 pulseTarget;
 	u8 level;
 	u8 playAreaIndex;
-	coord pulseCoord;
+	coord_s8 pulseCoord;
 	u8 particleIndex;
 } globals;
 

@@ -1,5 +1,3 @@
-#include "kftypes.h"
-
 enum next_registers
 {
 	CLOCK_SEL = 0x07,
@@ -53,6 +51,15 @@ enum next_registers
 	TILEMAP_CHAR_ADDRESS = 0x6f,
 	LAYER_2_CONTROL = 0x70,
 
+};
+
+enum sprite_attributes
+{
+	SPRITE_ATTR_2_X8=0x01,
+	SPRITE_ATTR_4_Y8=0x01,
+	SPRITE_ATTR_4_4BIT=0x80,
+	SPRITE_ATTR_3_VISIBLE=0x80,
+	SPRITE_ATTR_3_ENABLE_4=0x40,
 };
 
 enum next_ports

@@ -1,4 +1,3 @@
-#include "kftypes.h"
 #include "objects.h"
 
 #define SCORE_BCD_DIGITS 8

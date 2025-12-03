@@ -1,6 +1,5 @@
 #if !defined(__UTILITIES_H)
 #define __UTILITIES_H
-#include "kftypes.h"
 void *memcpy_dma(void *tgt, const void *src, u16 length);
 void *memset(void *tgt, u8 value, u16 length);
 void nextreg(u8 reg, u8 val);

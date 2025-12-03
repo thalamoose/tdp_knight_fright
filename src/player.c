@@ -19,8 +19,8 @@ player_object player;
 //---------------------------------------------------------
 void SnapToGrid(void)
 {
-    s16 x = player.playGrid.x - playArea.position.x;
-    s16 y = player.playGrid.y - playArea.position.y;
+    s16 x = player.object.playGrid.x - playArea.position.x;
+    s16 y = player.object.playGrid.y - playArea.position.y;
 
     s16 sx = (x + y) * 16;
     s16 sy = (y - x) * 24;
@@ -60,8 +60,8 @@ void InitializePlayer(void)
     player.object.animDelay = 4;
     player.object.animSpeed = 4;
     player.object.totalFrames = 8;
-    player.playGrid.x = playArea.start.x;
-    player.playGrid.y = playArea.start.y;
+    player.object.playGrid.x = playArea.start.x;
+    player.object.playGrid.y = playArea.start.y;
     //
     // Set up sprites 64..67, so that only the minimum needs to be set up below.
     //
@@ -71,12 +71,12 @@ void InitializePlayer(void)
     SetupSprite(PLAYER_SPRITE_SLOT + 3, PLAYER_SPRITE_PATTERN + 3, 16, 16, 0, 0xc0, 0x60);
 
     nextreg(MMU_SLOT_6, PALETTE_PAGE);
-    CopyPalette(asset_PlayerPalette, PALETTE_SPRITE_PRIMARY);
+    CopyPalettePartial(asset_PlayerPalette, PALETTE_SPRITE_PRIMARY, 0, 64);
     // Grab whatever colour is the background colour. This will be our transparent
     // index.
     nextreg(MMU_SLOT_6, PLAYER_ANIM_PAGE);
     nextreg(TRANS_SPRITE_INDEX, *(u8 *)SWAP_BANK_0);
-    SnapToGrid();
+    SnapToPlayAreaGrid(&player.object);
     player.moveSteps = 32;
     player.object.position.y -= I_TO_F(TILEMAP_PIX_HEIGHT/2+64);
     player.object.velocity.x = 0;
@@ -97,8 +97,8 @@ void BeginPulsePalette(void)
     }
     global.pulseColour = 0x1ff;
     global.pulseTarget = asset_TilemapPalette[4];
-    global.pulseCoord = player.playGrid;
-    RefreshPlayAreaBlock(player.playGrid.x, player.playGrid.y, 1);
+    global.pulseCoord = player.object.playGrid;
+    RefreshPlayAreaBlock(player.object.playGrid.x, player.object.playGrid.y, 1);
     SetColour(PALETTE_TILE_PRIMARY, 16 + 4, global.pulseColour);
 }
 
@@ -153,25 +153,25 @@ void HandleControllerInput(void)
         return;
     if (buttons & JOYPAD_L_LEFT)
     {
-        player.playGrid.x--;
+        player.object.playGrid.x--;
         SetPlayerAnim(PLAYERSPR_L + PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
         return;
     }
     if (buttons & JOYPAD_L_RIGHT)
     {
-        player.playGrid.x++;
+        player.object.playGrid.x++;
         SetPlayerAnim(PLAYERSPR_R + PLAYERSPR_RUN_ANIM, PLAYERDIR_BR, FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
         return;
     }
     if (buttons & JOYPAD_L_UP)
     {
-        player.playGrid.y--;
+        player.object.playGrid.y--;
         SetPlayerAnim(PLAYERSPR_U + PLAYERSPR_RUN_ANIM, PLAYERDIR_TL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
         return;
     }
     if (buttons & JOYPAD_L_DOWN)
     {
-        player.playGrid.y++;
+        player.object.playGrid.y++;
         SetPlayerAnim(PLAYERSPR_D + PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
         return;
     }
@@ -201,9 +201,10 @@ void MovePlayer(void)
             }
             return;
         }
-        SnapToGrid();
-        play_cell *pCell = GetPlayAreaCell(player.playGrid.x, player.playGrid.y);
-        //x_printf("Coord:(%d,%d), content:%c\n", player.playGrid.x, player.playGrid.y, *(u8 *)pCell);
+        SnapToPlayAreaGrid(&player.object);
+        player.object.gravity = FIXED_POINT_HALF;
+        play_cell *pCell = GetPlayAreaCell(player.object.playGrid.x, player.object.playGrid.y);
+        //x_printf("Coord:(%d,%d), content:%c\n", player.object.playGrid.x, player.object.playGrid.y, *(u8 *)pCell);
         if (pCell->type == 2)
         {
             HandlePickup();
@@ -244,7 +245,7 @@ void MovePlayer(void)
 void AnimatePlayer(void)
 {
     player.object.animDelay--;
-    if (player.object.animDelay < 0)
+    if (player.object.animDelay<0)
     {
         player.object.animDelay = player.object.animSpeed;
         player.object.frameIndex++;

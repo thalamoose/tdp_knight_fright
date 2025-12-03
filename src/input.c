@@ -1,6 +1,6 @@
 #include "kftypes.h"
-#include "input.h"
 #include "hardware.h"
+#include "input.h"
 
 static const u8 *ReadKeyboardMatrix(void);
 

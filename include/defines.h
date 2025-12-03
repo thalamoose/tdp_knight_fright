@@ -6,6 +6,7 @@ enum consts
 
     MAX_OBJECTS = 16,    // MUST be power of 2
     MAX_PARTICLES = 128, // MUST be power of 2
+    MAX_PICKUPS = 8,
 
     GRAVITY = 1, // About 0.5G
 
@@ -19,6 +20,8 @@ enum consts
 
     LAYER_2_BORDER = 8,
 
+    PLAYER_PICKUP_SLOT = 32,
+    PLAYER_PICKUP_PATTERN = 32,
     PLAYER_SPRITE_SLOT = 64,
     PLAYER_SPRITE_PATTERN = 0,
     PLAYER_TARGET_CENTER_X = -128,

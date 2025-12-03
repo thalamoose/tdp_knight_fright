@@ -1,7 +1,6 @@
 #if !defined(__PLAYER_H)
 #define __PLAYER_H
 
-#include "kftypes.h"
 #include "objects.h"
 
 void InitializePlayer(void);
@@ -13,7 +12,6 @@ void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy);
 typedef struct s_player_object
 {
     object object;
-    coord playGrid;
     u8 moveSteps;
     u8 direction;
 } player_object;

@@ -1,5 +1,6 @@
-#include "objects.h"
+#include "kftypes.h"
 #include "defines.h"
+#include "objects.h"
 #include "utilities.h"
 
 object objects[MAX_OBJECTS];

@@ -1,10 +1,11 @@
 #include "kftypes.h"
-#include "globals.h"
+#include "defines.h"
 #include "playarea.h"
 #include "utilities.h"
 #include "memorymap.h"
 #include "tilemap.h"
 #include "hardware.h"
+#include "pickups.h"
 
 play_area playArea;
 
@@ -41,12 +42,32 @@ void BuildPlayArea(const play_area_template *pTemplate)
 			// If the cell is not empty, then it must be flippable.
 			// This should be expanded to handle the case where the
 			// tile block is fatal.
-			if (pCell->type)
+			if (pCell->type==1)
+			{
 				playArea.tilesToFlip++;
+			}
+			if (pCell->type==2)
+			{
+				AddPickup(pCell->type, px+x, py+y);
+			}
 			pCell++;
 		}
 	}
 }
+
+//---------------------------------------------------------
+void SnapToPlayAreaGrid(object* pObject)
+{
+    s16 x = pObject->playGrid.x - playArea.position.x;
+    s16 y = pObject->playGrid.y - playArea.position.y;
+
+    s16 sx = (x + y) * 16;
+    s16 sy = (y - x) * 24;
+
+    pObject->position.x = I_TO_F(sx);
+    pObject->position.y = I_TO_F(sy);
+}
+
 
 //---------------------------------------------------------
 void RefreshPlayAreaBlock(s8 x, s8 y, s8 palette)

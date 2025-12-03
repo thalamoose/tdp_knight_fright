@@ -1,3 +1,4 @@
+#include "kftypes.h"
 #include "hardware.h"
 #include "defines.h"
 #include "memorymap.h"
@@ -53,6 +54,7 @@ void UpdateSprites(void)
 //
 void RenderSprites(void)
 {
+	return;
 	object *obj = objects;
 	u8 activeSpriteCount = 0;
 	for (u8 i = 0; i < MAX_OBJECTS; i++)

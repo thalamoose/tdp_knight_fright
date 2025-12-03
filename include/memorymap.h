@@ -1,5 +1,3 @@
-#include "kftypes.h"
-
 #define ASM_CODE_PAGE		4
 #define TILEMAP_CHARS_PAGE	10
 #define TILEMAP_PAGE		11
@@ -11,6 +9,7 @@
 #define TILES_PAGE     		51
 #define VIRTUAL_TILEMAP_PAGE 52
 #define SPRITES_PAGE    	53
+#define PICKUPS_PAGE		54
 #define STACK_TOP     	(void*)0xc000
 #define SWAP_BANK_0     (u8*)0xc000
 #define SWAP_BANK_1     (u8*)0xe000
