@@ -1,5 +1,3 @@
-#include "kftypes.h"
-
 typedef struct s_mouse
 {
 	u8 x;

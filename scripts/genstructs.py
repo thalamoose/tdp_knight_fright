@@ -26,6 +26,7 @@ DW_TAG_STRUCTURE_TYPE='DW_TAG_structure_type'
 DW_TAG_ARRAY_TYPE='DW_TAG_array_type'
 DW_TAG_POINTER_TYPE='DW_TAG_pointer_type'
 DW_TAG_MEMBER='DW_TAG_member'
+DW_TAG_UNION_TYPE='DW_TAG_union_type'
 DW_TAG_SUBPROGRAM='DW_TAG_subprogram'
 DW_TAG_FORMAL_PARAMETER = 'DW_TAG_formal_parameter'
 DW_TAG_VARIABLE = 'DW_TAG_variable'
@@ -87,6 +88,12 @@ def getType(CU, memberDef):
 		if typeDef==None:
 			return "void"
 		return getType(CU, typeDef)
+	if memberDef.tag==DW_TAG_UNION_TYPE:
+		structDef = getSiblingReference(CU, memberDef)
+		if getName(CU, memberDef)==None:
+			return None
+		name=getName(CU, structDef)
+		return name
 	if memberDef.tag==DW_TAG_MEMBER:
 		raise "This code should't be used"
 	error(f'ERROR: Unknown member tag {memberDef.tag}')
@@ -108,8 +115,10 @@ def expandFields(CU, prefix, fieldDef):
 		arraydefType=getReference(CU, fieldDef)
 		name = prefix ##+getName(CU, arraydefType)
 		fields += expandFields(CU, name, arraydefType)
-		return fields;
+		return fields
 	if fieldDef==None:
+		return fields
+	if fieldDef.tag==DW_TAG_UNION_TYPE:
 		return fields
 	if fieldDef.tag!=DW_TAG_STRUCTURE_TYPE:
 		error(f'Unhandled tag {fieldDef.tag}')

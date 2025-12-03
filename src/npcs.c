@@ -1,9 +1,7 @@
-#include "objects.h"
 #include "kftypes.h"
-#include "objects.h"
 #include "defines.h"
+#include "objects.h"
 #include "utilities.h"
-#include "globals.h"
 
 void InitializeNpcs(void)
 {

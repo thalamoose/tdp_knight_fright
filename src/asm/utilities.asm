@@ -155,10 +155,9 @@ _CopyPalettePartial:
         inc hl
         nextreg PALETTE_VALUE_9,a
         djnz @next_palette
-        ret
+         ret
 
 _DebugTiming:
-        ret
         ld hl,2
         add hl,sp
         ld a,(hl)

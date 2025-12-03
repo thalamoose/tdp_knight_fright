@@ -1,6 +1,5 @@
 #if !defined(__PLAYAREA_H)
 #define __PLAYAREA_H
-#include "kftypes.h"
 #include "objects.h"
 
 typedef struct s_play_cell
@@ -32,6 +31,8 @@ u8 GetPlayAreaContent(s8 x, s8 y);
 play_cell *GetPlayAreaCell(s8 x, s8 y);
 void DrawPlayArea(s8 w, s8 h);
 void RefreshPlayAreaBlock(s8 x, s8 y, s8 palette);
+void SnapToPlayAreaGrid(object* pObject);
+
 
 extern play_area playArea;
 

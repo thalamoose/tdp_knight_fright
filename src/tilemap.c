@@ -1,11 +1,10 @@
 #include "kftypes.h"
+#include "defines.h"
 #include "memorymap.h"
 #include "hardware.h"
 #include "utilities.h"
-#include "defines.h"
 #include "tilemap.h"
 #include "assets.h"
-#include "globals.h"
 #include "playarea.h"
 #include "player.h"
 #include "hud.h"
@@ -96,11 +95,11 @@ tilemap_cell *GetTilemapCell(s8 x, s8 y)
 //---------------------------------------------------------
 void SetTilemapMoveTarget(void)
 {
-	tileMap.lastPlayGrid.x=player.playGrid.x;
-	tileMap.lastPlayGrid.y=player.playGrid.y;
+	tileMap.lastPlayGrid.x=player.object.playGrid.x;
+	tileMap.lastPlayGrid.y=player.object.playGrid.y;
 
-	s16 px=playArea.position.x-player.playGrid.x;
-	s16 py=playArea.position.y-player.playGrid.y;
+	s16 px=playArea.position.x-player.object.playGrid.x;
+	s16 py=playArea.position.y-player.object.playGrid.y;
 
 	s16 sx=(px+py)*16-22;
 	s16 sy=(py-px)*24+16;
@@ -130,8 +129,8 @@ void UpdateTilemap(void)
 		tileMap.position.x -= FIXED_POINT_ONE*2;
 	}
 
-	s8 dgx=player.playGrid.x-tileMap.lastPlayGrid.x;
-	s8 dgy=player.playGrid.y-tileMap.lastPlayGrid.y;
+	s8 dgx=player.object.playGrid.x-tileMap.lastPlayGrid.x;
+	s8 dgy=player.object.playGrid.y-tileMap.lastPlayGrid.y;
 	if (dgx<-1 || dgx>1 || dgy<-1 || dgy>1)
 	{
 		SetTilemapMoveTarget();

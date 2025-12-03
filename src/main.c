@@ -1,4 +1,5 @@
 #include "kftypes.h"
+#include "defines.h"
 #include "globals.h"
 #include "utilities.h"
 #include "hardware.h"

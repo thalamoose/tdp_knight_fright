@@ -1,6 +1,5 @@
 #if !defined(__OBJECT_H)
 #define __OBJECT_H
-#include "kftypes.h"
 
 /*
 	All coordinates are internally held as signed 10.6 fixed point.
@@ -8,6 +7,13 @@
 	screen.
 	The dynamic range is -512 to 511
 */
+
+typedef struct s_sprite
+{
+	u8 slot;
+	u8 pattern;
+	u8 palette;
+} sprite;
 
 typedef struct s_object
 {
@@ -20,14 +26,20 @@ typedef struct s_object
 	s8 animDelay;
 	u8 animSpeed;
 	u8 totalFrames;
-	struct
+    coord_s8 playGrid;
+	
+	union
 	{
-		bool active;
-		bool pingpong;
-		bool is4bit;
-		bool direction;
+		struct 
+		{
+			bool active:1;
+			bool pingpong:1;
+			bool is4bit:1;
+			bool direction:1;
+			bool tilemapLocked:1;
+		};
+		u8 flagValue;
 	} flags;
-
 } object;
 
 extern object objects[];

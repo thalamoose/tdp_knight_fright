@@ -1,7 +1,5 @@
 #if !defined(__PARTICLES_H)
 #define __PARTICLES_H
-#include "kftypes.h"
-
 //
 // This MUST match the structure definition in particles.asm
 typedef struct s_particle

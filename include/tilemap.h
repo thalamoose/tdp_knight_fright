@@ -1,4 +1,3 @@
-#include "kftypes.h"
 #if !defined(__TILEMAP_H)
 #define __TILEMAP_H
 
