@@ -22,7 +22,7 @@ void SnapToGrid(void)
     s16 x = player.object.playGrid.x - playArea.position.x;
     s16 y = player.object.playGrid.y - playArea.position.y;
 
-    s16 sx = (x + y) * 16;
+    s16 sx = (x+y) * 16;
     s16 sy = (y - x) * 24;
 
     player.object.position.x = I_TO_F(sx);
@@ -66,9 +66,9 @@ void InitializePlayer(void)
     // Set up sprites 64..67, so that only the minimum needs to be set up below.
     //
     SetupSprite(PLAYER_SPRITE_SLOT, PLAYER_SPRITE_PATTERN, 0, 0, 0, 0x40, 0);
-    SetupSprite(PLAYER_SPRITE_SLOT + 1, PLAYER_SPRITE_PATTERN + 1, 16, 0, 0, 0xc0, 0x60);
-    SetupSprite(PLAYER_SPRITE_SLOT + 2, PLAYER_SPRITE_PATTERN + 2, 0, 16, 0, 0xc0, 0x60);
-    SetupSprite(PLAYER_SPRITE_SLOT + 3, PLAYER_SPRITE_PATTERN + 3, 16, 16, 0, 0xc0, 0x60);
+    SetupSprite(PLAYER_SPRITE_SLOT+1, PLAYER_SPRITE_PATTERN+1, 16, 0, 0, 0xc0, 0x60);
+    SetupSprite(PLAYER_SPRITE_SLOT+2, PLAYER_SPRITE_PATTERN+2, 0, 16, 0, 0xc0, 0x60);
+    SetupSprite(PLAYER_SPRITE_SLOT+3, PLAYER_SPRITE_PATTERN+3, 16, 16, 0, 0xc0, 0x60);
 
     nextreg(MMU_SLOT_6, PALETTE_PAGE);
     CopyPalettePartial(asset_PlayerPalette, PALETTE_SPRITE_PRIMARY, 0, 64);
@@ -99,7 +99,7 @@ void BeginPulsePalette(void)
     global.pulseTarget = asset_TilemapPalette[4];
     global.pulseCoord = player.object.playGrid;
     RefreshPlayAreaBlock(player.object.playGrid.x, player.object.playGrid.y, 1);
-    SetColour(PALETTE_TILE_PRIMARY, 16 + 4, global.pulseColour);
+    SetColour(PALETTE_TILE_PRIMARY, 16+4, global.pulseColour);
 }
 
 //---------------------------------------------------------
@@ -109,7 +109,7 @@ void PulsePalette(void)
         return;
 
     global.pulseColour = BlendColour(global.pulseColour, global.pulseTarget);
-    SetColour(PALETTE_TILE_PRIMARY, 16 + 4, global.pulseColour);
+    SetColour(PALETTE_TILE_PRIMARY, 16+4, global.pulseColour);
     if (global.pulseColour == global.pulseTarget)
     {
         RefreshPlayAreaBlock(global.pulseCoord.x, global.pulseCoord.y, 0);
@@ -119,17 +119,17 @@ void PulsePalette(void)
 //---------------------------------------------------------
 void HandlePickup(void)
 {
-    SetPlayerAnimIdle(player.direction * 8 + PLAYERSPR_IDLE_ANIM, 0, 0);
+    SetPlayerAnimIdle(player.direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
     u8 vxlz = 0, vxgz = 0, vylz = 0, vygz = 0;
     for (int i = 0; i < 32; i++)
     {
-        s16 px = player.object.position.x + I_TO_F(16) + ((s16)random8() << 3);
-        s16 py = player.object.position.y + I_TO_F(-16) + ((s16)random8() << 3);
+        s16 px = player.object.position.x+I_TO_F(16)+((s16)random8()<<3);
+        s16 py = player.object.position.y+I_TO_F(-16)+((s16)random8()<<3);
         s16 vx = random8();
         s16 vy = random8();
-        s8 width = random8() & 3 + 1;
+        s8 width = random8()&3+1;
         s8 colour = random8() | 0xf0;
-        s8 age = (random8() & 31) + 24;
+        s8 age = (random8()&31)+24;
         px += I_TO_F(TILEMAP_PIX_WIDTH/2)+tileMap.position.x;
         py += I_TO_F(TILEMAP_PIX_HEIGHT/2)+tileMap.position.y;
         AddParticle(px, py, vx, vy, age, colour, width, 0);
@@ -140,7 +140,7 @@ void HandlePickup(void)
 void HandleDeath(bool fallThrough)
 {
     (void)fallThrough;
-    SetPlayerAnimIdle(player.direction * 8 + PLAYERSPR_IDLE_ANIM, 0, -FIXED_POINT_ONE * 2);
+    SetPlayerAnimIdle(player.direction * 8+PLAYERSPR_IDLE_ANIM, 0, -FIXED_POINT_ONE * 2);
     player.moveSteps = 64;
     player.object.gravity = FIXED_POINT_HALF / 2;
 }
@@ -151,31 +151,31 @@ void HandleControllerInput(void)
     u8 buttons = ReadController();
     if (hud.transitionIsRunning)
         return;
-    if (buttons & JOYPAD_L_LEFT)
+    if (buttons&JOYPAD_L_LEFT)
     {
         player.object.playGrid.x--;
-        SetPlayerAnim(PLAYERSPR_L + PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
+        SetPlayerAnim(PLAYERSPR_L+PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
         return;
     }
-    if (buttons & JOYPAD_L_RIGHT)
+    if (buttons&JOYPAD_L_RIGHT)
     {
         player.object.playGrid.x++;
-        SetPlayerAnim(PLAYERSPR_R + PLAYERSPR_RUN_ANIM, PLAYERDIR_BR, FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
+        SetPlayerAnim(PLAYERSPR_R+PLAYERSPR_RUN_ANIM, PLAYERDIR_BR, FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
         return;
     }
-    if (buttons & JOYPAD_L_UP)
+    if (buttons&JOYPAD_L_UP)
     {
         player.object.playGrid.y--;
-        SetPlayerAnim(PLAYERSPR_U + PLAYERSPR_RUN_ANIM, PLAYERDIR_TL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
+        SetPlayerAnim(PLAYERSPR_U+PLAYERSPR_RUN_ANIM, PLAYERDIR_TL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
         return;
     }
-    if (buttons & JOYPAD_L_DOWN)
+    if (buttons&JOYPAD_L_DOWN)
     {
         player.object.playGrid.y++;
-        SetPlayerAnim(PLAYERSPR_D + PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
+        SetPlayerAnim(PLAYERSPR_D+PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
         return;
     }
-    if (buttons & JOYPAD_R_DOWN)
+    if (buttons&JOYPAD_R_DOWN)
     {
         playArea.tilesToFlip = 1;
     }
@@ -215,7 +215,7 @@ void MovePlayer(void)
         }
         else
         {
-            SetPlayerAnimIdle(player.direction * 8 + PLAYERSPR_IDLE_ANIM, 0, 0);
+            SetPlayerAnimIdle(player.direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
         }
         if (pCell->type && !pCell->dark && hud.transitionIsRunning==false)
         {
@@ -265,24 +265,24 @@ void UpdatePlayer(void)
 //---------------------------------------------------------
 void RenderPlayer(void)
 {
-    u8 animIndex = player.object.baseIndex + player.object.frameIndex;
+    u8 animIndex = player.object.baseIndex+player.object.frameIndex;
     if (animIndex != player.object.lastIndex)
     {
         player.object.lastIndex = animIndex;
-        u8 page = (animIndex >> 3) + PLAYER_ANIM_PAGE;
+        u8 page = (animIndex>>3)+PLAYER_ANIM_PAGE;
         nextreg(MMU_SLOT_6, page);
-        u8 *pPattern = (u8 *)SWAP_BANK_0 + ((animIndex & 7) << 10);
+        u8 *pPattern = (u8 *)SWAP_BANK_0+((animIndex&7)<<10);
         CopySprite(pPattern, PLAYER_SPRITE_PATTERN, 4);
     }
     nextreg(SPRITE_INDEX, PLAYER_SPRITE_SLOT);
-    s16 tx = tileMap.position.x & I_TO_F(0xfffe);
+    s16 tx = tileMap.position.x&I_TO_F(0xfffe);
     s16 ty = tileMap.position.y;
 
     s16 px = F_TO_I(tx+player.object.position.x);
     s16 py = F_TO_I(ty+player.object.position.y);
      
-    s16 x = px + hud.shake.x + TILEMAP_PIX_WIDTH/2 + PLAYER_TO_TILE_X_OFFSET;
-    s16 y = py + hud.shake.y + TILEMAP_PIX_HEIGHT/2 + PLAYER_TO_TILE_Y_OFFSET;
+    s16 x = px+hud.shake.x+TILEMAP_PIX_WIDTH/2+PLAYER_TO_TILE_X_OFFSET;
+    s16 y = py+hud.shake.y+TILEMAP_PIX_HEIGHT/2+PLAYER_TO_TILE_Y_OFFSET;
 
     if ((x < -32) || (x >= 320) || (y < -32) || (y >= 256))
     {
@@ -290,9 +290,9 @@ void RenderPlayer(void)
         nextreg(SPRITE_ATTR_3, 0);
         return;
     }
-    nextreg(SPRITE_ATTR_0, x & 0xff);
+    nextreg(SPRITE_ATTR_0, x&0xff);
     nextreg(SPRITE_ATTR_1, y);
-    nextreg(SPRITE_ATTR_2, (x >> 8) & 1);
+    nextreg(SPRITE_ATTR_2, (x>>8)&1);
     nextreg(SPRITE_ATTR_3, 0xc0);
-    nextreg(SPRITE_ATTR_4, (y >> 8) & 1);
+    nextreg(SPRITE_ATTR_4, (y>>8)&1);
 }

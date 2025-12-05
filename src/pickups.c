@@ -77,7 +77,7 @@ void RenderPickups(void)
 			s16 py = F_TO_I(ty+pPickup->object.position.y);
 			
 			s16 x = px+hud.shake.x+TILEMAP_PIX_WIDTH/2+10;
-			s16 y = py+hud.shake.y+TILEMAP_PIX_HEIGHT/2-6;
+			s16 y = py+hud.shake.y+TILEMAP_PIX_HEIGHT/2-3;
 
 			if ((x<-32)||(x>=320)||(y<-32)||(y>=256))
 			{
@@ -110,11 +110,10 @@ pickup_t* AddPickup(u8 type, s8 x, s8 y)
 			return NULL;
 	}
 	pickups.itemIndex = (index+1)%MAX_PICKUPS;
-	//x=y=0;
 	pPickup->object.playGrid.x = x;
 	pPickup->object.playGrid.y = y;
 	SnapToPlayAreaGrid(&pPickup->object);
-	x_printf( "px:%d,py:%d,x:%d,y:%d\n", x, y, F_TO_I(pPickup->object.position.x), F_TO_I(pPickup->object.position.y));
+	//x_printf( "px:%d,py:%d,x:%d,y:%d\n", x, y, F_TO_I(pPickup->object.position.x), F_TO_I(pPickup->object.position.y));
 	pPickup->object.flags.active = true;
 	pPickup->object.flags.tilemapLocked = true;
 	pPickup->type = type;
@@ -124,8 +123,9 @@ pickup_t* AddPickup(u8 type, s8 x, s8 y)
 	pPickup->object.lastIndex = 0xff;
 	pPickup->object.baseIndex = 0;
 	pPickup->object.totalFrames = 9;
-	pPickup->object.animSpeed = 4;
-	pPickup->object.animDelay = 4;
+	pPickup->object.frameIndex = index%8;
+	pPickup->object.animSpeed = 2+(index&1);
+	pPickup->object.animDelay = index%4;
 	return pPickup;
 }
 

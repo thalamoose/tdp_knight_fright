@@ -76,21 +76,22 @@ _asset_PlayArea_03:
 	db ___,___,___,BLK,BLK,BLK,BLK,BLK,BLK,___
 
 _asset_PlayArea_04:
-	db 12,12
-	db -6,-6
-	db BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK
-	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,BLK
-	db PEN,___,___,BLK,___,___,___,BLK,___,___,___,BLK
-	db BLK,___,___,BLK,___,___,___,PEN,___,___,___,BLK
-	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,BLK
-	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,BLK
-	db BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK
-	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,BLK
-	db PEN,___,___,BLK,___,___,___,PEN,___,___,___,BLK
-	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,PEN
-	db BLK,___,___,BLK,___,___,___,PEN,___,___,___,BLK
-	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,BLK
-	db BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK
+	db 13,13
+	db 0,1
+	db ___,___,___,___,___,___,___,___,___,___,___,___,___
+	db BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,___
+	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,BLK,___
+	db PEN,___,___,BLK,___,___,___,BLK,___,___,___,BLK,___
+	db BLK,___,___,BLK,___,___,___,PEN,___,___,___,BLK,___
+	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,BLK,___
+	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,BLK,___
+	db BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,___
+	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,BLK,___
+	db PEN,___,___,BLK,___,___,___,PEN,___,___,___,BLK,___
+	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,PEN,___
+	db BLK,___,___,BLK,___,___,___,PEN,___,___,___,BLK,___
+	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,BLK,___
+	db BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,___
 
 
 	ALIGN 256
