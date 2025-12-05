@@ -35,8 +35,8 @@ C_OBJ_DIR=build/c
 ASM_OBJ_DIR=build/asm
 DEP_DIR=build/deps
 
-C_SRCS := $(wildcard $(C_SRC_DIR)/*.c)
-C_HDRS := $(wildcard $(C_INC_DIR)/*.h)
+C_SRCS := $(wildcard $(C_SRC_DIR)/*.c) $(wildcard $(C_SRC_DIR)/enemies/*.c)
+C_HDRS := $(wildcard $(C_INC_DIR)/*.h) $(wildcard $(C_INC_DIR)/enemies/*.h)
 C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS))
 C_SYMS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.sym.o,$(C_SRCS))
 DEP_FILES := $(C_SRCS:src/%.c=$(DEP_DIR)/%.d)
@@ -112,6 +112,7 @@ $(OUT):
 
 $(C_OBJ_DIR):
 	$(MKDIR) $(subst /,\,$@)
+	$(MKDIR) $(subst /,\,$@/enemies)
 
 $(ASM_OBJ_DIR):
 	$(MKDIR) $(subst /,\,$@)
@@ -133,6 +134,7 @@ $(ASM_OBJ_DIR)/%.o: $(ASM_SRC_DIR)/%.asm $(ASM_OBJ_DIR) makefile
 
 $(DEP_DIR): 
 	$(MKDIR) $(subst /,\,$@)
+	$(MKDIR) $(subst /,\,$@/enemies)
 
 -include $(DEP_FILES)
 
