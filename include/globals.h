@@ -13,7 +13,9 @@ typedef struct s_globals
 	coord charScreen;
 	u16 pulseColour;
 	u16 pulseTarget;
-	u8 level;
+	u16 level;
+	u16 bonusTracker;
+	bool useSuperCoins;
 	u8 playAreaIndex;
 	coord_s8 pulseCoord;
 	u8 particleIndex;

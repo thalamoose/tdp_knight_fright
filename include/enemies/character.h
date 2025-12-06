@@ -4,6 +4,6 @@ typedef struct
 	coord position;
 } character;
 
-character* InitCharacter(void);
+void CreateCharacter(character* pObject);
 void UpdateCharacter(character* pObject);
 void DestroyCharacter(character* pObject);

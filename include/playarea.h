@@ -2,12 +2,22 @@
 #define __PLAYAREA_H
 #include "objects.h"
 
+enum
+{
+	CELL_TILE,
+	CELL_OBSTACLE,
+	CELL_ENEMY,
+	CELL_COIN,
+	CELL_HOLE,
+	CELL_SPIKE,
+};
+
 typedef struct s_play_cell
 {
-	unsigned char type : 4;
-	unsigned char unused : 2;
-	unsigned char lethal : 1;
-	unsigned char dark : 1;
+	u8 type:3;
+	u8 objIndex:3;
+	bool isStartingPosition:1;
+	bool isDark:1;
 } play_cell;
 
 typedef struct s_play_area

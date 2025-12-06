@@ -4,9 +4,10 @@
 enum consts
 {
 
-    MAX_OBJECTS = 16,    // MUST be power of 2
+    MAX_OBJECTS = 4,    // MUST be power of 2
     MAX_PARTICLES = 128, // MUST be power of 2
-    MAX_PICKUPS = 8,
+    MAX_COINS = 12,
+    MAX_ENEMIES = 8,
 
     GRAVITY = 1, // About 0.5G
 

@@ -4,7 +4,6 @@
 #include "utilities.h"
 #include "assets.h"
 #include "hud.h"
-#include "lerp.h"
 
 hud_t hud;
 

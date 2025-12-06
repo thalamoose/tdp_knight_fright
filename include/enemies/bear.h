@@ -4,6 +4,8 @@ typedef struct
 	coord position;
 } bear;
 
-void InitBear(bear* pObject);
+void CreateBear(bear* pObject);
 bool UpdateBear(bear* pObject);
 void DestroyBear(bear* pObject);
+void BlowupBear(bear* pObject);
+void CollideBear(bear* pObject, enemy_controller* pCollider);
