@@ -1,6 +1,5 @@
 #include "kftypes.h"
 #include "defines.h"
-#include "list.h"
 #include "playarea.h"
 #include "game.h"
 #include "globals.h"
@@ -14,20 +13,9 @@
 #include "audio.h"
 #include "sprites.h"
 #include "npcs.h"
-#include "pickups.h"
-
-extern play_area_template asset_PlayArea_01[];
-extern play_area_template asset_PlayArea_02[];
-extern play_area_template asset_PlayArea_03[];
-extern play_area_template asset_PlayArea_04[];
-play_area_template *levelData[] =
-{
-    asset_PlayArea_01,
-    asset_PlayArea_02,
-    asset_PlayArea_03,
-    asset_PlayArea_04,
-    NULL,
-};
+#include "coins.h"
+#include "enemies/enemy_controller.h"
+#include "level_manager.h"
 
 //---------------------------------------------------------
 void InitializeGame(void)
@@ -37,8 +25,9 @@ void InitializeGame(void)
     InitializeHud();
     InitializeParticles();
     InitializeObjects();
-    InitializePickups();
+    InitializeCoins();
     InitializeCopper();
+    InitializeLevelManager();
     x_printf("Game is running\n");
 }
 
@@ -50,8 +39,9 @@ void ResetGame(void)
     ResetHud();
     ResetParticles();
     ResetObjects();
-    ResetPickups();
-    InitializePlayArea(levelData[global.playAreaIndex]);
+    ResetCoins();
+    ResetLevelManager();
+    NewLevel();
     InitializePlayer();
     InitializeNpcs();
     x_printf("Game is running\n");
@@ -60,10 +50,11 @@ void ResetGame(void)
 //---------------------------------------------------------
 void UpdateGame(void)
 {
+    UpdateLevelManager();
     UpdateTilemap();
 	UpdateNpcs();
 	UpdatePlayer();
-    UpdatePickups();
+    UpdateCoins();
 	UpdateSprites();
 	global.particlesActive = UpdateParticles(&particles[0]);
     UpdateAudio();
@@ -76,7 +67,7 @@ void RenderGame(void)
     DebugTiming(ULA_COLOUR_MAGENTA);
     RenderTilemap();
     RenderPlayer();
-    RenderPickups();
+    RenderCoins();
     RenderSprites();
     DebugTiming(ULA_COLOUR_BLUE);
     RenderHud();
@@ -88,7 +79,7 @@ void RenderGame(void)
 void EndGame(void)
 {
     global.playAreaIndex += 1;
-    if (levelData[global.playAreaIndex]==NULL)
+    if (GetLevelTemplate(global.playAreaIndex)==NULL)
     {
         global.playAreaIndex = 0;
     }

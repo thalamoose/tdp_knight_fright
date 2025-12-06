@@ -24,6 +24,7 @@ DW_TAG_BASE_TYPE = 'DW_TAG_base_type'
 DW_TAG_TYPEDEF='DW_TAG_typedef'
 DW_TAG_STRUCTURE_TYPE='DW_TAG_structure_type'
 DW_TAG_ENUMERATION_TYPE='DW_TAG_enumeration_type'
+DW_TAG_SUBROUTINE_TYPE='DW_TAG_subroutine_type'
 DW_TAG_ARRAY_TYPE='DW_TAG_array_type'
 DW_TAG_POINTER_TYPE='DW_TAG_pointer_type'
 DW_TAG_MEMBER='DW_TAG_member'
@@ -75,6 +76,8 @@ def getType(CU, memberDef):
 			return getBaseType(CU, memberDef)
 		if typeDef.tag==DW_TAG_POINTER_TYPE:
 			return getName(CU, memberDef)
+		if typeDef.tag==DW_TAG_SUBROUTINE_TYPE:
+			return 'SUBROUTINE'+getName(CU, memberDef)
 
 		error(f'ERROR: unknown type tag {typeDef.tag}')
 	if memberDef.tag==DW_TAG_POINTER_TYPE:
@@ -191,8 +194,13 @@ def parseArray(CU, arrayDef):
 		constTypeDef = getReference(CU, typeDef)
 		constTypeName = getType(CU, constTypeDef)
 		return f'WORD ;; Pointer to {constTypeName}'
+	elif typeDef.tag==DW_TAG_UNION_TYPE:
+		unionDef = getSiblingReference(CU, typeDef)
+		if getName(CU, typeDef)==None:
+			return None
+		name=getName(CU, unionDef)
 
-	error( 'ERROR: unknown tag {typeDef.tag}')
+	error( f'ERROR: unknown tag {typeDef.tag}')
 
 
 def getName(CU, type):

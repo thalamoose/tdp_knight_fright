@@ -5,7 +5,7 @@
 #include "memorymap.h"
 #include "tilemap.h"
 #include "hardware.h"
-#include "pickups.h"
+#include "coins.h"
 
 play_area playArea;
 
@@ -18,9 +18,9 @@ void ClearPlayArea(void)
 //---------------------------------------------------------
 s8 CalcIndex(const play_cell *pCell)
 {
-	if (pCell->type == 0)
+	if (pCell->type==CELL_HOLE)
 		return 0;
-	if (pCell->dark)
+	if (pCell->isDark)
 		return 2;
 	return 1;
 }
@@ -38,17 +38,20 @@ void BuildPlayArea(const play_area_template *pTemplate)
 		pCell=GetPlayAreaCell(px, py+y);
 		for (s8 x=0; x<pTemplate->size.x; x++)
 		{
-			pCell->type=*pData++;
-			// If the cell is not empty, then it must be flippable.
-			// This should be expanded to handle the case where the
-			// tile block is fatal.
-			if (pCell->type==1)
+			u8 type = *pData++;
+			if (type==0)
 			{
+				pCell->type = CELL_HOLE;
+			}
+			if (type==1)
+			{
+				pCell->type = CELL_TILE;
 				playArea.tilesToFlip++;
 			}
-			if (pCell->type==2)
+			if (type==2)
 			{
-				AddPickup(pCell->type, px+x, py+y);
+				pCell->type = CELL_COIN;
+				AddCoin(type, px+x, py+y);
 			}
 			pCell++;
 		}
@@ -61,8 +64,8 @@ void SnapToPlayAreaGrid(object* pObject)
     s16 x = pObject->playGrid.x - playArea.position.x;
     s16 y = pObject->playGrid.y - playArea.position.y;
 
-    s16 sx = (x + y) * 16;
-    s16 sy = (y - x) * 24;
+    s16 sx = (x+y)*16;
+    s16 sy = (y-x)*24;
 
     pObject->position.x = I_TO_F(sx);
     pObject->position.y = I_TO_F(sy);
@@ -77,14 +80,14 @@ void RefreshPlayAreaBlock(s8 x, s8 y, s8 palette)
 	s16 ty=(y-x)*3;
 	tilemap_cell *pTilemap=GetTilemapCell(tx, ty);
 	const play_cell *pCell=GetPlayAreaCell(playArea.position.x+x, playArea.position.y+y);
-	s8 dark=pCell->dark;
+	s8 dark=pCell->isDark;
 	s8 bl=CalcIndex(pCell-1);
 	s8 tr=CalcIndex(pCell+1);
 	s8 tl=CalcIndex(pCell-PLAY_AREA_CELLS_WIDTH);
 	s8 br=CalcIndex(pCell+PLAY_AREA_CELLS_WIDTH);
 	if (pTilemap)
 	{
-		if (pCell->type)
+		if (pCell->type!=CELL_HOLE)
 		{
 			PasteTilemapBlock(pTilemap, dark, tl, tr, bl, br, palette);
 		}
@@ -117,6 +120,8 @@ void InitializePlayArea(const play_area_template *pTemplate)
 	ClearPlayArea();
 	nextreg(MMU_SLOT_6, PALETTE_PAGE);
 	BuildPlayArea(pTemplate);
+	play_cell* pCell = GetPlayAreaCell(playArea.start.x, playArea.start.y);
+	pCell->isStartingPosition = true;
 	DrawPlayArea(pTemplate->size.x, pTemplate->size.y);
 }
 

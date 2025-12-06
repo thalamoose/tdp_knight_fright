@@ -16,8 +16,10 @@ __asm
 	global _asset_GameDigitsPalette, _asset_GameDigits
 	global _asset_PickupPalette, _asset_PickupData
 	global _asset_MapShape_01,_asset_MapShape_02
-	global _asset_PlayArea_01,_asset_PlayArea_02
-	global _asset_PlayArea_03,_asset_PlayArea_04
+	global _asset_PlayArea_1,_asset_PlayArea_1_2,_asset_PlayArea_1_3
+	global _asset_PlayArea_2,_asset_PlayArea_2_2,_asset_PlayArea_2_4
+	global _asset_PlayArea_3,_asset_PlayArea_4,_asset_PlayArea_4_2
+	global _asset_PlayArea_5,_asset_PlayArea_6,_asset_PlayArea_7
 
 	include "build/assets/kfplayer.bin.s"
 	include "build/assets/kfback.bin.s"
@@ -40,7 +42,7 @@ TRE=4		; Cacti or tree, not sure
 TMB=5		; Tomb
 GRV=6		; Gravestone
 
-	_asset_PlayArea_01:
+	_asset_PlayArea_1:
 	db 8,6
 	db 0,0
 	db ___,___,___,BLK,BLK,BLK,PEN,___
@@ -50,7 +52,7 @@ GRV=6		; Gravestone
 	db ___,___,BLK,BLK,BLK,BLK,BLK,PEN
 	db ___,___,___,BLK,___,___,___,___
 
-_asset_PlayArea_02:
+_asset_PlayArea_1_2:
 	db 7,7
 	db 0,0
 	db 1, 1, 1, 1, 0, 0, 0
@@ -61,7 +63,7 @@ _asset_PlayArea_02:
 	db 0, 0, 0, 1, 2, 1, 1
 	db 0, 0, 0, 1, 1, 1 ,1
 
-_asset_PlayArea_03:
+_asset_PlayArea_1_3:
 	db 10,10
 	db -3,-3
 	db BLK,BLK,BLK,BLK,BLK,BLK,___,___,___,___
@@ -75,7 +77,7 @@ _asset_PlayArea_03:
 	db ___,___,___,___,BLK,BLK,BLK,GRV,BLK,BLK
 	db ___,___,___,BLK,BLK,BLK,BLK,BLK,BLK,___
 
-_asset_PlayArea_04:
+_asset_PlayArea_2:
 	db 13,13
 	db 0,1
 	db ___,___,___,___,___,___,___,___,___,___,___,___,___
@@ -93,7 +95,18 @@ _asset_PlayArea_04:
 	db BLK,___,___,BLK,___,___,___,BLK,___,___,___,BLK,___
 	db BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,BLK,___
 
-
+_asset_PlayArea_2_2:
+_asset_PlayArea_2_4:
+_asset_PlayArea_3:
+_asset_PlayArea_4:
+_asset_PlayArea_4_2:
+_asset_PlayArea_5:
+_asset_PlayArea_6:
+_asset_PlayArea_7:
+	db 2,2
+	db 1,1
+	db 1,1
+	db 1,1
 	ALIGN 256
 _asset_BackdropPalette:
 	incbin "build/assets/kfback.pal"

@@ -205,11 +205,11 @@ void MovePlayer(void)
         player.object.gravity = FIXED_POINT_HALF;
         play_cell *pCell = GetPlayAreaCell(player.object.playGrid.x, player.object.playGrid.y);
         //x_printf("Coord:(%d,%d), content:%c\n", player.object.playGrid.x, player.object.playGrid.y, *(u8 *)pCell);
-        if (pCell->type == 2)
+        if (pCell->type==CELL_COIN)
         {
             HandlePickup();
         }
-        else if (pCell->type == 0)
+        else if (pCell->type==CELL_HOLE)
         {
             HandleDeath(true);
         }
@@ -217,9 +217,9 @@ void MovePlayer(void)
         {
             SetPlayerAnimIdle(player.direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
         }
-        if (pCell->type && !pCell->dark && hud.transitionIsRunning==false)
+        if (!pCell->isDark && pCell->type==CELL_TILE && hud.transitionIsRunning==false)
         {
-            pCell->dark = 1;
+            pCell->isDark = true;
             BeginPulsePalette();
             bool tileFull = IncrementHudTileCount();
             if (tileFull)

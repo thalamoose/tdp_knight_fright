@@ -2,17 +2,19 @@
 #include "enemies/enemy_controller.h"
 #include "enemies/character.h"
 
-character* InitCharacter(void)
+void CreateCharacter(character* pObject)
 {
-	return NULL;
+	(void)pObject;
 }
 
 void UpdateCharacter(character* pObject)
 {
+	(void)pObject;
 
 }
 
 void DestroyCharacter(character* pObject)
 {
+	(void)pObject;
 
 }
