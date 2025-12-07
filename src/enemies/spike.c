@@ -1,5 +1,6 @@
 #include "kftypes.h"
-#include "enemies/enemy_controller.h"
+#include "defines.h"
+#include "objects.h"
 #include "enemies/spike.h"
 
 void CreateSpike(spike* pObject)
@@ -23,7 +24,7 @@ void BlowupSpike(spike* pObject)
 	(void)pObject;
 }
 
-void CollideSpike(spike* pObject, enemy_controller* pCollider)
+void CollideSpike(spike* pObject, object* pCollider)
 {
 	(void)pObject;
 	(void)pCollider;

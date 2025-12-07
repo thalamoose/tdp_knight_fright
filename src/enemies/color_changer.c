@@ -1,4 +1,6 @@
 #include "kftypes.h"
+#include "defines.h"
+#include "objects.h"
 #include "enemies/enemy_controller.h"
 #include "enemies/color_changer.h"
 
@@ -10,7 +12,7 @@ void CreateColorChanger(color_changer* pObject)
 bool UpdateColorChanger(color_changer* pObject)
 {
 	(void)pObject;
-	return false;
+	return true;
 }
 
 void DestroyColorChanger(color_changer* pObject)
@@ -23,7 +25,7 @@ void BlowupColorChanger(color_changer* pObject)
 	(void)pObject;
 }
 
-void CollideColorChanger(color_changer* pObject, enemy_controller* pCollider)
+void CollideColorChanger(color_changer* pObject, object* pCollider)
 {
 	(void)pObject;
 	(void)pCollider;

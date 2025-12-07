@@ -21,6 +21,8 @@ s16 fp_mul_f88(s16 a, s16 b);
 
 void bcd_add(u8 bcd_array[], u8 value);
 
+u8 GetTicksPerSecond(void);
+
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))

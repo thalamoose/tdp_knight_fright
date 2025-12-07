@@ -1,4 +1,6 @@
 #include "kftypes.h"
+#include "defines.h"
+#include "objects.h"
 #include "enemies/enemy_controller.h"
 #include "enemies/bear.h"
 
@@ -23,7 +25,7 @@ void BlowupBear(bear* pObject)
 	(void)pObject;
 }
 
-void CollideBear(bear* pObject, enemy_controller* pCollider)
+void CollideBear(bear* pObject, object* pCollider)
 {
 	(void)pObject;
 	(void)pCollider;

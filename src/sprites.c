@@ -54,7 +54,7 @@ void UpdateSprites(void)
 //
 void RenderSprites(void)
 {
-	return;
+#if false
 	object *obj = objects;
 	u8 activeSpriteCount = 0;
 	for (u8 i = 0; i < MAX_OBJECTS; i++)
@@ -84,4 +84,5 @@ void RenderSprites(void)
 		}
 		global.activeSpriteCount = activeSpriteCount;
 	}
+#endif
 }

@@ -1,74 +1,69 @@
 #include "kftypes.h"
 #include "defines.h"
 #include "playarea.h"
-#include "game.h"
+#include "game_manager.h"
 #include "globals.h"
 #include "sprites.h"
 #include "utilities.h"
 #include "hud.h"
-#include "npcs.h"
 #include "copper.h"
 #include "tilemap.h"
 #include "hardware.h"
 #include "audio.h"
-#include "sprites.h"
-#include "npcs.h"
-#include "coins.h"
+#include "particles.h"
+#include "objects.h"
+#include "objects/coin.h"
+#include "objects/player.h"
 #include "enemies/enemy_controller.h"
 #include "level_manager.h"
 
+game_manager gameManager;
+
 //---------------------------------------------------------
-void InitializeGame(void)
+void InitializeGameManager(void)
 {
+    gameManager.ticksPerSecond = GetTicksPerSecond();
     InitializeSprites();
     InitializeTilemap();
     InitializeHud();
     InitializeParticles();
     InitializeObjects();
-    InitializeCoins();
     InitializeCopper();
     InitializeLevelManager();
     x_printf("Game is running\n");
 }
 
 //---------------------------------------------------------
-void ResetGame(void)
+void ResetGameManager(void)
 {
     ResetSprites();
     ResetTilemap();
     ResetHud();
     ResetParticles();
     ResetObjects();
-    ResetCoins();
     ResetLevelManager();
     NewLevel();
     InitializePlayer();
-    InitializeNpcs();
     x_printf("Game is running\n");
 }
 
 //---------------------------------------------------------
-void UpdateGame(void)
+void UpdateGameManager(void)
 {
     UpdateLevelManager();
+    UpdateObjects();
     UpdateTilemap();
-	UpdateNpcs();
-	UpdatePlayer();
-    UpdateCoins();
-	UpdateSprites();
-	global.particlesActive = UpdateParticles(&particles[0]);
+	gameManager.particlesActive = UpdateParticles(&particles[0]);
     UpdateAudio();
 }
 
 //---------------------------------------------------------
-void RenderGame(void)
+void RenderGameManager(void)
 {
     RenderCopper(); // Must be done first, just after vsync
     DebugTiming(ULA_COLOUR_MAGENTA);
     RenderTilemap();
-    RenderPlayer();
-    RenderCoins();
-    RenderSprites();
+    RenderObjects();
     DebugTiming(ULA_COLOUR_BLUE);
     RenderHud();
     DebugTiming(ULA_COLOUR_GREEN);

@@ -16,10 +16,22 @@
         global _fp_mul_f88
         global _bcd_add
         global _DebugTiming
+        global _GetTicksPerSecond
 check_reset:
         xor a
         ret
 
+_GetTicksPerSecond:
+        ld bc, NEXTREG_SELECT_PORT
+        ld a, PERIPHERAL_1_SETTING
+        out (c),a
+        inc b
+        in a,(c)
+        ld l,50
+        bit 2,a
+        ret z
+        ld l,60
+        ret
 _nextreg:
         ld hl,2
         add hl,sp

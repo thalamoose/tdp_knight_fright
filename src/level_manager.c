@@ -1,11 +1,15 @@
 #include "kftypes.h"
 #include "defines.h"
 #include "utilities.h"
-#include "enemies/enemy_controller.h"
 #include "playarea.h"
 #include "globals.h"
 #include "level_manager.h"
-#include "coins.h"
+#include "sprites.h"
+#include "objects.h"
+#include "game_manager.h"
+#include "enemies/enemy_controller.h"
+#include "objects/coin.h"
+#include "objects/player.h"
 
 level_manager levelManager;
 
@@ -87,12 +91,20 @@ void NewLevel(void)
 	levelManager.config = levelTemplate->config;
 	InitializePlayArea(levelTemplate->template);
 	levelManager.playerSpawnPos = levelTemplate->template->start;
-	*(u8*)&levelManager.enemyTypeArray = levelTemplate->config.enabledEnemies;
+	levelManager.enemyDropDelay = levelManager.config.spawnRate*gameManager.ticksPerSecond;
+	// Create an array of enabled enemy types. This allows us to randomly pick a type later.
+	u8 enemyTypes = levelManager.config.enabledEnemies;
+	for (u8 i=0; i<8 && enemyTypes; i++)
+	{
+		levelManager.enabledEnemies[levelManager.enabledEnemiesCount++] = i;
+		enemyTypes >>= 1;
+	}
 }
 
 //---------------------------------------------------------
 void ClearEnemies(void)
 {
+#if 0
 	for (u8 i=0;i<MAX_ENEMIES; i++)
 	{
 		enemy_controller* enemy = GetEnemyFromIndex(i);
@@ -101,20 +113,23 @@ void ClearEnemies(void)
 			enemy->Destroy(enemy);
 		}
 	}
+#endif
 }
 
 //---------------------------------------------------------
 void BlowupEnemies(void)
 {
+#if 0
 	for (u8 i=0;i<MAX_ENEMIES; i++)
 	{
 		enemy_controller* enemy = GetEnemyFromIndex(i);
 		if (enemy->flags.active)
 		{
-			enemy->Blowup(enemy);
+			if (enemy->Blowup) enemy->Blowup(enemy);
 		}
 	}
-}
+#endif
+	}
 
 //---------------------------------------------------------
 void CheckForCoin(s8 x, s8 y)
@@ -138,26 +153,39 @@ void CheckForCoin(s8 x, s8 y)
 bool CheckForEnemy(s8 x, s8 y)
 {
 	play_cell* pCell = GetPlayAreaCell(x, y);
-	if (pCell)
-	{
-		return pCell->type==CELL_ENEMY;
-	}
-	return false;
+	if (!pCell)
+		return false;
+	return pCell->type==CELL_ENEMY;
+}
+
+//---------------------------------------------------------
+bool CheckPathBlocked(s8 x, s8 y)
+{
+	play_cell* pCell = GetPlayAreaCell(x, y);
+	if (!pCell)
+		return false;
+	return pCell->type==CELL_OBSTACLE || pCell->type==CELL_HOLE;
+
 }
 
 //---------------------------------------------------------
 void RemoveEnemy(s8 x, s8 y)
 {
+	#if 0
 	play_cell* pCell = GetPlayAreaCell(x, y);
-	if (pCell && pCell->type==CELL_ENEMY)
+	if (!pCell)
+		return;
+	if (pCell->type==CELL_ENEMY)
 	{
 		enemy_controller* enemy = GetEnemyFromIndex(pCell->objIndex);
 		if (enemy && enemy->flags.active)
 		{
-			enemy->Destroy(enemy);
+			if (enemy->Destroy) enemy->Destroy(enemy);
+			enemy->flags.active = false;
 		}
 		pCell->type = CELL_TILE;
 	}
+		#endif
 }
 
 //---------------------------------------------------------
@@ -171,6 +199,50 @@ void PositionEnemy(s8 x, s8 y, u8 enemyIndex)
 	}
 }
 
+//---------------------------------------------------------
+void PlaceRandomEnemy(s8 x, s8 y, bool drop)
+{
+	s8 enemyType = levelManager.enabledEnemies[random8()%levelManager.enabledEnemiesCount];
+	
+	object* enemy = CreateEnemy(enemyType);
+	if (!enemy)
+		return;
+
+	enemy->playGrid.x = x;
+	enemy->playGrid.y = y;
+	// Drop him in from the top
+	if (drop)
+	{
+
+	}
+}
+
+//---------------------------------------------------------
+void RandomEnemyDrop(u8 maxNumEntries, u8 spawnRate)
+{
+	if (gameManager.isPaused)
+		return;
+	if (levelManager.levelComplete || levelManager.isIntroLevel || !levelManager.dropEnemies)
+		return;
+	if (levelManager.enemyDropDelay)
+	{
+		levelManager.enemyDropDelay -= 1;
+		if (levelManager.enemyDropDelay)
+			return;
+	}
+	if (levelManager.enemiesActive>=maxNumEntries)
+		return;
+
+	s8 x = (random8()%playArea.activeSize.x)-playArea.activeSize.x/2;
+	s8 y = (random8()%playArea.activeSize.y)-playArea.activeSize.y/2;
+
+	if (CheckPathBlocked(x, y) || CheckForEnemy(x, y))
+		return;
+	if ((x==player->object.position.x) && (y==player->object.position.y))
+		return;
+	PlaceRandomEnemy(x, y, true);
+	levelManager.enemyDropDelay = spawnRate*gameManager.ticksPerSecond;
+}
 
 //---------------------------------------------------------
 void LevelStateMachine(void)

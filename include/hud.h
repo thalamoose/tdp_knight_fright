@@ -1,5 +1,3 @@
-#include "objects.h"
-
 #define SCORE_BCD_DIGITS 8
 typedef struct s_hud
 {

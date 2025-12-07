@@ -5,7 +5,8 @@
 #include "memorymap.h"
 #include "tilemap.h"
 #include "hardware.h"
-#include "coins.h"
+#include "sprites.h"
+#include "objects/coin.h"
 
 play_area playArea;
 
@@ -115,13 +116,12 @@ void InitializePlayArea(const play_area_template *pTemplate)
 {
 	playArea.position.x=0;
 	playArea.position.y=0;
-	playArea.start.x=pTemplate->start.x;
-	playArea.start.y=pTemplate->start.y;
+	playArea.start=pTemplate->start;
+	playArea.activeSize = pTemplate->size;
 	ClearPlayArea();
 	nextreg(MMU_SLOT_6, PALETTE_PAGE);
 	BuildPlayArea(pTemplate);
 	play_cell* pCell = GetPlayAreaCell(playArea.start.x, playArea.start.y);
-	pCell->isStartingPosition = true;
 	DrawPlayArea(pTemplate->size.x, pTemplate->size.y);
 }
 

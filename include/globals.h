@@ -1,11 +1,6 @@
 #if !defined(__GLOBALS_H)
 #define __GLOBALS_H
 
-#include "objects.h"
-#include "player.h"
-#include "playarea.h"
-#include "particles.h"
-
 typedef struct s_globals
 {
 	u8 particlesActive;

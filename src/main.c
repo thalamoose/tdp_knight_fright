@@ -9,7 +9,7 @@
 #include "memorymap.h"
 #include "copper.h"
 #include "hud.h"
-#include "game.h"
+#include "game_manager.h"
 
 globals global;
 
@@ -24,7 +24,7 @@ extern u8 _DATA_END_tail[];
 void InitializeSystem(void)
 {
     nextreg(CLOCK_SEL, 0x03);
-    nextreg(PERIPHERAL_3_CONTROL, 0x70);
+    nextreg(PERIPHERAL_3_SETTING, 0x70);
     // Remap 16K to ULA shadow.
     nextreg(MMU_SLOT_2, ULA_SHADOW_PAGE);
     nextreg(MMU_SLOT_3, ULA_SHADOW_PAGE + 1);
@@ -46,17 +46,17 @@ int main(void)
 {
     InitializeSystem();
     LoadInitialAssets();
-    InitializeGame();
+    InitializeGameManager();
     while (true)
     {
-        ResetGame();
+        ResetGameManager();
         // Game mode is derived from these two flags.
         // Begin game   - intro transitions     - gameIsRunning = true,  transitionIsRunning = true
         // Play game    - main body of game     - gameIsRunning = true,  transitionIsRunning = false
         // Game complete- exit game transition  - gameIsRunning = false, transitionIsRunninf = true
-        while (hud.gameIsRunning || hud.transitionIsRunning)
+        while (gameManager.isRunning || hud.transitionIsRunning)
         {
-            UpdateGame();
+            UpdateGameManager();
             DebugTiming(ULA_COLOUR_BLACK);
             c++;
             if (c>50)
@@ -66,7 +66,7 @@ int main(void)
             }
             WaitVSync();
             DebugTiming(ULA_COLOUR_CYAN);
-            RenderGame();
+            RenderGameManager();
             DebugTiming(ULA_COLOUR_YELLOW);
         }
         EndGame();

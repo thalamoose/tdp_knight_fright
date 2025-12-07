@@ -25,18 +25,14 @@ typedef struct
 
 	u16 randomDropCounter;
 	bool dropEnemies;
+	u8 enabledEnemiesCount;
+	u8 enabledEnemies[8];
 	level_configuration config;
 	coord_s8 playerSpawnPos;
 	u8 state;
 	u8 stateCounter;
-	struct
-	{
-		bool isBearEnabled:1;
-		bool isBigHopperEnabled:1;
-		bool isFollowerEnabled:1;
-		bool isColorChangerEnabled:1;
-	} enemyTypeArray;
-	enemy_controller enemyList[MAX_ENEMIES];
+	u8 enemiesActive;
+	u8 enemyDropDelay;
 } level_manager;
 
 typedef struct
@@ -50,7 +46,6 @@ void ResetLevelManager(void);
 void UpdateLevelManager(void);
 void DestroyLevelManager(void);
 
-void DeleteEnemy(enemy_controller* enemy);
 const level_template* GetLevelTemplate(u8 levelIndex);
 
 void GenerateLevel(u8 levelNum, level_configuration* config);

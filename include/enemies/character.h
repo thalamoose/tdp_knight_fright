@@ -1,9 +1,8 @@
 typedef struct
 {
-	enemy_controller controller;
-	coord position;
+	object object;
 } character;
 
 void CreateCharacter(character* pObject);
-void UpdateCharacter(character* pObject);
+bool UpdateCharacter(character* pObject);
 void DestroyCharacter(character* pObject);

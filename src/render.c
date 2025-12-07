@@ -2,7 +2,6 @@
 #include "defines.h"
 #include "hardware.h"
 #include "memorymap.h"
-#include "player.h"
 #include "render.h"
 #include "particles.h"
 #include "tilemap.h"

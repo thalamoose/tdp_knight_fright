@@ -35,8 +35,8 @@ C_OBJ_DIR=build/c
 ASM_OBJ_DIR=build/asm
 DEP_DIR=build/deps
 
-C_SRCS := $(wildcard $(C_SRC_DIR)/*.c) $(wildcard $(C_SRC_DIR)/enemies/*.c)
-C_HDRS := $(wildcard $(C_INC_DIR)/*.h) $(wildcard $(C_INC_DIR)/enemies/*.h)
+C_SRCS := $(wildcard $(C_SRC_DIR)/*.c) $(wildcard $(C_SRC_DIR)/enemies/*.c) $(wildcard $(C_SRC_DIR)/objects/*.c)
+C_HDRS := $(wildcard $(C_INC_DIR)/*.h) $(wildcard $(C_INC_DIR)/enemies/*.h) $(wildcard $(C_INC_DIR)/objects/*.h)
 C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS))
 C_SYMS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.sym.o,$(C_SRCS))
 DEP_FILES := $(C_SRCS:src/%.c=$(DEP_DIR)/%.d)
@@ -49,7 +49,7 @@ ASSETS= $(OUT)/kfsprites.bin $(OUT)/kfplayer.bin \
 
 ##ASM_SRCS := $(wildcard $(ASM_SRC_DIR)/*.asm)
 ASM_SRCS := $(ASM_SRC_DIR)/interrupts.asm \
-			$(ASM_SRC_DIR)/stubs.asm $(ASM_SRC_DIR)/print.asm \
+			$(ASM_SRC_DIR)/print.asm \
 			$(ASM_SRC_DIR)/utilities.asm $(ASM_SRC_DIR)/dma.asm \
 			$(ASM_SRC_DIR)/particles.asm
 
@@ -113,6 +113,7 @@ $(OUT):
 $(C_OBJ_DIR):
 	$(MKDIR) $(subst /,\,$@)
 	$(MKDIR) $(subst /,\,$@/enemies)
+	$(MKDIR) $(subst /,\,$@/objects)
 
 $(ASM_OBJ_DIR):
 	$(MKDIR) $(subst /,\,$@)
@@ -135,6 +136,7 @@ $(ASM_OBJ_DIR)/%.o: $(ASM_SRC_DIR)/%.asm $(ASM_OBJ_DIR) makefile
 $(DEP_DIR): 
 	$(MKDIR) $(subst /,\,$@)
 	$(MKDIR) $(subst /,\,$@/enemies)
+	$(MKDIR) $(subst /,\,$@/objects)
 
 -include $(DEP_FILES)
 

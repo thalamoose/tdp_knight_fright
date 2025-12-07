@@ -3,65 +3,114 @@
 #include "hardware.h"
 #include "memorymap.h"
 #include "utilities.h"
-#include "player.h"
+#include "objects/player.h"
 #include "sprites.h"
 #include "input.h"
 #include "globals.h"
 #include "particles.h"
 #include "assets.h"
+#include "playarea.h"
 #include "hud.h"
 
 #define PLAYER_TO_TILE_X_OFFSET ( 2)
 #define PLAYER_TO_TILE_Y_OFFSET (-22)
 
-player_object player;
+player_object* player;
+void AnimatePlayer(player_object* pPlayer);
+void MovePlayer(player_object* pPlayer);
 
 //---------------------------------------------------------
 void SnapToGrid(void)
 {
-    s16 x = player.object.playGrid.x - playArea.position.x;
-    s16 y = player.object.playGrid.y - playArea.position.y;
+    s16 x = player->object.playGrid.x - playArea.position.x;
+    s16 y = player->object.playGrid.y - playArea.position.y;
 
-    s16 sx = (x+y) * 16;
-    s16 sy = (y - x) * 24;
+    s16 sx = (x+y)*16;
+    s16 sy = (y-x)*24;
 
-    player.object.position.x = I_TO_F(sx);
-    player.object.position.y = I_TO_F(sy);
-    player.object.gravity = FIXED_POINT_HALF;
+    player->object.position.x = I_TO_F(sx);
+    player->object.position.y = I_TO_F(sy);
+    player->object.gravity = FIXED_POINT_HALF;
 }
 
 //---------------------------------------------------------
 void SetPlayerAnimIdle(u8 baseIndex, s16 vx, s16 vy)
 {
-    player.object.velocity.x = vx;
-    player.object.velocity.y = vy;
-    player.object.baseIndex = baseIndex;
-    player.object.totalFrames = 8;
-    player.object.frameIndex = 0;
-    player.object.animDelay = 4;
-    player.object.animSpeed = 4;
+    player->object.velocity.x = vx;
+    player->object.velocity.y = vy;
+    player->object.baseIndex = baseIndex;
+    player->object.totalFrames = 8;
+    player->object.frameIndex = 0;
+    player->object.animDelay = 4;
+    player->object.animSpeed = 4;
 }
 
 //---------------------------------------------------------
 void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy)
 {
-    player.moveSteps = 16;
-    player.direction = direction;
+    player->moveSteps = 16;
+    player->direction = direction;
     SetPlayerAnimIdle(baseIndex, vx, vy);
 }
 
 //---------------------------------------------------------
+void CreatePlayer(player_object* pPlayer)
+{
+    player = pPlayer;
+}
+
+//---------------------------------------------------------
+bool UpdatePlayer(player_object* pPlayer)
+{
+    MovePlayer(pPlayer);
+    AnimatePlayer(pPlayer);
+    return true;
+}
+
+//---------------------------------------------------------
+void DestroyPlayer(player_object* pPlayer)
+{
+    (void)pPlayer;
+
+}
+
+//---------------------------------------------------------
+void BlowupPlayer(player_object* pPlayer)
+{
+    (void)pPlayer;
+
+}
+
+//---------------------------------------------------------
+void CollidePlayer(player_object* pPlayer)
+{
+    (void)pPlayer;
+
+}
+
+//---------------------------------------------------------
+object_vtable playerVTable = 
+{
+    (object_create_fn*)CreatePlayer,
+    (object_update_fn*)UpdatePlayer,
+    (object_destroy_fn*)DestroyPlayer,
+    (object_blowup_fn*)BlowupPlayer,
+    (object_collide_fn*)CollidePlayer,
+};
+
+//---------------------------------------------------------
 void InitializePlayer(void)
 {
-    player.object.flags.direction = 0;
-    player.object.frameIndex = 0;
-    player.object.baseIndex = 32;
-    player.object.lastIndex = 0xff;
-    player.object.animDelay = 4;
-    player.object.animSpeed = 4;
-    player.object.totalFrames = 8;
-    player.object.playGrid.x = playArea.start.x;
-    player.object.playGrid.y = playArea.start.y;
+    player = (player_object*)CreateObject(&playerVTable);
+    player->object.flags.direction = 0;
+    player->object.frameIndex = 0;
+    player->object.baseIndex = 32;
+    player->object.lastIndex = 0xff;
+    player->object.animDelay = 4;
+    player->object.animSpeed = 4;
+    player->object.totalFrames = 8;
+    player->object.playGrid.x = playArea.start.x;
+    player->object.playGrid.y = playArea.start.y;
     //
     // Set up sprites 64..67, so that only the minimum needs to be set up below.
     //
@@ -76,12 +125,12 @@ void InitializePlayer(void)
     // index.
     nextreg(MMU_SLOT_6, PLAYER_ANIM_PAGE);
     nextreg(TRANS_SPRITE_INDEX, *(u8 *)SWAP_BANK_0);
-    SnapToPlayAreaGrid(&player.object);
-    player.moveSteps = 32;
-    player.object.position.y -= I_TO_F(TILEMAP_PIX_HEIGHT/2+64);
-    player.object.velocity.x = 0;
-    player.object.velocity.y = FIXED_POINT_HALF*4;
-    player.object.gravity = FIXED_POINT_HALF/2;
+    SnapToPlayAreaGrid(&player->object);
+    player->moveSteps = 32;
+    player->object.position.y -= I_TO_F(TILEMAP_PIX_HEIGHT/2+64);
+    player->object.velocity.x = 0;
+    player->object.velocity.y = FIXED_POINT_HALF*4;
+    player->object.gravity = FIXED_POINT_HALF/2;
 }
 
 //---------------------------------------------------------
@@ -97,8 +146,8 @@ void BeginPulsePalette(void)
     }
     global.pulseColour = 0x1ff;
     global.pulseTarget = asset_TilemapPalette[4];
-    global.pulseCoord = player.object.playGrid;
-    RefreshPlayAreaBlock(player.object.playGrid.x, player.object.playGrid.y, 1);
+    global.pulseCoord = player->object.playGrid;
+    RefreshPlayAreaBlock(player->object.playGrid.x, player->object.playGrid.y, 1);
     SetColour(PALETTE_TILE_PRIMARY, 16+4, global.pulseColour);
 }
 
@@ -119,12 +168,12 @@ void PulsePalette(void)
 //---------------------------------------------------------
 void HandlePickup(void)
 {
-    SetPlayerAnimIdle(player.direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
+    SetPlayerAnimIdle(player->direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
     u8 vxlz = 0, vxgz = 0, vylz = 0, vygz = 0;
     for (int i = 0; i < 32; i++)
     {
-        s16 px = player.object.position.x+I_TO_F(16)+((s16)random8()<<3);
-        s16 py = player.object.position.y+I_TO_F(-16)+((s16)random8()<<3);
+        s16 px = player->object.position.x+I_TO_F(16)+((s16)random8()<<3);
+        s16 py = player->object.position.y+I_TO_F(-16)+((s16)random8()<<3);
         s16 vx = random8();
         s16 vy = random8();
         s8 width = random8()&3+1;
@@ -140,9 +189,9 @@ void HandlePickup(void)
 void HandleDeath(bool fallThrough)
 {
     (void)fallThrough;
-    SetPlayerAnimIdle(player.direction * 8+PLAYERSPR_IDLE_ANIM, 0, -FIXED_POINT_ONE * 2);
-    player.moveSteps = 64;
-    player.object.gravity = FIXED_POINT_HALF / 2;
+    SetPlayerAnimIdle(player->direction * 8+PLAYERSPR_IDLE_ANIM, 0, -FIXED_POINT_ONE * 2);
+    player->moveSteps = 64;
+    player->object.gravity = FIXED_POINT_HALF / 2;
 }
 
 //---------------------------------------------------------
@@ -153,25 +202,25 @@ void HandleControllerInput(void)
         return;
     if (buttons&JOYPAD_L_LEFT)
     {
-        player.object.playGrid.x--;
+        player->object.playGrid.x--;
         SetPlayerAnim(PLAYERSPR_L+PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
         return;
     }
     if (buttons&JOYPAD_L_RIGHT)
     {
-        player.object.playGrid.x++;
+        player->object.playGrid.x++;
         SetPlayerAnim(PLAYERSPR_R+PLAYERSPR_RUN_ANIM, PLAYERDIR_BR, FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
         return;
     }
     if (buttons&JOYPAD_L_UP)
     {
-        player.object.playGrid.y--;
+        player->object.playGrid.y--;
         SetPlayerAnim(PLAYERSPR_U+PLAYERSPR_RUN_ANIM, PLAYERDIR_TL, -FIXED_POINT_ONE, -FIXED_POINT_ONE * 5);
         return;
     }
     if (buttons&JOYPAD_L_DOWN)
     {
-        player.object.playGrid.y++;
+        player->object.playGrid.y++;
         SetPlayerAnim(PLAYERSPR_D+PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, FIXED_POINT_ONE, -FIXED_POINT_ONE * 2);
         return;
     }
@@ -182,18 +231,18 @@ void HandleControllerInput(void)
 }
 
 //---------------------------------------------------------
-void MovePlayer(void)
+void MovePlayer(player_object* player)
 {
     PulsePalette();
-    if (player.moveSteps)
+    if (player->moveSteps)
     {
-        player.object.position.x += player.object.velocity.x;
-        player.object.position.y += player.object.velocity.y;
-        player.object.velocity.y += player.object.gravity;
-        player.moveSteps--;
-        if (player.moveSteps != 0)
+        player->object.position.x += player->object.velocity.x;
+        player->object.position.y += player->object.velocity.y;
+        player->object.velocity.y += player->object.gravity;
+        player->moveSteps--;
+        if (player->moveSteps != 0)
         {
-            s16 dy = F_TO_I(player.object.position.y+tileMap.position.y);
+            s16 dy = F_TO_I(player->object.position.y+tileMap.position.y);
             if (dy > 256+32)
             {
                 // We must have been in a die. Respawn now.
@@ -201,10 +250,10 @@ void MovePlayer(void)
             }
             return;
         }
-        SnapToPlayAreaGrid(&player.object);
-        player.object.gravity = FIXED_POINT_HALF;
-        play_cell *pCell = GetPlayAreaCell(player.object.playGrid.x, player.object.playGrid.y);
-        //x_printf("Coord:(%d,%d), content:%c\n", player.object.playGrid.x, player.object.playGrid.y, *(u8 *)pCell);
+        SnapToPlayAreaGrid(&player->object);
+        player->object.gravity = FIXED_POINT_HALF;
+        play_cell *pCell = GetPlayAreaCell(player->object.playGrid.x, player->object.playGrid.y);
+        //x_printf("Coord:(%d,%d), content:%c\n", player->object.playGrid.x, player->object.playGrid.y, *(u8 *)pCell);
         if (pCell->type==CELL_COIN)
         {
             HandlePickup();
@@ -215,7 +264,7 @@ void MovePlayer(void)
         }
         else
         {
-            SetPlayerAnimIdle(player.direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
+            SetPlayerAnimIdle(player->direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
         }
         if (!pCell->isDark && pCell->type==CELL_TILE && hud.transitionIsRunning==false)
         {
@@ -242,33 +291,26 @@ void MovePlayer(void)
 }
 
 //---------------------------------------------------------
-void AnimatePlayer(void)
+void AnimatePlayer(player_object* pPlayer)
 {
-    player.object.animDelay--;
-    if (player.object.animDelay<0)
+    pPlayer->object.animDelay--;
+    if (pPlayer->object.animDelay<0)
     {
-        player.object.animDelay = player.object.animSpeed;
-        player.object.frameIndex++;
-        if (player.object.frameIndex != player.object.totalFrames)
+        pPlayer->object.animDelay = pPlayer->object.animSpeed;
+        pPlayer->object.frameIndex++;
+        if (player->object.frameIndex != pPlayer->object.totalFrames)
             return;
-        player.object.frameIndex = 0;
+        pPlayer->object.frameIndex = 0;
     }
-}
-
-//---------------------------------------------------------
-void UpdatePlayer(void)
-{
-    MovePlayer();
-    AnimatePlayer();
 }
 
 //---------------------------------------------------------
 void RenderPlayer(void)
 {
-    u8 animIndex = player.object.baseIndex+player.object.frameIndex;
-    if (animIndex != player.object.lastIndex)
+    u8 animIndex = player->object.baseIndex+player->object.frameIndex;
+    if (animIndex != player->object.lastIndex)
     {
-        player.object.lastIndex = animIndex;
+        player->object.lastIndex = animIndex;
         u8 page = (animIndex>>3)+PLAYER_ANIM_PAGE;
         nextreg(MMU_SLOT_6, page);
         u8 *pPattern = (u8 *)SWAP_BANK_0+((animIndex&7)<<10);
@@ -278,8 +320,8 @@ void RenderPlayer(void)
     s16 tx = tileMap.position.x&I_TO_F(0xfffe);
     s16 ty = tileMap.position.y;
 
-    s16 px = F_TO_I(tx+player.object.position.x);
-    s16 py = F_TO_I(ty+player.object.position.y);
+    s16 px = F_TO_I(tx+player->object.position.x);
+    s16 py = F_TO_I(ty+player->object.position.y);
      
     s16 x = px+hud.shake.x+TILEMAP_PIX_WIDTH/2+PLAYER_TO_TILE_X_OFFSET;
     s16 y = py+hud.shake.y+TILEMAP_PIX_HEIGHT/2+PLAYER_TO_TILE_Y_OFFSET;

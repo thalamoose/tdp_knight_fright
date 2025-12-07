@@ -1,4 +1,6 @@
 #include "kftypes.h"
+#include "defines.h"
+#include "objects.h"
 #include "enemies/enemy_controller.h"
 #include "enemies/big_hopper.h"
 
@@ -22,7 +24,7 @@ void BlowupBigHopper(big_hopper* pObject)
 	(void)pObject;
 }
 
-void CollideBigHopper(big_hopper* pObject, enemy_controller* pCollider)
+void CollideBigHopper(big_hopper* pObject, object* pCollider)
 {
 	(void)pObject;
 	(void)pCollider;

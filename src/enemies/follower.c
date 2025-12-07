@@ -1,5 +1,6 @@
 #include "kftypes.h"
-#include "enemies/enemy_controller.h"
+#include "defines.h"
+#include "objects.h"
 #include "enemies/follower.h"
 
 void CreateFollower(follower* pObject)
@@ -23,7 +24,7 @@ void BlowupFollower(follower* pObject)
 	(void)pObject;
 }
 
-void CollideFollower(follower* pObject, enemy_controller* pCollider)
+void CollideFollower(follower* pObject, object* pCollider)
 {
 	(void)pObject;
 	(void)pCollider;
