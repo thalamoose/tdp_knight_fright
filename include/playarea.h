@@ -1,4 +1,4 @@
-#include "objects.h"
+#include "objects/object_manager.h"
 
 enum
 {
@@ -13,7 +13,7 @@ enum
 typedef struct s_play_cell
 {
 	u8 type:3;
-	u8 objIndex:4;
+	u8 objIndex:5;
 	bool isDark;
 } play_cell;
 

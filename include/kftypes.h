@@ -31,4 +31,5 @@ typedef struct s_coord_s8
 	s8 y;
 } coord_s8;
 
+
 #endif

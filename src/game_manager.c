@@ -3,15 +3,16 @@
 #include "playarea.h"
 #include "game_manager.h"
 #include "globals.h"
-#include "sprites.h"
 #include "utilities.h"
 #include "hud.h"
 #include "copper.h"
 #include "tilemap.h"
 #include "hardware.h"
 #include "audio.h"
+#include "sprite.h"
 #include "particles.h"
-#include "objects.h"
+#include "objects/components.h"
+#include "objects/object_manager.h"
 #include "objects/coin.h"
 #include "objects/player.h"
 #include "enemies/enemy_controller.h"
@@ -23,7 +24,6 @@ game_manager gameManager;
 void InitializeGameManager(void)
 {
     gameManager.ticksPerSecond = GetTicksPerSecond();
-    InitializeSprites();
     InitializeTilemap();
     InitializeHud();
     InitializeParticles();
@@ -36,14 +36,16 @@ void InitializeGameManager(void)
 //---------------------------------------------------------
 void ResetGameManager(void)
 {
-    ResetSprites();
     ResetTilemap();
+    ResetSprites();
     ResetHud();
     ResetParticles();
     ResetObjects();
     ResetLevelManager();
     NewLevel();
     InitializePlayer();
+    gameManager.isRunning = true;
+    gameManager.isPaused = false;
     x_printf("Game is running\n");
 }
 

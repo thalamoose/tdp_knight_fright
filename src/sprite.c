@@ -3,9 +3,10 @@
 #include "defines.h"
 #include "memorymap.h"
 #include "utilities.h"
-#include "sprites.h"
-#include "objects.h"
+#include "objects/components.h"
+#include "objects/object_manager.h"
 #include "globals.h"
+#include "sprite.h"
 
 //---------------------------------------------------------
 void UploadSprites(void)

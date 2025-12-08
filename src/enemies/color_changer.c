@@ -1,6 +1,6 @@
 #include "kftypes.h"
 #include "defines.h"
-#include "objects.h"
+#include "objects/object_manager.h"
 #include "enemies/enemy_controller.h"
 #include "enemies/color_changer.h"
 
@@ -13,6 +13,11 @@ bool UpdateColorChanger(color_changer* pObject)
 {
 	(void)pObject;
 	return true;
+}
+
+void RenderColorChanger(color_changer* pObject)
+{
+	(void)pObject;
 }
 
 void DestroyColorChanger(color_changer* pObject)

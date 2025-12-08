@@ -1,6 +1,6 @@
 #include "kftypes.h"
 #include "defines.h"
-#include "objects.h"
+#include "objects/object_manager.h"
 #include "enemies/enemy_controller.h"
 #include "enemies/character.h"
 

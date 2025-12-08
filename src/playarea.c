@@ -5,7 +5,7 @@
 #include "memorymap.h"
 #include "tilemap.h"
 #include "hardware.h"
-#include "sprites.h"
+#include "objects/components.h"
 #include "objects/coin.h"
 
 play_area playArea;
@@ -68,8 +68,8 @@ void SnapToPlayAreaGrid(object* pObject)
     s16 sx = (x+y)*16;
     s16 sy = (y-x)*24;
 
-    pObject->position.x = I_TO_F(sx);
-    pObject->position.y = I_TO_F(sy);
+    pObject->trans.pos.x = I_TO_F(sx);
+    pObject->trans.pos.y = I_TO_F(sy);
 }
 
 

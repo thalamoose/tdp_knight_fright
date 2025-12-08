@@ -4,7 +4,8 @@
 #include "memorymap.h"
 #include "utilities.h"
 #include "objects/player.h"
-#include "sprites.h"
+#include "objects/components.h"
+#include "sprite.h"
 #include "input.h"
 #include "globals.h"
 #include "particles.h"
@@ -20,29 +21,15 @@ void AnimatePlayer(player_object* pPlayer);
 void MovePlayer(player_object* pPlayer);
 
 //---------------------------------------------------------
-void SnapToGrid(void)
-{
-    s16 x = player->object.playGrid.x - playArea.position.x;
-    s16 y = player->object.playGrid.y - playArea.position.y;
-
-    s16 sx = (x+y)*16;
-    s16 sy = (y-x)*24;
-
-    player->object.position.x = I_TO_F(sx);
-    player->object.position.y = I_TO_F(sy);
-    player->object.gravity = FIXED_POINT_HALF;
-}
-
-//---------------------------------------------------------
 void SetPlayerAnimIdle(u8 baseIndex, s16 vx, s16 vy)
 {
-    player->object.velocity.x = vx;
-    player->object.velocity.y = vy;
-    player->object.baseIndex = baseIndex;
-    player->object.totalFrames = 8;
-    player->object.frameIndex = 0;
-    player->object.animDelay = 4;
-    player->object.animSpeed = 4;
+    player->object.trans.vel.x = vx;
+    player->object.trans.vel.y = vy;
+    player->object.anim.baseIndex = baseIndex;
+    player->object.anim.totalFrames = 8;
+    player->object.anim.frameIndex = 0;
+    player->object.anim.animDelay = 4;
+    player->object.anim.animSpeed = 4;
 }
 
 //---------------------------------------------------------
@@ -57,14 +44,55 @@ void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy)
 void CreatePlayer(player_object* pPlayer)
 {
     player = pPlayer;
+    pPlayer->object.flags.direction = 0;
+    pPlayer->object.anim.frameIndex = 0;
+    pPlayer->object.anim.baseIndex = 32;
+    pPlayer->object.anim.lastIndex = 0xff;
+    pPlayer->object.anim.animDelay = 4;
+    pPlayer->object.anim.animSpeed = 4;
+    pPlayer->object.anim.totalFrames = 8;
+    //
+    // Set up sprites 64..67, so that only the minimum needs to be set up below.
+    //
+    SetupSprite(PLAYER_SPRITE_SLOT, PLAYER_SPRITE_PATTERN, 0, 0, 0, 0x40, 0);
+    SetupSprite(PLAYER_SPRITE_SLOT+1, PLAYER_SPRITE_PATTERN+1, 16, 0, 0, 0xc0, 0x60);
+    SetupSprite(PLAYER_SPRITE_SLOT+2, PLAYER_SPRITE_PATTERN+2, 0, 16, 0, 0xc0, 0x60);
+    SetupSprite(PLAYER_SPRITE_SLOT+3, PLAYER_SPRITE_PATTERN+3, 16, 16, 0, 0xc0, 0x60);
+
+    nextreg(MMU_SLOT_6, PALETTE_PAGE);
+    CopyPalettePartial(asset_PlayerPalette, PALETTE_SPRITE_PRIMARY, 0, 64);
+    // Grab whatever colour is the background colour. This will be our transparent
+    // index.
+    pPlayer->object.anim.sprite.page = PLAYER_ANIM_PAGE;
+    pPlayer->object.anim.sprite.slot = PLAYER_SPRITE_SLOT;
+    pPlayer->object.anim.sprite.pattern = PLAYER_SPRITE_PATTERN;
+    pPlayer->object.anim.sprite.patternCount = 4;
+    pPlayer->object.anim.sprite.centerOffset.x = PLAYER_TO_TILE_X_OFFSET;
+    pPlayer->object.anim.sprite.centerOffset.y = PLAYER_TO_TILE_Y_OFFSET;
+    
+    pPlayer->object.anim.sprite.patternCount = 4;
+    // Copies transparent color to the register.
+    nextreg(MMU_SLOT_6, PLAYER_ANIM_PAGE);
+    nextreg(TRANS_SPRITE_INDEX, *(u8 *)SWAP_BANK_0);
+    pPlayer->moveSteps = 32;
+    pPlayer->object.trans.pos.y -= I_TO_F(TILEMAP_PIX_HEIGHT/2+64);
+    pPlayer->object.trans.vel.x = 0;
+    pPlayer->object.trans.vel.y = FIXED_POINT_HALF*4;
+    pPlayer->object.trans.gravity = FIXED_POINT_HALF/2;
 }
 
 //---------------------------------------------------------
 bool UpdatePlayer(player_object* pPlayer)
 {
     MovePlayer(pPlayer);
-    AnimatePlayer(pPlayer);
+    AnimateComponent(&pPlayer->object.anim);
     return true;
+}
+
+//---------------------------------------------------------
+void RenderPlayer(player_object* pPlayer)
+{
+    RenderComponent(&pPlayer->object.trans, &pPlayer->object.anim);
 }
 
 //---------------------------------------------------------
@@ -89,51 +117,21 @@ void CollidePlayer(player_object* pPlayer)
 }
 
 //---------------------------------------------------------
-object_vtable playerVTable = 
+object_vtable playerVirtualTable = 
 {
     (object_create_fn*)CreatePlayer,
     (object_update_fn*)UpdatePlayer,
+    (object_render_fn*)RenderPlayer,
     (object_destroy_fn*)DestroyPlayer,
-    (object_blowup_fn*)BlowupPlayer,
     (object_collide_fn*)CollidePlayer,
+    (object_blowup_fn*)BlowupPlayer,
 };
 
 //---------------------------------------------------------
 void InitializePlayer(void)
 {
-    player = (player_object*)CreateObject(&playerVTable);
-    player->object.flags.direction = 0;
-    player->object.frameIndex = 0;
-    player->object.baseIndex = 32;
-    player->object.lastIndex = 0xff;
-    player->object.animDelay = 4;
-    player->object.animSpeed = 4;
-    player->object.totalFrames = 8;
-    player->object.playGrid.x = playArea.start.x;
-    player->object.playGrid.y = playArea.start.y;
-    //
-    // Set up sprites 64..67, so that only the minimum needs to be set up below.
-    //
-    SetupSprite(PLAYER_SPRITE_SLOT, PLAYER_SPRITE_PATTERN, 0, 0, 0, 0x40, 0);
-    SetupSprite(PLAYER_SPRITE_SLOT+1, PLAYER_SPRITE_PATTERN+1, 16, 0, 0, 0xc0, 0x60);
-    SetupSprite(PLAYER_SPRITE_SLOT+2, PLAYER_SPRITE_PATTERN+2, 0, 16, 0, 0xc0, 0x60);
-    SetupSprite(PLAYER_SPRITE_SLOT+3, PLAYER_SPRITE_PATTERN+3, 16, 16, 0, 0xc0, 0x60);
-
-    nextreg(MMU_SLOT_6, PALETTE_PAGE);
-    CopyPalettePartial(asset_PlayerPalette, PALETTE_SPRITE_PRIMARY, 0, 64);
-    // Grab whatever colour is the background colour. This will be our transparent
-    // index.
-    nextreg(MMU_SLOT_6, PLAYER_ANIM_PAGE);
-    nextreg(TRANS_SPRITE_INDEX, *(u8 *)SWAP_BANK_0);
-    SnapToPlayAreaGrid(&player->object);
-    player->moveSteps = 32;
-    player->object.position.y -= I_TO_F(TILEMAP_PIX_HEIGHT/2+64);
-    player->object.velocity.x = 0;
-    player->object.velocity.y = FIXED_POINT_HALF*4;
-    player->object.gravity = FIXED_POINT_HALF/2;
+    player = (player_object*)CreateObject(&playerVirtualTable, playArea.start.x, playArea.start.y);
 }
-
-//---------------------------------------------------------
 
 //---------------------------------------------------------
 void BeginPulsePalette(void)
@@ -172,8 +170,8 @@ void HandlePickup(void)
     u8 vxlz = 0, vxgz = 0, vylz = 0, vygz = 0;
     for (int i = 0; i < 32; i++)
     {
-        s16 px = player->object.position.x+I_TO_F(16)+((s16)random8()<<3);
-        s16 py = player->object.position.y+I_TO_F(-16)+((s16)random8()<<3);
+        s16 px = player->object.trans.pos.x+I_TO_F(16)+((s16)random8()<<3);
+        s16 py = player->object.trans.pos.y+I_TO_F(-16)+((s16)random8()<<3);
         s16 vx = random8();
         s16 vy = random8();
         s8 width = random8()&3+1;
@@ -191,7 +189,7 @@ void HandleDeath(bool fallThrough)
     (void)fallThrough;
     SetPlayerAnimIdle(player->direction * 8+PLAYERSPR_IDLE_ANIM, 0, -FIXED_POINT_ONE * 2);
     player->moveSteps = 64;
-    player->object.gravity = FIXED_POINT_HALF / 2;
+    player->object.trans.gravity = FIXED_POINT_HALF / 2;
 }
 
 //---------------------------------------------------------
@@ -236,13 +234,11 @@ void MovePlayer(player_object* player)
     PulsePalette();
     if (player->moveSteps)
     {
-        player->object.position.x += player->object.velocity.x;
-        player->object.position.y += player->object.velocity.y;
-        player->object.velocity.y += player->object.gravity;
+        TransformComponent(&player->object.trans);
         player->moveSteps--;
         if (player->moveSteps != 0)
         {
-            s16 dy = F_TO_I(player->object.position.y+tileMap.position.y);
+            s16 dy = F_TO_I(player->object.trans.pos.y+tileMap.position.y);
             if (dy > 256+32)
             {
                 // We must have been in a die. Respawn now.
@@ -251,7 +247,7 @@ void MovePlayer(player_object* player)
             return;
         }
         SnapToPlayAreaGrid(&player->object);
-        player->object.gravity = FIXED_POINT_HALF;
+        player->object.trans.gravity = FIXED_POINT_HALF;
         play_cell *pCell = GetPlayAreaCell(player->object.playGrid.x, player->object.playGrid.y);
         //x_printf("Coord:(%d,%d), content:%c\n", player->object.playGrid.x, player->object.playGrid.y, *(u8 *)pCell);
         if (pCell->type==CELL_COIN)
@@ -290,51 +286,3 @@ void MovePlayer(player_object* player)
     HandleControllerInput();
 }
 
-//---------------------------------------------------------
-void AnimatePlayer(player_object* pPlayer)
-{
-    pPlayer->object.animDelay--;
-    if (pPlayer->object.animDelay<0)
-    {
-        pPlayer->object.animDelay = pPlayer->object.animSpeed;
-        pPlayer->object.frameIndex++;
-        if (player->object.frameIndex != pPlayer->object.totalFrames)
-            return;
-        pPlayer->object.frameIndex = 0;
-    }
-}
-
-//---------------------------------------------------------
-void RenderPlayer(void)
-{
-    u8 animIndex = player->object.baseIndex+player->object.frameIndex;
-    if (animIndex != player->object.lastIndex)
-    {
-        player->object.lastIndex = animIndex;
-        u8 page = (animIndex>>3)+PLAYER_ANIM_PAGE;
-        nextreg(MMU_SLOT_6, page);
-        u8 *pPattern = (u8 *)SWAP_BANK_0+((animIndex&7)<<10);
-        CopySprite(pPattern, PLAYER_SPRITE_PATTERN, 4);
-    }
-    nextreg(SPRITE_INDEX, PLAYER_SPRITE_SLOT);
-    s16 tx = tileMap.position.x&I_TO_F(0xfffe);
-    s16 ty = tileMap.position.y;
-
-    s16 px = F_TO_I(tx+player->object.position.x);
-    s16 py = F_TO_I(ty+player->object.position.y);
-     
-    s16 x = px+hud.shake.x+TILEMAP_PIX_WIDTH/2+PLAYER_TO_TILE_X_OFFSET;
-    s16 y = py+hud.shake.y+TILEMAP_PIX_HEIGHT/2+PLAYER_TO_TILE_Y_OFFSET;
-
-    if ((x < -32) || (x >= 320) || (y < -32) || (y >= 256))
-    {
-        // Hide the sprite if clipped
-        nextreg(SPRITE_ATTR_3, 0);
-        return;
-    }
-    nextreg(SPRITE_ATTR_0, x&0xff);
-    nextreg(SPRITE_ATTR_1, y);
-    nextreg(SPRITE_ATTR_2, (x>>8)&1);
-    nextreg(SPRITE_ATTR_3, 0xc0);
-    nextreg(SPRITE_ATTR_4, (y>>8)&1);
-}

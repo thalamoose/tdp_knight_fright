@@ -1,6 +1,6 @@
 #include "kftypes.h"
 #include "defines.h"
-#include "objects.h"
+#include "objects/object_manager.h"
 #include "enemies/follower.h"
 
 void CreateFollower(follower* pObject)
@@ -12,6 +12,11 @@ bool UpdateFollower(follower* pObject)
 {
 	(void)pObject;
 	return true;
+}
+
+void RenderFollower(follower* pObject)
+{
+	(void)pObject;
 }
 
 void DestroyFollower(follower* pObject)

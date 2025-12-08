@@ -6,6 +6,7 @@ typedef struct
 
 void CreateFollower(follower* pObject);
 bool UpdateFollower(follower* pObject);
+void RenderFollower(follower* pObject);
 void DestroyFollower(follower* pObject);
 void BlowupFollower(follower* pObject);
 void CollideFollower(follower* pObject, object* pCollider);

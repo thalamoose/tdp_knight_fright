@@ -6,7 +6,6 @@
 #include "particles.h"
 #include "tilemap.h"
 #include "utilities.h"
-#include "sprites.h"
 #include "copper.h"
 #include "hud.h"
 

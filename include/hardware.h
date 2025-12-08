@@ -1,3 +1,5 @@
+#if !defined(__HARDWARE_H)
+#define __HARDWARE_H
 enum next_registers
 {
 	PERIPHERAL_1_SETTING = 0x04,
@@ -146,3 +148,5 @@ enum dma_modes
 
 extern u8 port_in(u16 port);
 void port_out(u16 port, u8 val);
+
+#endif

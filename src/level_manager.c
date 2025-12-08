@@ -4,12 +4,13 @@
 #include "playarea.h"
 #include "globals.h"
 #include "level_manager.h"
-#include "sprites.h"
-#include "objects.h"
 #include "game_manager.h"
-#include "enemies/enemy_controller.h"
+#include "objects/object.h"
+#include "objects/components.h"
+#include "objects/object_manager.h"
 #include "objects/coin.h"
 #include "objects/player.h"
+#include "enemies/enemy_controller.h"
 
 level_manager levelManager;
 
@@ -104,31 +105,33 @@ void NewLevel(void)
 //---------------------------------------------------------
 void ClearEnemies(void)
 {
-#if 0
-	for (u8 i=0;i<MAX_ENEMIES; i++)
+	game_object* objList = objectManager.objects;
+	for (u8 i=0;i<MAX_ENEMIES; i++, objList++)
 	{
-		enemy_controller* enemy = GetEnemyFromIndex(i);
+		object* enemy = &objList->object;
 		if (enemy->flags.active)
 		{
-			enemy->Destroy(enemy);
+			play_cell* pCell = GetPlayAreaCell(enemy->playGrid.x, enemy->playGrid.y);
+			if (pCell->type==CELL_ENEMY)
+				DestroyObject(enemy);
 		}
 	}
-#endif
 }
 
 //---------------------------------------------------------
 void BlowupEnemies(void)
 {
-#if 0
-	for (u8 i=0;i<MAX_ENEMIES; i++)
+	game_object* objList = objectManager.objects;
+	for (u8 i=0;i<MAX_ENEMIES; i++, objList++)
 	{
-		enemy_controller* enemy = GetEnemyFromIndex(i);
+		object* enemy = &objList->object;
 		if (enemy->flags.active)
 		{
-			if (enemy->Blowup) enemy->Blowup(enemy);
+			play_cell* pCell = GetPlayAreaCell(enemy->playGrid.x, enemy->playGrid.y);
+			if (pCell->type==CELL_ENEMY)
+				if (enemy->vtable->Blowup) enemy->vtable->Blowup(enemy);
 		}
 	}
-#endif
 	}
 
 //---------------------------------------------------------
@@ -171,6 +174,7 @@ bool CheckPathBlocked(s8 x, s8 y)
 //---------------------------------------------------------
 void RemoveEnemy(s8 x, s8 y)
 {
+	(void)(x+y);
 	#if 0
 	play_cell* pCell = GetPlayAreaCell(x, y);
 	if (!pCell)
@@ -204,12 +208,10 @@ void PlaceRandomEnemy(s8 x, s8 y, bool drop)
 {
 	s8 enemyType = levelManager.enabledEnemies[random8()%levelManager.enabledEnemiesCount];
 	
-	object* enemy = CreateEnemy(enemyType);
+	object* enemy = CreateEnemy(enemyType, x, y);
 	if (!enemy)
 		return;
 
-	enemy->playGrid.x = x;
-	enemy->playGrid.y = y;
 	// Drop him in from the top
 	if (drop)
 	{
@@ -238,7 +240,7 @@ void RandomEnemyDrop(u8 maxNumEntries, u8 spawnRate)
 
 	if (CheckPathBlocked(x, y) || CheckForEnemy(x, y))
 		return;
-	if ((x==player->object.position.x) && (y==player->object.position.y))
+	if ((x==player->object.trans.pos.x) && (y==player->object.trans.pos.y))
 		return;
 	PlaceRandomEnemy(x, y, true);
 	levelManager.enemyDropDelay = spawnRate*gameManager.ticksPerSecond;
