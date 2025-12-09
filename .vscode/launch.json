@@ -196,7 +196,7 @@
             "request" : "launch",
             "program" : "${file}",
             "console" : "integratedTerminal",
-            "args" : ["--size=16,16","--sprite", "--packed", "assets/coins.png", "build/assets/coins.bin", "--palette=build/assets/coins.pal"]
+            "args" : ["-o","build/c/objects/object.s","build/c/objects/object.sym.o"]
         }
 
     ]

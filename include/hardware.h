@@ -83,7 +83,7 @@ enum next_ports
 	KEMPSTON_MOUSE_Y_PORT = (signed)0xffdf,
 };
 
-enum PALETTE_INDEX
+enum PALETTE_TYPE
 {
 	PALETTE_ULA_PRIMARY,
 	PALETTE_LAYER_2_PRIMARY,

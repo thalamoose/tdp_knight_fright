@@ -18,18 +18,20 @@ typedef struct s_object
 	u8 index;
 	union
 	{
+		u8 value;
 		struct 
 		{
-			bool active:1;
+			u8 active:1;
 			bool pingpong:1;
 			bool is4bit:1;
 			bool direction:1;
 			bool tilemapLocked:1;
 		};
-		u8 value;
 	} flags;
 	transform trans;
 	animation anim;
+	u8 moveSteps;
+	u8 direction;
     coord_s8 playGrid;
 	const object_vtable* vtable;
 } object;

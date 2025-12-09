@@ -11,12 +11,9 @@
 //---------------------------------------------------------
 void TransformComponent(transform* trans)
 {
-	if (trans->vel.x|trans->vel.y)
-	{
-		trans->pos.x += trans->vel.x;
-		trans->pos.y += trans->vel.y;
-		trans->vel.y += trans->gravity;
-	}
+	trans->pos.x += trans->vel.x;
+	trans->pos.y += trans->vel.y;
+	trans->vel.y += trans->gravity;
 }
 
 //---------------------------------------------------------
@@ -63,13 +60,12 @@ void RenderComponent(transform* pTrans, animation* pAnim)
         CopySprite(pPattern, pAnim->sprite.pattern, pAnim->sprite.patternCount);
     }
     nextreg(SPRITE_INDEX, pAnim->sprite.slot);
-    s16 tx = tileMap.position.x&I_TO_F(0xfffe);
-    s16 ty = tileMap.position.y;
-
-    s16 px = F_TO_I(tx+pTrans->pos.x);
-    s16 py = F_TO_I(ty+pTrans->pos.y);
-     
+    s16 tx = pTrans->pos.x+tileMap.position.x&I_TO_F(0xfffe);
+    s16 px = F_TO_I(tx);
     s16 x = px+hud.shake.x+TILEMAP_PIX_WIDTH/2+pAnim->sprite.centerOffset.x;
+
+	s16 ty = pTrans->pos.y+tileMap.position.y;
+    s16 py = F_TO_I(ty);
     s16 y = py+hud.shake.y+TILEMAP_PIX_HEIGHT/2+pAnim->sprite.centerOffset.y;
 
     if ((x < -32) || (x >= 320) || (y < -32) || (y >= 256))

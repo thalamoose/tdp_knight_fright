@@ -11,13 +11,13 @@
 #include "particles.h"
 #include "assets.h"
 #include "playarea.h"
+#include "game_manager.h"
 #include "hud.h"
 
 #define PLAYER_TO_TILE_X_OFFSET ( 2)
 #define PLAYER_TO_TILE_Y_OFFSET (-22)
 
 player_object* player;
-void AnimatePlayer(player_object* pPlayer);
 void MovePlayer(player_object* pPlayer);
 
 //---------------------------------------------------------
@@ -25,18 +25,19 @@ void SetPlayerAnimIdle(u8 baseIndex, s16 vx, s16 vy)
 {
     player->object.trans.vel.x = vx;
     player->object.trans.vel.y = vy;
-    player->object.anim.baseIndex = baseIndex;
-    player->object.anim.totalFrames = 8;
     player->object.anim.frameIndex = 0;
+    player->object.anim.baseIndex = baseIndex;
+    player->object.anim.lastIndex = 0xff;
     player->object.anim.animDelay = 4;
     player->object.anim.animSpeed = 4;
+    player->object.anim.totalFrames = 8;
 }
 
 //---------------------------------------------------------
 void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy)
 {
-    player->moveSteps = 16;
-    player->direction = direction;
+    player->object.moveSteps = 16;
+    player->object.direction = direction;
     SetPlayerAnimIdle(baseIndex, vx, vy);
 }
 
@@ -44,13 +45,7 @@ void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy)
 void CreatePlayer(player_object* pPlayer)
 {
     player = pPlayer;
-    pPlayer->object.flags.direction = 0;
-    pPlayer->object.anim.frameIndex = 0;
-    pPlayer->object.anim.baseIndex = 32;
-    pPlayer->object.anim.lastIndex = 0xff;
-    pPlayer->object.anim.animDelay = 4;
-    pPlayer->object.anim.animSpeed = 4;
-    pPlayer->object.anim.totalFrames = 8;
+    SetPlayerAnimIdle(PLAYERSPR_IDLE_ANIM, 0, 0);
     //
     // Set up sprites 64..67, so that only the minimum needs to be set up below.
     //
@@ -74,7 +69,7 @@ void CreatePlayer(player_object* pPlayer)
     // Copies transparent color to the register.
     nextreg(MMU_SLOT_6, PLAYER_ANIM_PAGE);
     nextreg(TRANS_SPRITE_INDEX, *(u8 *)SWAP_BANK_0);
-    pPlayer->moveSteps = 32;
+    pPlayer->object.moveSteps = 32;
     pPlayer->object.trans.pos.y -= I_TO_F(TILEMAP_PIX_HEIGHT/2+64);
     pPlayer->object.trans.vel.x = 0;
     pPlayer->object.trans.vel.y = FIXED_POINT_HALF*4;
@@ -134,6 +129,14 @@ void InitializePlayer(void)
 }
 
 //---------------------------------------------------------
+void ResetPlayer(void)
+{
+	player->object.playGrid = playArea.start;
+	SnapToPlayAreaGrid(&player->object);
+    CreatePlayer(player);
+}
+
+//---------------------------------------------------------
 void BeginPulsePalette(void)
 {
     nextreg(MMU_SLOT_6, PALETTE_PAGE);
@@ -166,7 +169,7 @@ void PulsePalette(void)
 //---------------------------------------------------------
 void HandlePickup(void)
 {
-    SetPlayerAnimIdle(player->direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
+    SetPlayerAnimIdle(player->object.direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
     u8 vxlz = 0, vxgz = 0, vylz = 0, vygz = 0;
     for (int i = 0; i < 32; i++)
     {
@@ -187,9 +190,9 @@ void HandlePickup(void)
 void HandleDeath(bool fallThrough)
 {
     (void)fallThrough;
-    SetPlayerAnimIdle(player->direction * 8+PLAYERSPR_IDLE_ANIM, 0, -FIXED_POINT_ONE * 2);
-    player->moveSteps = 64;
-    player->object.trans.gravity = FIXED_POINT_HALF / 2;
+    SetPlayerAnimIdle(player->object.direction*8+PLAYERSPR_IDLE_ANIM, 0, -FIXED_POINT_ONE*2);
+    player->object.moveSteps = 64;
+    player->object.trans.gravity = FIXED_POINT_HALF/2;
 }
 
 //---------------------------------------------------------
@@ -232,17 +235,17 @@ void HandleControllerInput(void)
 void MovePlayer(player_object* player)
 {
     PulsePalette();
-    if (player->moveSteps)
+    if (player->object.moveSteps)
     {
         TransformComponent(&player->object.trans);
-        player->moveSteps--;
-        if (player->moveSteps != 0)
+        player->object.moveSteps--;
+        if (player->object.moveSteps != 0)
         {
             s16 dy = F_TO_I(player->object.trans.pos.y+tileMap.position.y);
             if (dy > 256+32)
             {
                 // We must have been in a die. Respawn now.
-                InitializePlayer();
+                ResetPlayer();
             }
             return;
         }
@@ -260,7 +263,7 @@ void MovePlayer(player_object* player)
         }
         else
         {
-            SetPlayerAnimIdle(player->direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
+            SetPlayerAnimIdle(player->object.direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
         }
         if (!pCell->isDark && pCell->type==CELL_TILE && hud.transitionIsRunning==false)
         {
@@ -277,7 +280,7 @@ void MovePlayer(player_object* player)
             {
                 x_printf("No more tiles. Restart.\n");
                 // End of map, needs to go on to the next
-                hud.gameIsRunning = false;
+                gameManager.isRunning = false;
                 StartTransition(50, 0, 0, I_TO_F(5), I_TO_F(-1), I_TO_F(1) / 4);
             }
         }

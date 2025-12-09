@@ -30,14 +30,14 @@ typedef struct s_animation
 	u8 totalFrames;
 	union
 	{
+		u8 value;
 		struct 
 		{
-			bool pingpong:1;
-			bool is4bit:1;
-			bool direction:1;
-			bool tilemapLocked:1;
+			u8 pingpong:1;
+			u8 is4bit:1;
+			u8 direction:1;
+			u8 tilemapLocked:1;
 		};
-		u8 value;
 	} flags;
 } animation;
 

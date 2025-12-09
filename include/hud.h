@@ -1,7 +1,6 @@
 #define SCORE_BCD_DIGITS 8
 typedef struct s_hud
 {
-	bool gameIsRunning;
 	bool transitionIsRunning;
 	u8 transDuration;
 	coord transPosition;
