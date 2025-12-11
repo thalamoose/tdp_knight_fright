@@ -4,9 +4,9 @@ import os.path as path
 import argparse
 from pathlib import Path
 
-blockSize = 16384
+blockSize = 8192
 
-def split_file_and_generate_map(inputName,outputName,bankIndex,blockSize):
+def split_file_and_generate_map(inputName,outputName,pageIndex,blockSize):
 	inputFile = open(inputName,"rb")
 	outputFile = open(outputName,"w")
 
@@ -24,11 +24,11 @@ def split_file_and_generate_map(inputName,outputName,bankIndex,blockSize):
 			writeSize = blockSize
 		segmentData = inputFile.read(writeSize)
 		segmentOut.write(segmentData)
-		outputFile.write( f'    SECTION BANK_{bankIndex}\n')
+		outputFile.write( f'    SECTION PAGE_{pageIndex}\n')
 		outputFile.write( f'    incbin "{outName}"\n')
 		remainingSize -= writeSize
 		index += 1
-		bankIndex += 1
+		pageIndex += 1
 		segmentOut.close()
 	inputFile.close()
 	outputFile.close()
@@ -38,9 +38,9 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('input_file', type=str, help='Processed (ELF format file)')
 parser.add_argument('output_file',type=str, help='Output filename')
-parser.add_argument('start_bank',type=int, help='Bank number to start at')
+parser.add_argument('start_page',type=int, help='Page number to start at')
 args=parser.parse_args()
 
-split_file_and_generate_map(args.input_file,args.output_file,args.start_bank,blockSize)
+split_file_and_generate_map(args.input_file,args.output_file,args.start_page,blockSize)
 
 

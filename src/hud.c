@@ -37,7 +37,6 @@ void ResetHud(void)
  
 	UpdateHudCount(TILE_COUNT_X, TILE_COUNT_Y, hud.tilesBCD, hud.tilesDigitsShown);
 	UpdateHudCount(COIN_COUNT_X, COIN_COUNT_Y, hud.coinsBCD, hud.coinsDigitsShown);
-	StartTransition(85, I_TO_F(-240), I_TO_F(-191), I_TO_F(51) / 18, I_TO_F(-3), I_TO_F(1) / 8);
 }
 //---------------------------------------------------------
 void CopyBackgroundBitmap(u8 srcPage)

@@ -11,7 +11,6 @@ typedef struct s_globals
 	u16 level;
 	u16 bonusTracker;
 	bool useSuperCoins;
-	u8 playAreaIndex;
 	coord_s8 pulseCoord;
 	u8 particleIndex;
 } globals;

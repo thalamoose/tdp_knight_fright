@@ -1,11 +1,6 @@
-typedef struct
-{
-	object object;
-} spike;
-
-void CreateSpike(spike* pObject);
-bool UpdateSpike(spike* pObject);
-void RenderSpike(spike* pObject);
-void DestroySpike(spike* pObject);
-void BlowupSpike(spike* pObject);
-void CollideSpike(spike* pObject, object* pCollider);
+void CreateSpike(game_object* pObject, s8 px, s8 py);
+bool UpdateSpike(game_object* pObject);
+void RenderSpike(game_object* pObject);
+void DestroySpike(game_object* pObject);
+void BlowupSpike(game_object* pObject);
+void CollideSpike(game_object* pObject, play_cell* pCollider);

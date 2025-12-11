@@ -4,34 +4,34 @@
 #include "enemies/enemy_controller.h"
 #include "enemies/bear.h"
 
-void CreateBear(bear* pObject)
+void CreateBear(game_object* pObject, s8 px, s8 py)
 {
-	(void)pObject;
+	(void)(pObject+px+py);
 }
 
-bool UpdateBear(bear* pObject)
+bool UpdateBear(game_object* pObject)
 {
 	(void)pObject;
 	return true;
 }
 
-void DestroyBear(bear* pObject)
+void DestroyBear(game_object* pObject)
 {
 	(void)pObject;
 }
 
-void RenderBear(bear* pObject)
+void RenderBear(game_object* pObject)
 {
 	(void)pObject;
 }
 
-void CollideBear(bear* pObject, object* pCollider)
+void CollideBear(game_object* pObject, play_cell* pCollider)
 {
 	(void)pObject;
 	(void)pCollider;
 }
 
-void BlowupBear(bear* pObject)
+void BlowupBear(game_object* pObject)
 {
 	(void)pObject;
 }

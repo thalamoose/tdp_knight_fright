@@ -21,13 +21,20 @@ __asm
 	global _asset_PlayArea_3,_asset_PlayArea_4,_asset_PlayArea_4_2
 	global _asset_PlayArea_5,_asset_PlayArea_6,_asset_PlayArea_7
 
-	include "build/assets/kfplayer.bin.s"
+	include "build/assets/bear.bin.s"
+	include "build/assets/bighopper.bin.s"
+	include "build/assets/coin.bin.s"
+	include "build/assets/colorchanger.bin.s"
+	include "build/assets/follower.bin.s"
+	include "build/assets/player.bin.s"
 	include "build/assets/kfback.bin.s"
+	include "build/assets/spike.bin.s"
+	include "build/assets/coin.bin.s"
 
 	;
 	; This is for miscellaneous small assets
 	;
-	SECTION PAGE_50
+	SECTION PAGE_42
 	org 0xc000
 _asset_MapShape_01:
 	include "build/assets/shape_01.map"
@@ -42,7 +49,7 @@ TRE=4		; Cacti or tree, not sure
 TMB=5		; Tomb
 GRV=6		; Gravestone
 
-	_asset_PlayArea_1:
+_asset_PlayArea_1:
 	db 5,5
 	db 0,0
 	db 1, 1, 1, 1, 1
@@ -209,13 +216,13 @@ _asset_PlayArea_7:
 _asset_BackdropPalette:
 	incbin "build/assets/kfback.pal"
 _asset_PlayerPalette:
-	incbin "build/assets/kfplayer.pal"
+	incbin "build/assets/player.pal"
 _asset_SpritePalette:
-	incbin "build/assets/kfsprites.pal"
-_asset_PickupPalette:
-	incbin "build/assets/coins.pal"
+	incbin "build/assets/sprites.pal"
+_asset_CoinPalette:
+	incbin "build/assets/coin.pal"
 _asset_TilemapPalette:
-	incbin "build/assets/kftiles.pal"
+	incbin "build/assets/tiles.pal"
 _tmpe:
 	// We need this space since we will be copying over the palettes
 	// from one slot to another.
@@ -228,21 +235,14 @@ _asset_GameDigits:
 	;// We need the tile data to be in its own page. The tile data is exactly 8KB so it makes sense
 	;// to have it within it's own page.
 	;
-	SECTION PAGE_51
+	SECTION PAGE_43
 	org 0xc000
 _asset_TileData:
-	incbin "build/assets/kftiles.bin"
-	SECTION PAGE_52
+	incbin "build/assets/tiles.bin"
+	SECTION PAGE_45
 	org 0xc000
 _asset_SpriteData:
-	incbin "build/assets/kfsprites.bin"
-
-	SECTION PAGE_54
-	org 0xc000
-_asset_PickupData:
-	incbin "build/assets/coins.bin"
-
-
+	incbin "build/assets/sprites.bin"
 	__endasm;
 #endif
 }

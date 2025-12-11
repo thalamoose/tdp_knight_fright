@@ -3,33 +3,33 @@
 #include "objects/object_manager.h"
 #include "enemies/follower.h"
 
-void CreateFollower(follower* pObject)
+void CreateFollower(game_object* pObject, s8 px, s8 py)
 {
-	(void)pObject;
+	(void)(pObject+px+py);
 }
 
-bool UpdateFollower(follower* pObject)
+bool UpdateFollower(game_object* pObject)
 {
 	(void)pObject;
 	return true;
 }
 
-void RenderFollower(follower* pObject)
+void RenderFollower(game_object* pObject)
 {
 	(void)pObject;
 }
 
-void DestroyFollower(follower* pObject)
+void DestroyFollower(game_object* pObject)
 {
 	(void)pObject;
 }
 
-void BlowupFollower(follower* pObject)
+void BlowupFollower(game_object* pObject)
 {
 	(void)pObject;
 }
 
-void CollideFollower(follower* pObject, object* pCollider)
+void CollideFollower(game_object* pObject, play_cell* pCollider)
 {
 	(void)pObject;
 	(void)pCollider;

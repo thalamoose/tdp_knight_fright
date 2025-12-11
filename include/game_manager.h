@@ -13,6 +13,8 @@ typedef struct
 	bool isRunning;
 	u8 particlesActive;
 	u8 ticksPerSecond;
+	u8 livesRemaining;
+	u8 level;
 } game_manager;
 
 extern game_manager gameManager;

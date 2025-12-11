@@ -16,13 +16,13 @@ typedef struct
 	u16 levelNum;
 	u8 levelComplete;
 	bool isIntroLevel;
+	bool playerIsDead;
 	u8 currentLevelType;
 	u8 currentMaxEnemies;
 	u8 currentSpawnRate;
 	u16 tilesFlipped;
 	u16 coinsFound;
 	u16 tilesRemaining;
-
 	u16 randomDropCounter;
 	bool dropEnemies;
 	u8 enabledEnemiesCount;

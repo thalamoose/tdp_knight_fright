@@ -30,6 +30,7 @@ void InitializeGameManager(void)
     InitializeObjects();
     InitializeCopper();
     InitializeLevelManager();
+    gameManager.livesRemaining = 4;
     x_printf("Game is running\n");
 }
 
@@ -71,13 +72,4 @@ void RenderGameManager(void)
     DebugTiming(ULA_COLOUR_GREEN);
     RenderParticles(&particles[0]);
     DebugTiming(ULA_COLOUR_WHITE);
-}
-
-void EndGame(void)
-{
-    global.playAreaIndex += 1;
-    if (GetLevelTemplate(global.playAreaIndex)==NULL)
-    {
-        global.playAreaIndex = 0;
-    }
 }

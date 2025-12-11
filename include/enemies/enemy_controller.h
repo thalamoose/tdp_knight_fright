@@ -7,5 +7,5 @@ enum enemy_type
 	ENEMY_SPIKE=(1<<4),
 };
 
-object* CreateEnemy(u8 type, s8 x, s8 y);
-void DestroyEnemy(object* enemy);
+game_object* CreateEnemy(u8 type, s8 x, s8 y);
+void DestroyEnemy(game_object* enemy);

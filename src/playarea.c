@@ -7,6 +7,7 @@
 #include "hardware.h"
 #include "objects/components.h"
 #include "objects/coin.h"
+#include "level_manager.h"
 
 play_area playArea;
 
@@ -33,7 +34,7 @@ void BuildPlayArea(const play_area_template *pTemplate)
 	s8 py=-pTemplate->size.y/2;
 	const u8 *pData=pTemplate->data;
 	play_cell *pCell=NULL;
-	playArea.tilesToFlip=0;
+	levelManager.tilesRemaining = 0;
 	for (s8 y=0; y<pTemplate->size.y; y++)
 	{
 		pCell=GetPlayAreaCell(px, py+y);
@@ -47,7 +48,7 @@ void BuildPlayArea(const play_area_template *pTemplate)
 			if (type==1)
 			{
 				pCell->type = CELL_TILE;
-				playArea.tilesToFlip++;
+				levelManager.tilesRemaining++;
 			}
 			if (type==2)
 			{
@@ -60,7 +61,7 @@ void BuildPlayArea(const play_area_template *pTemplate)
 }
 
 //---------------------------------------------------------
-void SnapToPlayAreaGrid(object* pObject)
+void SnapToPlayAreaGrid(game_object* pObject)
 {
     s16 x = pObject->playGrid.x - playArea.position.x;
     s16 y = pObject->playGrid.y - playArea.position.y;

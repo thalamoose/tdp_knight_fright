@@ -10,18 +10,51 @@
 	The dynamic range is -512 to 511
 */
 
-struct s_object_vtable;
-typedef struct s_object_vtable object_vtable;
-
-typedef struct s_object
+enum object_type
 {
-	u8 index;
+	OBJECT_PLAYER = 0,
+	OBJECT_BEAR,
+	OBJECT_BIG_HOPPER,
+	OBJECT_COLOR_CHANGER,
+	OBJECT_FOLLOWER,
+	OBJECT_SPIKE,
+	OBJECT_OBSTACLE,
+} ;
+
+typedef struct s_play_cell play_cell;
+typedef struct s_game_object game_object;
+
+typedef void(object_create_fn)(game_object* obj, s8 px, s8 py);
+typedef bool(object_update_fn)(game_object* obj);
+typedef void(object_render_fn)(game_object* obj);
+typedef void(object_destroy_fn)(game_object* obj);
+typedef void(object_collide_fn)(game_object* obj, play_cell* c);
+typedef void(object_blowup_fn)(game_object* obj);
+
+typedef struct s_object_vtable
+{
+	object_create_fn* Create;
+	object_update_fn* Update;
+	object_render_fn* Render;
+	object_destroy_fn* Destroy;
+	object_collide_fn* Collide;
+	object_blowup_fn* Blowup;
+} object_vtable;
+
+typedef struct s_game_object
+{
+	struct
+	{
+		u8 index;
+		const object_vtable* vtable;
+	} object;
+	
 	union
 	{
 		u8 value;
 		struct 
 		{
-			u8 active:1;
+			bool active:1;
 			bool pingpong:1;
 			bool is4bit:1;
 			bool direction:1;
@@ -33,17 +66,6 @@ typedef struct s_object
 	u8 moveSteps;
 	u8 direction;
     coord_s8 playGrid;
-	const object_vtable* vtable;
-} object;
-
-enum object_type
-{
-	OBJECT_PLAYER = 0,
-	OBJECT_BEAR,
-	OBJECT_BIG_HOPPER,
-	OBJECT_COLOR_CHANGER,
-	OBJECT_FOLLOWER,
-	OBJECT_SPIKE,
-} ;
+} game_object;
 
 #endif

@@ -1,11 +1,7 @@
-typedef struct
-{
-	object object;
-} bear;
 
-void CreateBear(bear* pObject);
-bool UpdateBear(bear* pObject);
-void RenderBear(bear* pObject);
-void DestroyBear(bear* pObject);
-void BlowupBear(bear* pObject);
-void CollideBear(bear* pObject, object* pCollider);
+void CreateBear(game_object* pObject, s8 sx, s8 sy);
+bool UpdateBear(game_object* pObject);
+void RenderBear(game_object* pObject);
+void DestroyBear(game_object* pObject);
+void BlowupBear(game_object* pObject);
+void CollideBear(game_object* pObject, play_cell* pCollider);

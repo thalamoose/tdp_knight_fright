@@ -14,33 +14,34 @@
 #define COIN_PALETTE 8
 
 //---------------------------------------------------------
-void CreateCoin(coin* pCoin, s8 x, s8 y)
+void CreateCoin(game_object* pCoin, s8 x, s8 y)
 {
 	(void)(pCoin+x+y);
 }
 
-void UpdateCoin(coin* pCoin)
+bool UpdateCoin(game_object* pCoin)
 {
 	(void)pCoin;
+	return true;
 }
 //---------------------------------------------------------
-void RenderCoin(coin* pCoin)
+void RenderCoin(game_object* pCoin)
 {
 	nextreg(MMU_SLOT_6, PICKUPS_PAGE);
-	if (pCoin->object.flags.active)
+	if (pCoin->flags.active)
 	{
-		u8 animIndex = pCoin->object.anim.baseIndex+pCoin->object.anim.frameIndex;
-		if (animIndex!=pCoin->object.anim.lastIndex)
+		u8 animIndex = pCoin->anim.baseIndex+pCoin->anim.frameIndex;
+		if (animIndex!=pCoin->anim.lastIndex)
 		{
 			//CopySprite(SWAP_BANK_0+animIndex*(16*16/2), pCoin->sprite.pattern, 1);
-			pCoin->object.anim.lastIndex = animIndex;
+			pCoin->anim.lastIndex = animIndex;
 		}
 		//nextreg(SPRITE_INDEX, pCoin->sprite.slot);
 		s16 tx = tileMap.position.x & I_TO_F(0xfffe);
 		s16 ty = tileMap.position.y;
 
-		s16 px = F_TO_I(tx+pCoin->object.trans.pos.x);
-		s16 py = F_TO_I(ty+pCoin->object.trans.pos.y);
+		s16 px = F_TO_I(tx+pCoin->trans.pos.x);
+		s16 py = F_TO_I(ty+pCoin->trans.pos.y);
 		
 		s16 x = px+hud.shake.x+TILEMAP_PIX_WIDTH/2+10;
 		s16 y = py+hud.shake.y+TILEMAP_PIX_HEIGHT/2-3;
@@ -61,54 +62,56 @@ void RenderCoin(coin* pCoin)
 	}
 }
 
-void DestroyCoin(coin* pCoin)
+void DestroyCoin(game_object* pCoin)
 {
 	(void)pCoin;
 }
 
-void BlowupCoin(coin* pCoin)
+void BlowupCoin(game_object* pCoin)
 {
 	(void)pCoin;
 }
 
-void CollideCoin(coin* pCoin)
+void CollideCoin(game_object* pCoin, play_cell* pCollider)
 {
 	(void)pCoin;
+	(void)pCollider;
 }
 
 const object_vtable coinVirtualTable =
 {
-	(object_create_fn*)CreateCoin, 
-	(object_update_fn*)UpdateCoin, 
-	(object_render_fn*)RenderCoin,
-	(object_destroy_fn*)DestroyCoin, 
-	(object_collide_fn*)CollideCoin,
-	(object_blowup_fn*)BlowupCoin, 
+	CreateCoin, 
+	UpdateCoin, 
+	RenderCoin,
+	DestroyCoin, 
+	CollideCoin,
+	BlowupCoin, 
 };
 
 //---------------------------------------------------------
 u8 AddCoin(u8 type, s8 x, s8 y)
 {
-	coin* pCoin = (coin*)CreateObject(&coinVirtualTable, x, y);
-	//x_printf( "px:%d,py:%d,x:%d,y:%d\n", x, y, F_TO_I(pCoin->object.position.x), F_TO_I(pCoin->object.position.y));
-	pCoin->object.flags.active = true;
-	pCoin->object.flags.tilemapLocked = true;
-	pCoin->type = type;
+	(void)type;
+	game_object* pCoin = CreateObject(&coinVirtualTable, x, y);
+	//x_printf( "px:%d,py:%d,x:%d,y:%d\n", x, y, F_TO_I(pCoin->position.x), F_TO_I(pCoin->position.y));
+	pCoin->flags.active = true;
+	pCoin->flags.tilemapLocked = true;
+	//pCoin->type = type;
 	//pCoin->sprite.pattern = AllocSpritePattern();
 	//pCoin->sprite.palette = COIN_PALETTE;
 	//pCoin->sprite.slot = AllocSpriteSlot();
-	pCoin->object.anim.lastIndex = 0xff;
-	pCoin->object.anim.baseIndex = 0;
-	pCoin->object.anim.totalFrames = 9;
-	pCoin->object.anim.frameIndex = pCoin->object.index%8;
-	pCoin->object.anim.animSpeed = 2+(pCoin->object.index&1);
-	pCoin->object.anim.animDelay = pCoin->object.index%4;
+	pCoin->anim.lastIndex = 0xff;
+	pCoin->anim.baseIndex = 0;
+	pCoin->anim.totalFrames = 9;
+	pCoin->anim.frameIndex = pCoin->object.index%8;
+	pCoin->anim.animSpeed = 2+(pCoin->object.index&1);
+	pCoin->anim.animDelay = pCoin->object.index%4+1;
 	return pCoin->object.index;
 }
 
 //---------------------------------------------------------
 void RemoveCoin(u8 coinIndex)
 {
-	coin* pCoin = (coin*)GetObjectFromIndex(coinIndex);
-	DestroyObject(&pCoin->object);
+	game_object* pCoin = GetObjectFromIndex(coinIndex);
+	DestroyObject(pCoin);
 }

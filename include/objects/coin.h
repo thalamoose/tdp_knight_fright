@@ -1,12 +1,6 @@
 #if !defined(__COIN_H)
 #define __COIN_H
 
-typedef struct
-{
-	object object;
-	u8 type;
-} coin;
-
 enum
 {
 	COIN_NORMAL,

@@ -69,6 +69,5 @@ int main(void)
             RenderGameManager();
             DebugTiming(ULA_COLOUR_YELLOW);
         }
-        EndGame();
     }
 }

@@ -1,3 +1,5 @@
+#if !defined(__PLAY_AREA_H)
+#define __PLAY_AREA_H
 #include "objects/object_manager.h"
 
 enum
@@ -38,6 +40,7 @@ void InitializePlayArea(const play_area_template *pTemplate);
 play_cell *GetPlayAreaCell(s8 x, s8 y);
 void DrawPlayArea(s8 w, s8 h);
 void RefreshPlayAreaBlock(s8 x, s8 y, s8 palette);
-void SnapToPlayAreaGrid(object* pObject);
+void SnapToPlayAreaGrid(game_object* pObject);
 
 extern play_area playArea;
+#endif

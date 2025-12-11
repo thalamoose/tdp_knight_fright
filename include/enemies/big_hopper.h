@@ -1,12 +1,7 @@
-typedef struct
-{
-	object object;
-} big_hopper;
-
-void CreateBigHopper(big_hopper* pObject);
-bool UpdateBigHopper(big_hopper* pObject);
-void RenderBigHopper(big_hopper* pObject);
-void DestroyBigHopper(big_hopper* pObject);
-void BlowupBigHopper(big_hopper* pObject);
-void CollideBigHopper(big_hopper* pObject, object* pCollider);
+void CreateBigHopper(game_object* pObject, s8 px, s8 py);
+bool UpdateBigHopper(game_object* pObject);
+void RenderBigHopper(game_object* pObject);
+void DestroyBigHopper(game_object* pObject);
+void BlowupBigHopper(game_object* pObject);
+void CollideBigHopper(game_object* pObject, play_cell* pCollider);
 

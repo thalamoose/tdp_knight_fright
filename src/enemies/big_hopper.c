@@ -4,32 +4,32 @@
 #include "enemies/enemy_controller.h"
 #include "enemies/big_hopper.h"
 
-void CreateBigHopper(big_hopper* pObject)
+void CreateBigHopper(game_object* pObject, s8 px, s8 py)
 {
-	(void)pObject;
+	(void)(pObject+px+py);
 }
 
-bool UpdateBigHopper(big_hopper* pObject)
+bool UpdateBigHopper(game_object* pObject)
 {
 	(void)pObject;
 	return true;
 }
 
-void RenderBigHopper(big_hopper* pObject)
+void RenderBigHopper(game_object* pObject)
 {
 	(void)pObject;
 }
 
-void DestroyBigHopper(big_hopper* pObject)
+void DestroyBigHopper(game_object* pObject)
 {
 	(void)pObject;
 }
-void BlowupBigHopper(big_hopper* pObject)
+void BlowupBigHopper(game_object* pObject)
 {
 	(void)pObject;
 }
 
-void CollideBigHopper(big_hopper* pObject, object* pCollider)
+void CollideBigHopper(game_object* pObject, play_cell* pCollider)
 {
 	(void)pObject;
 	(void)pCollider;
