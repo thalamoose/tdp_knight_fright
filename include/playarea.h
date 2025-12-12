@@ -30,16 +30,18 @@ typedef struct s_play_area
 
 typedef struct s_play_area_template
 {
-	coord_s8 size;
+	coord_u8 size;
 	coord_s8 start;
 	u8 data[0];
 } play_area_template;
 
-void InitializePlayArea(const play_area_template *pTemplate);
+void deprecatedInitializePlayArea(const play_area_template *pTemplate);
 
 play_cell *GetPlayAreaCell(s8 x, s8 y);
-void DrawPlayArea(s8 w, s8 h);
-void RefreshPlayAreaBlock(s8 x, s8 y, s8 palette);
+void ClearPlayArea(void);
+void DrawPlayArea(const play_area_template* template);
+void BuildPlayArea(const play_area_template* template);
+void RefreshPlayAreaCell(s8 x, s8 y, u8 palette);
 void SnapToPlayAreaGrid(game_object* pObject);
 
 extern play_area playArea;

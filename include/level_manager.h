@@ -17,6 +17,7 @@ typedef struct
 	u8 levelComplete;
 	bool isIntroLevel;
 	bool playerIsDead;
+	game_object* player;
 	u8 currentLevelType;
 	u8 currentMaxEnemies;
 	u8 currentSpawnRate;

@@ -3,13 +3,10 @@
 
 #include "object_manager.h"
 
-void SetPlayerAnimIdle(u8 baseIndex, s16 vx, s16 vy);
-void SetPlayerAnim(u8 baseIndex, u8 direction, s16 vx, s16 vy);
-void InitializePlayer(void);
-void ResetPlayer(void);
-
-u8 GetPlaygridContent(u8 x, u8 y);
-
+void SetPlayerAnimIdle(game_object* pObject, u8 baseIndex, s16 vx, s16 vy);
+void SetPlayerAnim(game_object* pObject, u8 baseIndex, u8 direction, s16 vx, s16 vy);
+void ResetPlayer(game_object* pObject);
+void HandleControllerInput(game_object* pObj, u8 spriteBase, u8 buttons);
+game_object* CreatePlayerObject(void);
 bool CheckReset(void);
-extern game_object* player;
 #endif

@@ -31,5 +31,11 @@ typedef struct s_coord_s8
 	s8 y;
 } coord_s8;
 
+typedef struct s_coord_u8
+{
+	u8 x;
+	u8 y;
+} coord_u8;
+
 
 #endif

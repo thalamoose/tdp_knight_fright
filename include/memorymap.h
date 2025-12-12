@@ -4,7 +4,7 @@
 #define ULA_SHADOW_PAGE 	14
 #define LAYER_2_PAGE    	16              // 8 pages at 256x256; 10 at 256x320
 #define BACKDROP_PAGE     	32              // Bank 16
-#define PALETTE_PAGE		42				// Various things kept in this bank
+#define MISC_DATA_PAGE		42				// Various things kept in this bank
 #define TILES_PAGE     		43
 #define VIRTUAL_TILEMAP_PAGE 44
 #define SPRITES_PAGE    	45

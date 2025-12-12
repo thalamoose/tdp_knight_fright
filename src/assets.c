@@ -41,14 +41,6 @@ _asset_MapShape_01:
 _asset_MapShape_02:
 	include "build/assets/shape_02.map"
 
-___=0		; Blank
-BLK=1		; Normal block
-PEN=2		; Penny
-SPK=3		; Spikes
-TRE=4		; Cacti or tree, not sure
-TMB=5		; Tomb
-GRV=6		; Gravestone
-
 _asset_PlayArea_1:
 	db 5,5
 	db 0,0

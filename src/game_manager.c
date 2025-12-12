@@ -31,7 +31,6 @@ void InitializeGameManager(void)
     InitializeCopper();
     InitializeLevelManager();
     gameManager.livesRemaining = 4;
-    x_printf("Game is running\n");
 }
 
 //---------------------------------------------------------
@@ -43,8 +42,6 @@ void ResetGameManager(void)
     ResetParticles();
     ResetObjects();
     ResetLevelManager();
-    NewLevel();
-    InitializePlayer();
     gameManager.isRunning = true;
     gameManager.isPaused = false;
     x_printf("Game is running\n");

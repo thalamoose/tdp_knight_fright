@@ -9,6 +9,7 @@
 #include "objects/player.h"
 #include "hud.h"
 #include "input.h"
+#include "level_manager.h"
 
 tile_map tileMap;
 //---------------------------------------------------------
@@ -37,13 +38,13 @@ void InitializeTilemap(void)
 	// Make the first character 0
 	memset(SWAP_BANK_1, 0, 32);
 
-	nextreg(MMU_SLOT_6, PALETTE_PAGE);
+	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
 	// Copy slot 0 palette to slot 1, this will be used for pulsing
 	// colours on a block switch.
 	memcpy_dma(asset_TilemapPalette+16, asset_TilemapPalette, 16*sizeof(u16));
 	CopyPalette(asset_TilemapPalette, PALETTE_TILE_PRIMARY);
 
-	nextreg(MMU_SLOT_6, VIRTUAL_TILEMAP_PAGE);
+	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
 	ClearTilemap();
 
 	// Tilemap templates are in the same bank as the palette
@@ -71,7 +72,7 @@ void ResetTilemap(void)
 //---------------------------------------------------------
 void ClearTilemap(void)
 {
-	u8 *pTileTable=SWAP_BANK_0;
+	u8 *pTileTable=SWAP_BANK_1;
 	pTileTable[0]=0x00;
 	pTileTable[1]=0x01;
 	// Since I know this copies forward, I can copy the first 2 bytes
@@ -89,17 +90,17 @@ tilemap_cell *GetTilemapCell(s8 x, s8 y)
 		return NULL;
 	if ((y<0) || (y>=VIRTUAL_TILEMAP_HEIGHT))
 		return NULL;
-	return (tilemap_cell*)SWAP_BANK_0+(y*VIRTUAL_TILEMAP_WIDTH)+x;
+	return (tilemap_cell*)SWAP_BANK_1+(y*VIRTUAL_TILEMAP_WIDTH)+x;
 }
 
 //---------------------------------------------------------
 void SetTilemapMoveTarget(void)
 {
-	tileMap.lastPlayGrid.x=player->playGrid.x;
-	tileMap.lastPlayGrid.y=player->playGrid.y;
+	tileMap.lastPlayGrid.x=levelManager.player->playGrid.x;
+	tileMap.lastPlayGrid.y=levelManager.player->playGrid.y;
 
-	s16 px=playArea.position.x-player->playGrid.x;
-	s16 py=playArea.position.y-player->playGrid.y;
+	s16 px=playArea.position.x-levelManager.player->playGrid.x;
+	s16 py=playArea.position.y-levelManager.player->playGrid.y;
 
 	s16 sx=(px+py)*16-22;
 	s16 sy=(py-px)*24+16;
@@ -129,8 +130,8 @@ void UpdateTilemap(void)
 		tileMap.position.x -= FIXED_POINT_ONE*2;
 	}
 
-	s8 dgx=player->playGrid.x-tileMap.lastPlayGrid.x;
-	s8 dgy=player->playGrid.y-tileMap.lastPlayGrid.y;
+	s8 dgx=levelManager.player->playGrid.x-tileMap.lastPlayGrid.x;
+	s8 dgy=levelManager.player->playGrid.y-tileMap.lastPlayGrid.y;
 	if (dgx<-1 || dgx>1 || dgy<-1 || dgy>1)
 	{
 		SetTilemapMoveTarget();
@@ -183,12 +184,12 @@ void RenderTilemap(void)
 	nextreg(TILEMAP_CLIP_WINDOW, rClip>>1);
 	nextreg(TILEMAP_CLIP_WINDOW, tClip);
 	nextreg(TILEMAP_CLIP_WINDOW, bClip);
+	nextreg(MMU_SLOT_6, TILEMAP_PAGE);
+	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
 	s16 tmapx=(sx>>3)+4;
 	s16 tmapy=(sy>>3)+8;
-	tilemap_cell* pCell = ((tilemap_cell*)SWAP_BANK_0)+tmapx+(tmapy*VIRTUAL_TILEMAP_WIDTH);
-	nextreg(MMU_SLOT_6, VIRTUAL_TILEMAP_PAGE);
-	nextreg(MMU_SLOT_7, TILEMAP_PAGE);
-	BlitTilemap(pCell, (tilemap_cell*)SWAP_BANK_1);
+	tilemap_cell* pCell = ((tilemap_cell*)SWAP_BANK_1)+tmapx+(tmapy*VIRTUAL_TILEMAP_WIDTH);
+	BlitTilemap(pCell, (tilemap_cell*)SWAP_BANK_0);
 }
 
 //---------------------------------------------------------

@@ -1,5 +1,7 @@
 #include "kftypes.h"
 #include "defines.h"
+#include "hardware.h"
+#include "memorymap.h"
 #include "utilities.h"
 #include "playarea.h"
 #include "globals.h"
@@ -172,7 +174,7 @@ void RandomEnemyDrop(u8 maxNumEntries, u8 spawnRate)
 
 	if (CheckPathBlocked(x, y) || CheckForEnemy(x, y))
 		return;
-	if ((x==player->trans.pos.x) && (y==player->trans.pos.y))
+	if ((x==levelManager.player->trans.pos.x) && (y==levelManager.player->trans.pos.y))
 		return;
 	PlaceRandomEnemy(x, y, true);
 	levelManager.enemyDropDelay = spawnRate*gameManager.ticksPerSecond;
@@ -186,32 +188,19 @@ bool CanPlaceObstacleOrHole(s8 x, s8 y)
 }
 
 //---------------------------------------------------------
-void NewLevel(void)
+void AddEnemiesAndObstructions(const play_area_template* template)
 {
-	levelManager.levelComplete = false;
-
-	u16 levelNum = gameManager.level;
-	if (levelNum>=12)
-	{
-		levelNum = 12+random8()%6;
-	}
-	const level_template* levelTemplate = &levelData[levelNum];
-	levelManager.config = levelTemplate->config;
-	x_printf("Initialize play area %d\n", levelNum);
-	InitializePlayArea(levelTemplate->template);
-	levelManager.playerSpawnPos = levelTemplate->template->start;
-	levelManager.enemyDropDelay = levelManager.config.spawnRate*gameManager.ticksPerSecond;
-	// Create an array of enabled enemy types. This allows us to randomly pick a type later.
+		// Create an array of enabled enemy types. This allows us to randomly pick a type later.
 	u8 enemyTypes = levelManager.config.enabledEnemies;
 	for (u8 i=0; i<8 && enemyTypes; i++)
 	{
 		levelManager.enabledEnemies[levelManager.enabledEnemiesCount++] = i;
 		enemyTypes >>= 1;
 	}
-	s8 sx = levelTemplate->template->size.x;
-	s8 sy = levelTemplate->template->size.y;
-	s8 spawnx = levelTemplate->template->start.x;
-	s8 spawny = levelTemplate->template->start.y;
+	s8 sx = template->size.x;
+	s8 sy = template->size.y;
+	s8 spawnx = template->start.x;
+	s8 spawny = template->start.y;
 	for (s8 y = 0; y<sy; y++)
 	{
 		play_cell* pCell = GetPlayAreaCell(-sx/2, y-sy/2);
@@ -221,7 +210,7 @@ void NewLevel(void)
 			{
 				u8 upperRange = sx-1+sy-(x+y);
 				upperRange += levelManager.config.numCoins+levelManager.config.numHoles+levelManager.config.numObstacles;
-				upperRange += levelManager.config.maxNumEnemies+levelManager.config.numSpikes;
+				upperRange += levelManager.currentMaxEnemies+levelManager.config.numSpikes;
 				u8 rand = random8()%upperRange;
 				if (rand>0 && rand<=levelManager.config.numCoins)
 				{
@@ -260,6 +249,30 @@ void NewLevel(void)
 			}
 		}
 	}
+}
+//---------------------------------------------------------
+void NewLevel(void)
+{
+	levelManager.levelComplete = false;
+
+	u16 levelNum = gameManager.level;
+	if (levelNum>=12)
+	{
+		levelNum = 12+random8()%6;
+	}
+	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
+	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	const level_template* levelTemplate = &levelData[levelNum];
+	levelManager.config = levelTemplate->config;
+	ClearPlayArea();
+	AddEnemiesAndObstructions(levelTemplate->template);
+	BuildPlayArea(levelTemplate->template);
+	DrawPlayArea(levelTemplate->template);
+	playArea.start = levelTemplate->template->start;
+	playArea.position = playArea.start;
+	levelManager.playerSpawnPos = levelTemplate->template->start;
+	levelManager.enemyDropDelay = levelManager.config.spawnRate*gameManager.ticksPerSecond;
+	levelManager.currentMaxEnemies = levelManager.config.maxNumEnemies;
 }
 
 //---------------------------------------------------------
@@ -357,10 +370,6 @@ void LevelStateMachine(void)
 			{
 				levelManager.state = LEVEL_STATE_GAME_OVER;
 			}
-			if (levelManager.playerIsDead)
-			{
-				levelManager.state = LEVEL_STATE_NEXT_LIFE;
-			}
 			break;
 		case LEVEL_STATE_NEXT_LIFE:
 			gameManager.livesRemaining--;
@@ -382,6 +391,11 @@ void LevelStateMachine(void)
 			break;
 		case LEVEL_STATE_NEXT_LEVEL:
 			ClearEnemies();
+			if (levelManager.playerIsDead)
+			{
+				levelManager.state = LEVEL_STATE_NEXT_LIFE;
+				return;
+			}
 			gameManager.level++;
 			levelManager.state = LEVEL_STATE_BUILD;
 			break;
@@ -407,6 +421,7 @@ void ResetLevelManager(void)
 	global.bonusTracker = 0;
 
 	levelManager.randomDropCounter = levelManager.currentSpawnRate;
+	levelManager.player = CreatePlayerObject();
 }
 
 //---------------------------------------------------------

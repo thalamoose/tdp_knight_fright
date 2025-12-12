@@ -26,7 +26,7 @@ void InitializeHud(void)
 void ResetHud(void)
 {
 	CopyBackgroundBitmap(BACKDROP_PAGE);
-	nextreg(MMU_SLOT_6, PALETTE_PAGE);
+	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
 	memset(&hud.coinsDigitsShown, 0xff, sizeof(hud.coinsDigitsShown));
 	memset(&hud.tilesDigitsShown, 0xff, sizeof(hud.tilesDigitsShown));
 	ResetHudTiles();
@@ -51,7 +51,7 @@ void CopyBackgroundBitmap(u8 srcPage)
 		srcPage++;
 		dstPage++;
 	}
-	nextreg(MMU_SLOT_6, PALETTE_PAGE);
+	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
 	CopyPalette(asset_BackdropPalette, PALETTE_LAYER_2_PRIMARY);
 	CopyPalettePartial(asset_GameDigitsPalette, PALETTE_LAYER_2_PRIMARY, 0xd0, 16);
 }
@@ -183,7 +183,7 @@ void DrawHudDigit(u8 *bitmap, u8 value)
 void UpdateHudCount(s16 x, s16 y, u8* bcdDigits, u8* bcdShown)
 {
 	// Need access to the font.
-	nextreg(MMU_SLOT_6, PALETTE_PAGE);
+	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
 	for (s8 i=3; i>=0; i--)
 	{
 		if (bcdDigits[i]!=bcdShown[i])
