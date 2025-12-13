@@ -123,10 +123,6 @@ void DrawPlayArea(const play_area_template* template)
 		s8 x = -sx;
 		for (u8 j=0; j<width; j++, x++)
 		{
-			if (GetPlayAreaCell(x, y)==(play_cell*)0x6cf6)
-			{
-				x_printf("hit\n");
-			}
 			RefreshBlock(x, y, 0);
 		}
 	}

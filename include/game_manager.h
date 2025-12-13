@@ -11,6 +11,7 @@ typedef struct
 {
 	bool isPaused;
 	bool isRunning;
+	bool useSuperCoins;
 	u8 particlesActive;
 	u8 ticksPerSecond;
 	u8 livesRemaining;

@@ -22,13 +22,12 @@ enum object_type
 } ;
 
 typedef struct s_play_cell play_cell;
-typedef struct s_game_object game_object;
 
 typedef void(object_create_fn)(game_object* obj, s8 px, s8 py);
 typedef bool(object_update_fn)(game_object* obj);
 typedef void(object_render_fn)(game_object* obj);
 typedef void(object_destroy_fn)(game_object* obj);
-typedef void(object_collide_fn)(game_object* obj, play_cell* c);
+typedef void(object_collide_fn)(game_object* obj, const game_object* collider);
 typedef void(object_blowup_fn)(game_object* obj);
 
 typedef struct s_object_vtable

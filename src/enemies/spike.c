@@ -29,7 +29,7 @@ void BlowupSpike(game_object* pObject)
 	(void)pObject;
 }
 
-void CollideSpike(game_object* pObject, play_cell* pCollider)
+void CollideSpike(game_object* pObject, const game_object* pCollider)
 {
 	(void)pObject;
 	(void)pCollider;

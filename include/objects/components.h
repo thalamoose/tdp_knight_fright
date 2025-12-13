@@ -41,8 +41,11 @@ typedef struct s_animation
 	} flags;
 } animation;
 
+typedef struct s_game_object game_object;
 void AnimateComponent(animation* pAnim);
 void TransformComponent(transform* pTrans);
-void RenderComponent(transform* pTrans, animation* pAnim);
+void CheckPlayerToObjectCollision(game_object* pObject);
+void CheckObjectToPlayerCollision(game_object* pObject);
+void RenderComponent(game_object* pObject);
 
 #endif

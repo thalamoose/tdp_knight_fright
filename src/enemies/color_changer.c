@@ -30,7 +30,7 @@ void BlowupColorChanger(game_object* pObject)
 	(void)pObject;
 }
 
-void CollideColorChanger(game_object* pObject, play_cell* pCollider)
+void CollideColorChanger(game_object* pObject, const game_object* pCollider)
 {
 	(void)pObject;
 	(void)pCollider;

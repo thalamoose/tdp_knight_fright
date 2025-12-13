@@ -44,7 +44,7 @@ _CopySprite:
         ld bc,SPRITE_SLOT_PORT
         out (c),a
         ld a,6
-        ;out (ULA_PORT),a
+        out (ULA_PORT),a
         ld a,e
         ld (sprcpy_len+1),a
         xor a
@@ -53,8 +53,8 @@ _CopySprite:
         ld hl,sprcpy_dma_xfer
         ld b,sprcpy_dma_len
         ld c,ZXN_DMA_PORT
-        ld a,5
-        ;out (ULA_PORT),a
+        ld a,3
+        out (ULA_PORT),a
         otir
         ld a,0
         out (ULA_PORT),a
