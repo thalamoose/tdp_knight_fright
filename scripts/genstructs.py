@@ -23,9 +23,12 @@ DW_AT_SIBLING = 'DW_AT_sibling'
 DW_TAG_BASE_TYPE = 'DW_TAG_base_type'
 DW_TAG_TYPEDEF='DW_TAG_typedef'
 DW_TAG_STRUCTURE_TYPE='DW_TAG_structure_type'
+DW_TAG_ENUMERATION_TYPE='DW_TAG_enumeration_type'
+DW_TAG_SUBROUTINE_TYPE='DW_TAG_subroutine_type'
 DW_TAG_ARRAY_TYPE='DW_TAG_array_type'
 DW_TAG_POINTER_TYPE='DW_TAG_pointer_type'
 DW_TAG_MEMBER='DW_TAG_member'
+DW_TAG_UNION_TYPE='DW_TAG_union_type'
 DW_TAG_SUBPROGRAM='DW_TAG_subprogram'
 DW_TAG_FORMAL_PARAMETER = 'DW_TAG_formal_parameter'
 DW_TAG_VARIABLE = 'DW_TAG_variable'
@@ -69,6 +72,13 @@ def getType(CU, memberDef):
 			return getBaseType(CU, typeDef)
 		if typeDef.tag==DW_TAG_STRUCTURE_TYPE:
 			return getName(CU, memberDef)
+		if typeDef.tag==DW_TAG_ENUMERATION_TYPE:
+			return getBaseType(CU, memberDef)
+		if typeDef.tag==DW_TAG_POINTER_TYPE:
+			return getName(CU, memberDef)
+		if typeDef.tag==DW_TAG_SUBROUTINE_TYPE:
+			return 'SUBROUTINE'+getName(CU, memberDef)
+
 		error(f'ERROR: unknown type tag {typeDef.tag}')
 	if memberDef.tag==DW_TAG_POINTER_TYPE:
 		typeDef = getReference(CU, memberDef)
@@ -82,11 +92,23 @@ def getType(CU, memberDef):
 			return None
 		name=getName(CU, structDef)
 		return name
+	if memberDef.tag==DW_TAG_ENUMERATION_TYPE:
+		enumDef = getSiblingReference(CU, memberDef)
+		if getName(CU, memberDef)==None:
+			return None
+		name=getName(CU, enumDef)
+		return name
 	if memberDef.tag==DW_TAG_CONST_TYPE:
 		typeDef = getReference(CU, memberDef)
 		if typeDef==None:
 			return "void"
 		return getType(CU, typeDef)
+	if memberDef.tag==DW_TAG_UNION_TYPE:
+		structDef = getSiblingReference(CU, memberDef)
+		if getName(CU, memberDef)==None:
+			return None
+		name=getName(CU, structDef)
+		return name
 	if memberDef.tag==DW_TAG_MEMBER:
 		raise "This code should't be used"
 	error(f'ERROR: Unknown member tag {memberDef.tag}')
@@ -108,8 +130,10 @@ def expandFields(CU, prefix, fieldDef):
 		arraydefType=getReference(CU, fieldDef)
 		name = prefix ##+getName(CU, arraydefType)
 		fields += expandFields(CU, name, arraydefType)
-		return fields;
+		return fields
 	if fieldDef==None:
+		return fields
+	if fieldDef.tag==DW_TAG_UNION_TYPE:
 		return fields
 	if fieldDef.tag!=DW_TAG_STRUCTURE_TYPE:
 		error(f'Unhandled tag {fieldDef.tag}')
@@ -170,8 +194,13 @@ def parseArray(CU, arrayDef):
 		constTypeDef = getReference(CU, typeDef)
 		constTypeName = getType(CU, constTypeDef)
 		return f'WORD ;; Pointer to {constTypeName}'
+	elif typeDef.tag==DW_TAG_UNION_TYPE:
+		unionDef = getSiblingReference(CU, typeDef)
+		if getName(CU, typeDef)==None:
+			return None
+		name=getName(CU, unionDef)
 
-	error( 'ERROR: unknown tag {typeDef.tag}')
+	error( f'ERROR: unknown tag {typeDef.tag}')
 
 
 def getName(CU, type):
@@ -215,7 +244,7 @@ def handleTypedef(CU, typedefRef, outFile):
 	if typedefName in existingTypedefs:
 		return
 	existingTypedefs.append(typedefName)
-	if typeRef.tag==DW_TAG_STRUCTURE_TYPE:
+	if typeRef.tag==DW_TAG_STRUCTURE_TYPE or typeRef.tag==DW_TAG_ENUMERATION_TYPE:
 		structFields = expandFields(CU, '', typeRef)
 		if structFields:
 			if verbose:	
@@ -249,11 +278,11 @@ def handleSubprogram(CU, progRef, outFile):
 		paramIndex = 1
 		if verbose: 
 			print(f'    STRUCT {stackFrameName}')
-			print(f'__previous_frame_pointer__          		WORD ;; Previous frame pointer\n')
-			print(f'__return_address__							WORD ;; Return address\n')
+			print(f'__prev_fp__          		WORD ;; Previous frame pointer\n')
+			print(f'__ret_addr__							WORD ;; Return address\n')
 		outFile.write(f'    STRUCT {stackFrameName}\n')
-		outFile.write(f'__previous_frame_pointer__          		WORD ;; Previous frame pointer\n')
-		outFile.write(f'__return_address__							WORD ;; Return address\n')
+		outFile.write(f'__prev_fp__          		WORD ;; Previous frame pointer\n')
+		outFile.write(f'__ret_addr__							WORD ;; Return address\n')
 		for child in progRef.iter_children():
 			if child.tag==DW_TAG_FORMAL_PARAMETER:
 				childName = getName(CU, child)

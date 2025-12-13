@@ -32,33 +32,32 @@ _memcpy_dma:
 
 ; A - Sprite slot
 ; HL - Source data
-; E - Slots to transfer (16x16)
+; DE - bytes to transfer
 _CopySprite:
-        push ix
-        ld ix,0
-        add ix,sp
-        ld hl,(ix+4)
-        ld a,(ix+6)
-        ld e,(ix+7)
+        ld hl,2
+        add hl,sp
+        ld a,(hl)
+        inc hl
+        ld (sprcpy_src),a
+        ld a,(hl)
+        inc hl
+        ld (sprcpy_src+1),a
 
+        ld a,(hl)
+        inc hl
         ld bc,SPRITE_SLOT_PORT
         out (c),a
-        ld a,6
-        ;out (ULA_PORT),a
-        ld a,e
-        ld (sprcpy_len+1),a
-        xor a
+
+        ld a,(hl)
+        inc hl
         ld (sprcpy_len),a
-        ld (sprcpy_src),hl
+        ld a,(hl)
+        ld (sprcpy_len+1),a
+
         ld hl,sprcpy_dma_xfer
         ld b,sprcpy_dma_len
         ld c,ZXN_DMA_PORT
-        ld a,5
-        ;out (ULA_PORT),a
         otir
-        ld a,0
-        out (ULA_PORT),a
-        pop ix
         ret
 
         SECTION data_user

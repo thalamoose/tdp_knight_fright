@@ -1,10 +1,13 @@
 #include "kftypes.h"
-#include "globals.h"
+#include "defines.h"
 #include "playarea.h"
 #include "utilities.h"
 #include "memorymap.h"
 #include "tilemap.h"
 #include "hardware.h"
+#include "objects/components.h"
+#include "objects/coin.h"
+#include "level_manager.h"
 
 play_area playArea;
 
@@ -12,14 +15,15 @@ play_area playArea;
 void ClearPlayArea(void)
 {
 	memset(playArea.cells, 0, sizeof(playArea.cells));
+	ClearTilemap();
 }
 
 //---------------------------------------------------------
 s8 CalcIndex(const play_cell *pCell)
 {
-	if (pCell->type == 0)
+	if (pCell->type==CELL_HOLE)
 		return 0;
-	if (pCell->dark)
+	if (pCell->isDark)
 		return 2;
 	return 1;
 }
@@ -31,72 +35,97 @@ void BuildPlayArea(const play_area_template *pTemplate)
 	s8 py=-pTemplate->size.y/2;
 	const u8 *pData=pTemplate->data;
 	play_cell *pCell=NULL;
-	playArea.tilesToFlip=0;
-	for (s8 y=0; y<pTemplate->size.y; y++)
+
+	levelManager.tilesRemaining = 0;
+	for (u8 y=0; y<pTemplate->size.y; y++)
 	{
 		pCell=GetPlayAreaCell(px, py+y);
-		for (s8 x=0; x<pTemplate->size.x; x++)
+		for (u8 x=0; x<pTemplate->size.x; x++, pCell++, pData++)
 		{
-			pCell->type=*pData++;
-			// If the cell is not empty, then it must be flippable.
-			// This should be expanded to handle the case where the
-			// tile block is fatal.
-			if (pCell->type)
-				playArea.tilesToFlip++;
-			pCell++;
+			u8 type = *pData;
+			switch(type)
+			{
+				case 0:		// A hole
+					pCell->type = CELL_HOLE;
+					break;
+				case 1:		// A tile
+					pCell->type = CELL_TILE;
+					levelManager.tilesRemaining++;
+					break;
+				case 2:		// An obstacle?
+					pCell->type = CELL_OBSTACLE;
+					break;
+				default:
+					x_printf("Unknown cell type %d\n", (u16)type);
+					pCell->type = CELL_HOLE;
+					break;
+			}
 		}
 	}
 }
 
 //---------------------------------------------------------
-void RefreshPlayAreaBlock(s8 x, s8 y, s8 palette)
+void SnapToPlayAreaGrid(game_object* pObject)
 {
-	nextreg(MMU_SLOT_6, VIRTUAL_TILEMAP_PAGE);
+    s16 x = pObject->playGrid.x - playArea.position.x;
+    s16 y = pObject->playGrid.y - playArea.position.y;
+
+    s16 sx = (x+y)*16;
+    s16 sy = (y-x)*24;
+
+    pObject->trans.pos.x = I_TO_F(sx);
+    pObject->trans.pos.y = I_TO_F(sy);
+}
+
+//---------------------------------------------------------
+void RefreshBlock(s8 x, s8 y, s8 palette)
+{
 	s16 tx=(x+y)*2;
 	s16 ty=(y-x)*3;
 	tilemap_cell *pTilemap=GetTilemapCell(tx, ty);
 	const play_cell *pCell=GetPlayAreaCell(playArea.position.x+x, playArea.position.y+y);
-	s8 dark=pCell->dark;
+	s8 dark=pCell->isDark;
 	s8 bl=CalcIndex(pCell-1);
 	s8 tr=CalcIndex(pCell+1);
 	s8 tl=CalcIndex(pCell-PLAY_AREA_CELLS_WIDTH);
 	s8 br=CalcIndex(pCell+PLAY_AREA_CELLS_WIDTH);
-	if (pTilemap)
+	if (pCell->type!=CELL_HOLE)
 	{
-		if (pCell->type)
-		{
-			PasteTilemapBlock(pTilemap, dark, tl, tr, bl, br, palette);
-		}
+		PasteTilemapBlock(pTilemap, dark, tl, tr, bl, br, palette);
 	}
 }
 
 //---------------------------------------------------------
-void DrawPlayArea(s8 w, s8 h)
+void RefreshPlayAreaCell(s8 x, s8 y, u8 palette)
 {
-	nextreg(MMU_SLOT_6, VIRTUAL_TILEMAP_PAGE);
-
-	w=(w+1)/2;
-	h=(h+1)/2;
-	for (s16 y=-h; y<h; y++)
-	{
-		for (s16 x=-w; x<w; x++)
-		{
-			RefreshPlayAreaBlock(x, y, 0);
-		}
-	}
+	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
+	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	RefreshBlock(x, y, palette);
 }
 
 //---------------------------------------------------------
-void InitializePlayArea(const play_area_template *pTemplate)
+void DrawPlayArea(const play_area_template* template)
 {
-	playArea.position.x=0;
-	playArea.position.y=0;
-	playArea.start.x=pTemplate->start.x;
-	playArea.start.y=pTemplate->start.y;
-	ClearPlayArea();
-	nextreg(MMU_SLOT_6, PALETTE_PAGE);
-	BuildPlayArea(pTemplate);
-	DrawPlayArea(pTemplate->size.x, pTemplate->size.y);
+	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
+	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	//
+	// Must be zero for initial full play area draw
+	//
+	playArea.position.x = 0;
+	playArea.position.y = 0;
+	u8 width = template->size.x;
+	u8 height = template->size.y;
+	s8 sx = (s8)width/2;
+	s8 sy = (s8)height/2;
+	s8 y = -sy;
+	for (u8 i=0; i<height; i++, y++)
+	{
+		s8 x = -sx;
+		for (u8 j=0; j<width; j++, x++)
+		{
+			RefreshBlock(x, y, 0);
+		}
+	}
 }
 
 //---------------------------------------------------------
@@ -105,6 +134,6 @@ play_cell *GetPlayAreaCell(s8 x, s8 y)
 	x=x+PLAY_AREA_CELLS_WIDTH/2;
 	y=y+PLAY_AREA_CELLS_HEIGHT/2;
 
-	// x_printf("x:%d,y:%d, cell:0x%x,pa:%x\n",(s16)x, (s16)y,&playArea.cells[y][x],playArea.cells);
+	//x_printf("x:%d,y:%d,cell:0x%x,t:%x\n",(s16)x, (s16)y, &playArea.cells[y][x], (s16)playArea.cells[y][x].type);
 	return &playArea.cells[y][x];
 }

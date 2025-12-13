@@ -4,7 +4,7 @@
 #include "utilities.h"
 #include "assets.h"
 #include "hud.h"
-#include "lerp.h"
+#include "game_manager.h"
 
 hud_t hud;
 
@@ -26,7 +26,7 @@ void InitializeHud(void)
 void ResetHud(void)
 {
 	CopyBackgroundBitmap(BACKDROP_PAGE);
-	nextreg(MMU_SLOT_6, PALETTE_PAGE);
+	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
 	memset(&hud.coinsDigitsShown, 0xff, sizeof(hud.coinsDigitsShown));
 	memset(&hud.tilesDigitsShown, 0xff, sizeof(hud.tilesDigitsShown));
 	ResetHudTiles();
@@ -37,8 +37,6 @@ void ResetHud(void)
  
 	UpdateHudCount(TILE_COUNT_X, TILE_COUNT_Y, hud.tilesBCD, hud.tilesDigitsShown);
 	UpdateHudCount(COIN_COUNT_X, COIN_COUNT_Y, hud.coinsBCD, hud.coinsDigitsShown);
-	hud.gameIsRunning = true;
-	StartTransition(85, I_TO_F(-240), I_TO_F(-191), I_TO_F(51) / 18, I_TO_F(-3), I_TO_F(1) / 8);
 }
 //---------------------------------------------------------
 void CopyBackgroundBitmap(u8 srcPage)
@@ -53,7 +51,7 @@ void CopyBackgroundBitmap(u8 srcPage)
 		srcPage++;
 		dstPage++;
 	}
-	nextreg(MMU_SLOT_6, PALETTE_PAGE);
+	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
 	CopyPalette(asset_BackdropPalette, PALETTE_LAYER_2_PRIMARY);
 	CopyPalettePartial(asset_GameDigitsPalette, PALETTE_LAYER_2_PRIMARY, 0xd0, 16);
 }
@@ -94,7 +92,7 @@ void UpdateTransition(void)
 		hud.transitionIsRunning = false;
 		hud.shake.x = 0;
 		hud.shake.y = 0;
-		if (hud.gameIsRunning)
+		if (gameManager.isRunning)
 		{
 			x_printf("End transition. Start game.\n");
 		}
@@ -185,7 +183,7 @@ void DrawHudDigit(u8 *bitmap, u8 value)
 void UpdateHudCount(s16 x, s16 y, u8* bcdDigits, u8* bcdShown)
 {
 	// Need access to the font.
-	nextreg(MMU_SLOT_6, PALETTE_PAGE);
+	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
 	for (s8 i=3; i>=0; i--)
 	{
 		if (bcdDigits[i]!=bcdShown[i])

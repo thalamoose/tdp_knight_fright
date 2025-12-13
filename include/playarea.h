@@ -1,38 +1,48 @@
-#if !defined(__PLAYAREA_H)
-#define __PLAYAREA_H
-#include "kftypes.h"
-#include "objects.h"
+#if !defined(__PLAY_AREA_H)
+#define __PLAY_AREA_H
+#include "objects/object_manager.h"
+
+enum
+{
+	CELL_HOLE,
+	CELL_TILE,
+	CELL_OBSTACLE,
+	CELL_ENEMY,
+	CELL_COIN,
+	CELL_SPIKE,
+};
 
 typedef struct s_play_cell
 {
-	unsigned char type : 4;
-	unsigned char unused : 2;
-	unsigned char lethal : 1;
-	unsigned char dark : 1;
+	u8 type:3;
+	u8 objIndex:5;
+	bool isDark;
 } play_cell;
 
 typedef struct s_play_area
 {
 	coord_s8 position;
 	coord_s8 start;
+	coord_s8 activeSize;
 	u8 tilesToFlip;
 	play_cell cells[PLAY_AREA_CELLS_HEIGHT][PLAY_AREA_CELLS_WIDTH];
 } play_area;
 
 typedef struct s_play_area_template
 {
-	coord_s8 size;
+	coord_u8 size;
 	coord_s8 start;
 	u8 data[0];
 } play_area_template;
 
-void InitializePlayArea(const play_area_template *pTemplate);
+void deprecatedInitializePlayArea(const play_area_template *pTemplate);
 
-u8 GetPlayAreaContent(s8 x, s8 y);
 play_cell *GetPlayAreaCell(s8 x, s8 y);
-void DrawPlayArea(s8 w, s8 h);
-void RefreshPlayAreaBlock(s8 x, s8 y, s8 palette);
+void ClearPlayArea(void);
+void DrawPlayArea(const play_area_template* template);
+void BuildPlayArea(const play_area_template* template);
+void RefreshPlayAreaCell(s8 x, s8 y, u8 palette);
+void SnapToPlayAreaGrid(game_object* pObject);
 
 extern play_area playArea;
-
 #endif

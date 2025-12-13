@@ -1,9 +1,11 @@
-#include "kftypes.h"
-
+#if !defined(__HARDWARE_H)
+#define __HARDWARE_H
 enum next_registers
 {
+	PERIPHERAL_1_SETTING = 0x04,
+	PERIPHERAL_2_SETTING = 0x06,
 	CLOCK_SEL = 0x07,
-	PERIPHERAL_3_CONTROL = 0x08,
+	PERIPHERAL_3_SETTING = 0x08,
 	LAYER_2_RAM_BANK = 0x12,
 	LAYER_2_SHADOW_BANK = 0x13,
 	GLOBAL_TRANSPARENCY = 0x14,
@@ -55,6 +57,15 @@ enum next_registers
 
 };
 
+enum sprite_attributes
+{
+	SPRITE_ATTR_2_X8=0x01,
+	SPRITE_ATTR_4_Y8=0x01,
+	SPRITE_ATTR_4_4BIT=0x80,
+	SPRITE_ATTR_3_VISIBLE=0x80,
+	SPRITE_ATTR_3_ENABLE_ATTR_4=0x40,
+};
+
 enum next_ports
 {
 	KEMPSTON_JOYSTICK_PORT = 0x1f,
@@ -72,7 +83,7 @@ enum next_ports
 	KEMPSTON_MOUSE_Y_PORT = (signed)0xffdf,
 };
 
-enum PALETTE_INDEX
+enum PALETTE_TYPE
 {
 	PALETTE_ULA_PRIMARY,
 	PALETTE_LAYER_2_PRIMARY,
@@ -110,7 +121,8 @@ enum pad_buttons
 
 enum general_constants
 {
-	MAX_SPRITES = 128,
+	MAX_SPRITE_SLOTS = 128,
+	MAX_SPRITE_PATTERNS = 64,
 };
 
 enum dma_modes
@@ -137,3 +149,5 @@ enum dma_modes
 
 extern u8 port_in(u16 port);
 void port_out(u16 port, u8 val);
+
+#endif

@@ -1,14 +1,12 @@
 #include "kftypes.h"
+#include "defines.h"
 #include "hardware.h"
-#include "player.h"
+#include "memorymap.h"
 #include "render.h"
 #include "particles.h"
 #include "tilemap.h"
 #include "utilities.h"
-#include "sprites.h"
-#include "memorymap.h"
 #include "copper.h"
-#include "globals.h"
 #include "hud.h"
 
 void InitializeRender(void)

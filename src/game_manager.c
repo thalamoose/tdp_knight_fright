@@ -1,87 +1,72 @@
 #include "kftypes.h"
 #include "defines.h"
 #include "playarea.h"
-#include "game.h"
+#include "game_manager.h"
 #include "globals.h"
-#include "sprites.h"
 #include "utilities.h"
 #include "hud.h"
-#include "npcs.h"
 #include "copper.h"
 #include "tilemap.h"
 #include "hardware.h"
 #include "audio.h"
-#include "sprites.h"
-#include "npcs.h"
+#include "sprite.h"
+#include "particles.h"
+#include "objects/components.h"
+#include "objects/object_manager.h"
+#include "objects/coin.h"
+#include "objects/player.h"
+#include "enemies/enemy_controller.h"
+#include "level_manager.h"
 
-extern play_area_template asset_PlayArea_01[];
-extern play_area_template asset_PlayArea_02[];
-extern play_area_template asset_PlayArea_03[];
-play_area_template *levelData[] =
-{
-    asset_PlayArea_01,
-    asset_PlayArea_02,
-    asset_PlayArea_03,
-    NULL,
-};
+game_manager gameManager;
 
 //---------------------------------------------------------
-void InitializeGame(void)
+void InitializeGameManager(void)
 {
-    InitializeSprites();
+    gameManager.ticksPerSecond = GetTicksPerSecond();
     InitializeTilemap();
     InitializeHud();
     InitializeParticles();
     InitializeObjects();
     InitializeCopper();
-    x_printf("Game is running\n");
+    InitializeLevelManager();
+    gameManager.livesRemaining = 4;
 }
 
 //---------------------------------------------------------
-void ResetGame(void)
+void ResetGameManager(void)
 {
-    ResetSprites();
     ResetTilemap();
+    ResetSprites();
     ResetHud();
     ResetParticles();
     ResetObjects();
-    InitializePlayArea(levelData[global.playAreaIndex]);
-    InitializePlayer();
-    InitializeNpcs();
+    ResetLevelManager();
+    gameManager.isRunning = true;
+    gameManager.isPaused = false;
     x_printf("Game is running\n");
 }
 
 //---------------------------------------------------------
-void UpdateGame(void)
+void UpdateGameManager(void)
 {
+    UpdateLevelManager();
+    UpdateObjects();
     UpdateTilemap();
-	UpdateNpcs();
-	UpdatePlayer();
-	UpdateSprites();
-	global.particlesActive = UpdateParticles(&particles[0]);
+	gameManager.particlesActive = UpdateParticles(&particles[0]);
     UpdateAudio();
 }
 
 //---------------------------------------------------------
-void RenderGame(void)
+void RenderGameManager(void)
 {
     RenderCopper(); // Must be done first, just after vsync
     DebugTiming(ULA_COLOUR_MAGENTA);
     RenderTilemap();
-    RenderPlayer();
-    RenderSprites();
+    RenderObjects();
     DebugTiming(ULA_COLOUR_BLUE);
     RenderHud();
     DebugTiming(ULA_COLOUR_GREEN);
     RenderParticles(&particles[0]);
     DebugTiming(ULA_COLOUR_WHITE);
-}
-
-void EndGame(void)
-{
-    global.playAreaIndex += 1;
-    if (levelData[global.playAreaIndex] == NULL)
-    {
-        global.playAreaIndex = 0;
-    }
 }
