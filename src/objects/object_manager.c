@@ -43,7 +43,8 @@ void RenderObjects(void)
 	{
 		if (pObject->flags.active)
 		{
-			pObject->object.vtable->Render(pObject);
+			if (pObject->object.vtable->Render)
+				pObject->object.vtable->Render(pObject);
 		}
 	}
 }
@@ -78,9 +79,18 @@ game_object* CreateObject(const object_vtable* vtable, s8 px, s8 py)
 	pGameObj->playGrid.x = px;
 	pGameObj->playGrid.y = py;
 	SnapToPlayAreaGrid(pGameObj);
+	pGameObj->flags.value = 0;
 	pGameObj->flags.active = true;
+	pGameObj->object.index = index;
 	if (pGameObj->object.vtable->Create) pGameObj->object.vtable->Create(pGameObj, px, py);
 	return pGameObj;
+}
+
+//---------------------------------------------------------
+void BlowupObject(game_object* pObject)
+{
+	if (pObject->object.vtable->Blowup) 
+		pObject->object.vtable->Blowup(pObject);
 }
 
 //---------------------------------------------------------

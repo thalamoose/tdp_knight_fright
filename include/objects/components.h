@@ -24,7 +24,7 @@ typedef struct s_animation
 	sprite sprite;
 	u8 frameIndex;
 	u8 baseIndex;
-	u8 lastIndex;
+	u16 lastIndex;
 	s8 animDelay;
 	u8 animSpeed;
 	u8 totalFrames;
@@ -41,8 +41,11 @@ typedef struct s_animation
 	} flags;
 } animation;
 
+typedef struct s_game_object game_object;
 void AnimateComponent(animation* pAnim);
 void TransformComponent(transform* pTrans);
-void RenderComponent(transform* pTrans, animation* pAnim);
+void CheckPlayerToObjectCollision(game_object* pObject);
+void CheckObjectToPlayerCollision(game_object* pObject);
+void RenderComponent(game_object* pObject);
 
 #endif

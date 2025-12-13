@@ -21,13 +21,15 @@
 
 void MovePlayer(game_object* pPlayer);
 
+anim_config idleConfig = {PLAYERSPR_IDLE_ANIM, 0, 0};
+
 //---------------------------------------------------------
-void SetPlayerAnimIdle(game_object* pObj, u8 baseIndex, s16 vx, s16 vy)
+void SetPlayerAnimIdle(game_object* pObj, const anim_config* config)
 {
-    pObj->trans.vel.x = vx;
-    pObj->trans.vel.y = vy;
+    pObj->trans.vel.x = config->vx;
+    pObj->trans.vel.y = config->vy;
     pObj->anim.frameIndex = 0;
-    pObj->anim.baseIndex = baseIndex;
+    pObj->anim.baseIndex = config->baseIndex;
     pObj->anim.lastIndex = 0xff;
     pObj->anim.animDelay = 4;
     pObj->anim.animSpeed = 4;
@@ -35,25 +37,32 @@ void SetPlayerAnimIdle(game_object* pObj, u8 baseIndex, s16 vx, s16 vy)
 }
 
 //---------------------------------------------------------
-void SetPlayerAnim(game_object* pObj, u8 baseIndex, u8 direction, s16 vx, s16 vy)
+void SetPlayerAnimRun(game_object* pObj, const anim_config* pConfig )
 {
     pObj->moveSteps = 16;
-    pObj->direction = direction;
-    SetPlayerAnimIdle(pObj, baseIndex, vx, vy);
+    pObj->direction = pConfig->direction;
+    SetPlayerAnimIdle(pObj, pConfig);
 }
+
+const sprite_config playerSpriteConfig[4]=
+{
+    {PLAYER_SPRITE_PATTERN,    0,  0, 0, 0x40, 0x00},
+    {PLAYER_SPRITE_PATTERN+1, 16,  0, 0, 0xc0, 0x60},
+    {PLAYER_SPRITE_PATTERN+2,  0, 16, 0, 0xc0, 0x60},
+    {PLAYER_SPRITE_PATTERN+3, 16, 16, 0, 0xc0, 0x60}
+};
 
 //---------------------------------------------------------
 void CreatePlayer(game_object* pPlayer, s8 px, s8 py)
 {
-    SetPlayerAnimIdle(pPlayer, PLAYERSPR_IDLE_ANIM, 0, 0);
+    SetPlayerAnimIdle(pPlayer, &idleConfig);
     //
     // Set up sprites 64..67, so that only the minimum needs to be set up below.
     //
-    SetupSprite(PLAYER_SPRITE_SLOT, PLAYER_SPRITE_PATTERN, 0, 0, 0, 0x40, 0);
-    SetupSprite(PLAYER_SPRITE_SLOT+1, PLAYER_SPRITE_PATTERN+1, 16, 0, 0, 0xc0, 0x60);
-    SetupSprite(PLAYER_SPRITE_SLOT+2, PLAYER_SPRITE_PATTERN+2, 0, 16, 0, 0xc0, 0x60);
-    SetupSprite(PLAYER_SPRITE_SLOT+3, PLAYER_SPRITE_PATTERN+3, 16, 16, 0, 0xc0, 0x60);
-
+    for (u8 i=0; i<4; i++)
+    {
+        SetupSprite(PLAYER_SPRITE_SLOT+i,  &playerSpriteConfig[i]);
+    }
     nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
     CopyPalettePartial(asset_PlayerPalette, PALETTE_SPRITE_PRIMARY, 0, 64);
     // Grab whatever colour is the background colour. This will be our transparent
@@ -64,18 +73,12 @@ void CreatePlayer(game_object* pPlayer, s8 px, s8 py)
     pPlayer->anim.sprite.patternCount = 4;
     pPlayer->anim.sprite.centerOffset.x = PLAYER_TO_TILE_X_OFFSET;
     pPlayer->anim.sprite.centerOffset.y = PLAYER_TO_TILE_Y_OFFSET;
-    
-    pPlayer->anim.sprite.patternCount = 4;
     // Copies transparent color to the register.
     nextreg(MMU_SLOT_6, PLAYER_ANIM_PAGE);
     nextreg(TRANS_SPRITE_INDEX, *(u8 *)SWAP_BANK_0);
-    pPlayer->moveSteps = 32;
-    pPlayer->trans.pos.y -= I_TO_F(TILEMAP_PIX_HEIGHT/2+64);
-    pPlayer->trans.vel.x = 0;
-    pPlayer->trans.vel.y = FIXED_POINT_HALF*4;
-    pPlayer->trans.gravity = FIXED_POINT_HALF/2;
     pPlayer->playGrid.x = px;
     pPlayer->playGrid.y = py;
+    ResetPlayer(pPlayer);
 }
 
 //---------------------------------------------------------
@@ -87,16 +90,9 @@ bool UpdatePlayer(game_object* pPlayer)
 }
 
 //---------------------------------------------------------
-void RenderPlayer(game_object* pPlayer)
-{
-    RenderComponent(&pPlayer->trans, &pPlayer->anim);
-}
-
-//---------------------------------------------------------
 void DestroyPlayer(game_object* pPlayer)
 {
     (void)pPlayer;
-
 }
 
 //---------------------------------------------------------
@@ -139,7 +135,13 @@ void PulsePalette(void)
 //---------------------------------------------------------
 void HandlePickup(game_object* pObject)
 {
-    SetPlayerAnimIdle(pObject, pObject->direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
+    anim_config config;
+
+    config.baseIndex = PLAYERSPR_IDLE_ANIM+pObject->direction*pObject->anim.totalFrames;
+    config.direction = pObject->direction;
+    config.vx = 0;
+    config.vy = 0;
+    SetPlayerAnimIdle(pObject, &config);
     u8 vxlz = 0, vxgz = 0, vylz = 0, vygz = 0;
     for (int i = 0; i < 32; i++)
     {
@@ -154,69 +156,77 @@ void HandlePickup(game_object* pObject)
         py += I_TO_F(TILEMAP_PIX_HEIGHT/2)+tileMap.position.y;
         AddParticle(px, py, vx, vy, age, colour, width, 0);
     }
+    play_cell* pCell = GetPlayAreaCell(pObject->playGrid.x, pObject->playGrid.y);
+    game_object* pCollider = GetObjectFromIndex(pCell->objIndex);
+    BlowupObject(pCollider);
+    pCell->objIndex = 0;
+    pCell->type = CELL_TILE;
 }
 
+anim_config deathAnimConfig = {PLAYERSPR_IDLE_ANIM, PLAYERDIR_BL, 0, -FIXED_POINT_ONE*2};
 //---------------------------------------------------------
 void HandleDeath(game_object* pObject, bool fallThrough)
 {
     (void)fallThrough;
-    SetPlayerAnimIdle(pObject, pObject->direction*8+PLAYERSPR_IDLE_ANIM, 0, -FIXED_POINT_ONE*2);
+    deathAnimConfig.direction = pObject->direction;
+    SetPlayerAnimIdle(pObject, &deathAnimConfig);
     pObject->moveSteps = 64;
     pObject->trans.gravity = FIXED_POINT_HALF/2;
 }
+
+
+anim_config playerMoves[4]=
+{
+    {PLAYERSPR_L+PLAYERSPR_RUN_ANIM, PLAYERDIR_TL,-FIXED_POINT_ONE, -FIXED_POINT_ONE*2},
+    {PLAYERSPR_R+PLAYERSPR_RUN_ANIM, PLAYERDIR_BR, FIXED_POINT_ONE, -FIXED_POINT_ONE*5},
+    {PLAYERSPR_U+PLAYERSPR_RUN_ANIM, PLAYERDIR_TR,-FIXED_POINT_ONE, -FIXED_POINT_ONE*5},
+    {PLAYERSPR_D+PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, FIXED_POINT_ONE, -FIXED_POINT_ONE*2}
+};
 
 //---------------------------------------------------------
 void HandleControllerInput(game_object* pObject, u8 spriteBase, u8 buttons)
 {
     if (hud.transitionIsRunning)
         return;
-    
     s8 nx = pObject->playGrid.x;
     s8 ny = pObject->playGrid.y;
     u8 anim = 0;
     u8 dir = 0;
     s16 vx = 0;
     s16 vy = 0;
+    const anim_config* pAnimConfig = NULL;
     if (buttons&JOYPAD_L_LEFT)
     {
         nx--;
-        anim = spriteBase+PLAYERSPR_L+PLAYERSPR_RUN_ANIM;
-        dir = PLAYERDIR_BL;
-        vx = -FIXED_POINT_ONE;
-        vy = -FIXED_POINT_ONE * 2;
+        pAnimConfig = &playerMoves[0];
     }
     else if (buttons&JOYPAD_L_RIGHT)
     {
         nx++;
-        anim = spriteBase+PLAYERSPR_R+PLAYERSPR_RUN_ANIM;
-        dir = PLAYERDIR_BR;
-        vx = FIXED_POINT_ONE;
-        vy = -FIXED_POINT_ONE*5;
+        pAnimConfig = &playerMoves[1];
     }
     else if (buttons&JOYPAD_L_UP)
     {
         ny--;
-        anim = spriteBase+PLAYERSPR_U+PLAYERSPR_RUN_ANIM;
-        dir = PLAYERDIR_TL;
-        vx = -FIXED_POINT_ONE;
-        vy = -FIXED_POINT_ONE*5;
+        pAnimConfig = &playerMoves[2];
     }
     else if (buttons&JOYPAD_L_DOWN)
     {
         ny++;
+        pAnimConfig = &playerMoves[3];
         anim = spriteBase+PLAYERSPR_D+PLAYERSPR_RUN_ANIM;
         dir = PLAYERDIR_BL;
         vx = FIXED_POINT_ONE;
         vy = -FIXED_POINT_ONE*2;
     }
-    if (nx!=pObject->playGrid.x || ny!=pObject->playGrid.y)
+    if (pAnimConfig)
     {
         play_cell* pCell = GetPlayAreaCell(nx, ny);
         if (pCell->type!=CELL_OBSTACLE)
         {
             pObject->playGrid.x = nx;
             pObject->playGrid.y = ny;
-            SetPlayerAnim(pObject, anim, dir, vx, vy);
+            SetPlayerAnimRun(pObject, pAnimConfig);
         }
     }
     if (buttons&JOYPAD_R_DOWN)
@@ -226,12 +236,13 @@ void HandleControllerInput(game_object* pObject, u8 spriteBase, u8 buttons)
 }
 
 //---------------------------------------------------------
-void CollidePlayer(game_object* pPlayer, play_cell* pCollider)
+void CollidePlayer(game_object* pPlayer, const game_object* pCollider)
 {
     if (hud.transitionIsRunning)
         return;
     //x_printf("Coord:(%d,%d), content:%c\n", player->playGrid.x, player->playGrid.y, *(u8 *)pCell);
-    switch (pCollider->type)
+    play_cell* pCell = GetPlayAreaCell(pPlayer->playGrid.x, pPlayer->playGrid.y);
+    switch (pCell->type)
     {
         case CELL_HOLE:
         {
@@ -245,8 +256,7 @@ void CollidePlayer(game_object* pPlayer, play_cell* pCollider)
         }
         case CELL_SPIKE:
         {
-            game_object* pSpike = GetObjectFromIndex(pCollider->objIndex);
-            if (pSpike->anim.frameIndex!=0)
+            if (pCollider->anim.frameIndex!=0)
             {
                 HandleDeath(pPlayer, true);
             }
@@ -259,9 +269,9 @@ void CollidePlayer(game_object* pPlayer, play_cell* pCollider)
         }
         case CELL_TILE:
         {
-            if (!pCollider->isDark)
+            if (!pCell->isDark)
             {
-                pCollider->isDark = true;
+                pCell->isDark = true;
                 BeginPulsePalette();
                 bool tileFull = IncrementHudTileCount();
                 if (tileFull)
@@ -270,7 +280,12 @@ void CollidePlayer(game_object* pPlayer, play_cell* pCollider)
                 }
                 levelManager.tilesRemaining--;
             }
-            SetPlayerAnimIdle(pPlayer, pPlayer->direction * 8+PLAYERSPR_IDLE_ANIM, 0, 0);
+            anim_config config;
+            config.direction = pPlayer->direction;
+            config.baseIndex = PLAYERSPR_IDLE_ANIM+pPlayer->direction*8;
+            config.vx = 0;
+            config.vy = 0;
+            SetPlayerAnimIdle(pPlayer, &config);
             break;
         }
     }
@@ -281,7 +296,7 @@ object_vtable playerVirtualTable =
 {
     CreatePlayer,
     UpdatePlayer,
-    RenderPlayer,
+    RenderComponent,
     DestroyPlayer,
     CollidePlayer,
     BlowupPlayer,
@@ -298,6 +313,11 @@ void ResetPlayer(game_object* pObject)
 {
 	pObject->playGrid = playArea.start;
 	SnapToPlayAreaGrid(pObject);
+    pObject->moveSteps = 32;
+    pObject->trans.pos.y -= I_TO_F(TILEMAP_PIX_HEIGHT/2+64);
+    pObject->trans.vel.x = 0;
+    pObject->trans.vel.y = FIXED_POINT_HALF*4;
+    pObject->trans.gravity = FIXED_POINT_HALF/2;
 }
 
 
@@ -324,7 +344,8 @@ void MovePlayer(game_object* player)
         play_cell *pCell = GetPlayAreaCell(player->playGrid.x, player->playGrid.y);
         if (pCell)
         {
-            player->object.vtable->Collide(player, pCell);
+            game_object* pCollider = GetObjectFromIndex(pCell->objIndex);
+            player->object.vtable->Collide(player, pCollider);
         }
         return;
     }

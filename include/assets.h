@@ -12,5 +12,5 @@ extern u16 asset_SpritePalette[];
 extern u16 asset_TilemapPalette[];
 extern u8 asset_GameDigits[];
 extern u8 asset_GameDigitsPalette[];
-extern u16 asset_PickupPalette[];
-extern u8 asset_PickupData[];
+extern u16 asset_CoinPalette[];
+extern u8 asset_CoinData[];

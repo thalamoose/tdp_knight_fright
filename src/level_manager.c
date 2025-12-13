@@ -84,9 +84,22 @@ bool CheckLevelComplete(void)
 }
 
 //---------------------------------------------------------
-void PlaceCoin(s8 x, s8 y)
+u8 AddCoin(s8 x, s8 y)
 {
-	(void)(x+y);
+	game_object* pCoin = CreateCoinObject(x, y);
+	return pCoin->object.index;
+	//x_printf( "px:%d,py:%d,x:%d,y:%d\n", x, y, F_TO_I(pCoin->position.x), F_TO_I(pCoin->position.y));
+}
+
+//---------------------------------------------------------
+void PlaceHole(play_cell* pCell)
+{
+	if (pCell->type==CELL_TILE)
+	{
+		pCell->type=CELL_HOLE;
+		levelManager.config.numHoles--;
+		levelManager.tilesRemaining--;
+	}
 }
 
 //---------------------------------------------------------
@@ -117,39 +130,25 @@ void PlaceRandomEnemy(s8 x, s8 y, bool drop)
 	}
 }
 //---------------------------------------------------------
-void CheckForCoin(s8 x, s8 y)
+void CheckForCoin(play_cell* pCell, s8 x, s8 y)
 {
-	play_cell* pCell = GetPlayAreaCell(x, y);
 	if (pCell->type==CELL_COIN)
 	{
-		if (global.useSuperCoins)
-		{
-			pCell->objIndex = AddCoin(COIN_SUPER, x, y);
-		}
-		else
-		{
-			pCell->objIndex = AddCoin(COIN_NORMAL, x, y);
-		}
+		pCell->objIndex = AddCoin(x, y);
 		pCell->type = CELL_TILE;
 	}
 }
 
 //---------------------------------------------------------
-bool CheckForEnemy(s8 x, s8 y)
+bool CheckForEnemy(const play_cell* pCell)
 {
-	play_cell* pCell = GetPlayAreaCell(x, y);
-	if (!pCell)
-		return false;
 	return pCell->type==CELL_ENEMY;
 }
 
 //---------------------------------------------------------
-bool CheckPathBlocked(s8 x, s8 y)
+u8 CheckPathBlocked(const play_cell* pCell)
 {
-	play_cell* pCell = GetPlayAreaCell(x, y);
-	if (!pCell)
-		return false;
-	return pCell->type==CELL_OBSTACLE || pCell->type==CELL_HOLE;
+	return (pCell->type==CELL_OBSTACLE || pCell->type==CELL_HOLE)?1:0;
 
 }
 
@@ -172,7 +171,8 @@ void RandomEnemyDrop(u8 maxNumEntries, u8 spawnRate)
 	s8 x = (random8()%playArea.activeSize.x)-playArea.activeSize.x/2;
 	s8 y = (random8()%playArea.activeSize.y)-playArea.activeSize.y/2;
 
-	if (CheckPathBlocked(x, y) || CheckForEnemy(x, y))
+	const play_cell* pCell = GetPlayAreaCell(x, y);
+	if (CheckPathBlocked(pCell) || CheckForEnemy(pCell))
 		return;
 	if ((x==levelManager.player->trans.pos.x) && (y==levelManager.player->trans.pos.y))
 		return;
@@ -180,16 +180,26 @@ void RandomEnemyDrop(u8 maxNumEntries, u8 spawnRate)
 	levelManager.enemyDropDelay = spawnRate*gameManager.ticksPerSecond;
 }
 
+#define CELL_OFFSET(x,y) ((x)+((y)*PLAY_AREA_CELLS_WIDTH))
 //---------------------------------------------------------
-bool CanPlaceObstacleOrHole(s8 x, s8 y)
+bool CanPlaceObstacleOrHole(play_cell* pCell)
 {
-	(void)(x+y);
-	return true;
+	u8 borderingObstacles = 0;
+	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(-1, 0));
+	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(-1,-1));
+	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(-1, 1));
+	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(0, 1));
+	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(0,-1));
+	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(1, 0));
+	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(1, 1));
+	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(1, -1));
+	return (borderingObstacles<=1)?true:false;
 }
 
 //---------------------------------------------------------
-void AddEnemiesAndObstructions(const play_area_template* template)
+void AddObstacles(const play_area_template* template, u8 nObstacles)
 {
+	(void)nObstacles;
 		// Create an array of enabled enemy types. This allows us to randomly pick a type later.
 	u8 enemyTypes = levelManager.config.enabledEnemies;
 	for (u8 i=0; i<8 && enemyTypes; i++)
@@ -197,16 +207,18 @@ void AddEnemiesAndObstructions(const play_area_template* template)
 		levelManager.enabledEnemies[levelManager.enabledEnemiesCount++] = i;
 		enemyTypes >>= 1;
 	}
-	s8 sx = template->size.x;
-	s8 sy = template->size.y;
+	u8 sx = template->size.x;
+	u8 sy = template->size.y;
 	s8 spawnx = template->start.x;
 	s8 spawny = template->start.y;
-	for (s8 y = 0; y<sy; y++)
+	s8 cy = -sy/2;
+	for (u8 y = 0; y<sy; cy++, y++)
 	{
-		play_cell* pCell = GetPlayAreaCell(-sx/2, y-sy/2);
-		for (s8 x = 0; x<sx; x++, pCell++)
+		s8 cx = -sx/2;
+		play_cell* pCell = GetPlayAreaCell(cx, cy);
+		for (u8 x = 0; x<sx; x++, cx++, pCell++)
 		{
-			if ((x!=-sx) && (y!=-sy) && (pCell->type!=CELL_HOLE) && (pCell->type!=CELL_OBSTACLE) && !((x==spawnx) && (y==spawny)))
+			if ((x!=0) && (y!=0) && (pCell->type!=CELL_HOLE) && (pCell->type!=CELL_OBSTACLE) && !((cx==spawnx) && (cy==spawny)))
 			{
 				u8 upperRange = sx-1+sy-(x+y);
 				upperRange += levelManager.config.numCoins+levelManager.config.numHoles+levelManager.config.numObstacles;
@@ -214,7 +226,7 @@ void AddEnemiesAndObstructions(const play_area_template* template)
 				u8 rand = random8()%upperRange;
 				if (rand>0 && rand<=levelManager.config.numCoins)
 				{
-					PlaceCoin(x, y);
+					AddCoin(cx, cy);
 					levelManager.config.numCoins--;
 				}
 				else if ((rand>levelManager.config.numHoles+levelManager.config.numCoins+levelManager.config.numObstacles+levelManager.config.maxNumEnemies) && 
@@ -225,12 +237,11 @@ void AddEnemiesAndObstructions(const play_area_template* template)
 				}
 				else
 				{
-					if (CanPlaceObstacleOrHole(x, y))
+					if (CanPlaceObstacleOrHole(pCell))
 					{
 						if ((rand>levelManager.config.numCoins) && (rand<=levelManager.config.numHoles+levelManager.config.numCoins))
 						{
-							pCell->type=CELL_HOLE;
-							levelManager.config.numHoles--;
+							PlaceHole(pCell);
 						}
 						else if ((rand>levelManager.config.numHoles+levelManager.config.numCoins) && 
 								 (rand <= levelManager.config.numHoles+levelManager.config.numCoins+levelManager.config.numObstacles))
@@ -265,8 +276,8 @@ void NewLevel(void)
 	const level_template* levelTemplate = &levelData[levelNum];
 	levelManager.config = levelTemplate->config;
 	ClearPlayArea();
-	AddEnemiesAndObstructions(levelTemplate->template);
 	BuildPlayArea(levelTemplate->template);
+	AddObstacles(levelTemplate->template, 2);
 	DrawPlayArea(levelTemplate->template);
 	playArea.start = levelTemplate->template->start;
 	playArea.position = playArea.start;
@@ -346,7 +357,26 @@ bool TransitionComplete(void)
 }
 
 //---------------------------------------------------------
-void LevelStateMachine(void)
+void InitializeLevelManager(void)
+{
+	levelManager.state = LEVEL_STATE_INIT;
+	ResetLevelManager();
+}
+
+//---------------------------------------------------------
+void ResetLevelManager(void)
+{
+	ClearEnemies();
+	levelManager.dropEnemies = false;
+	levelManager.levelComplete = false;
+	global.bonusTracker = 0;
+
+	levelManager.randomDropCounter = levelManager.currentSpawnRate;
+	levelManager.player = CreatePlayerObject();
+}
+
+//---------------------------------------------------------
+void UpdateLevelManager(void)
 {
 	switch (levelManager.state)
 	{
@@ -403,31 +433,6 @@ void LevelStateMachine(void)
 			levelManager.state = LEVEL_STATE_IDLE;
 			break;
 	}
-}
-
-//---------------------------------------------------------
-void InitializeLevelManager(void)
-{
-	levelManager.state = LEVEL_STATE_INIT;
-	ResetLevelManager();
-}
-
-//---------------------------------------------------------
-void ResetLevelManager(void)
-{
-	ClearEnemies();
-	levelManager.dropEnemies = false;
-	levelManager.levelComplete = false;
-	global.bonusTracker = 0;
-
-	levelManager.randomDropCounter = levelManager.currentSpawnRate;
-	levelManager.player = CreatePlayerObject();
-}
-
-//---------------------------------------------------------
-void UpdateLevelManager(void)
-{
-	LevelStateMachine();
 }
 
 //---------------------------------------------------------

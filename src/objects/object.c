@@ -7,6 +7,8 @@
 #include "hardware.h"
 #include "tilemap.h"
 #include "hud.h"
+#include "level_manager.h"
+#include "sprite.h"
 
 //---------------------------------------------------------
 void TransformComponent(transform* trans)
@@ -14,6 +16,34 @@ void TransformComponent(transform* trans)
 	trans->pos.x += trans->vel.x;
 	trans->pos.y += trans->vel.y;
 	trans->vel.y += trans->gravity;
+}
+
+//---------------------------------------------------------
+// Did object collide with player?
+void CheckObjectToPlayerCollision(game_object* pObject)
+{
+	if (pObject==levelManager.player)
+		return;
+	if ((pObject->playGrid.x==levelManager.player->playGrid.x) &&
+		(pObject->playGrid.y==levelManager.player->playGrid.y))
+	{
+		pObject->object.vtable->Collide(pObject, levelManager.player);
+	}
+}
+
+//---------------------------------------------------------
+// Did player collide with object?
+void CheckPlayerToObjectCollision(game_object* pObject)
+{
+	play_cell* pCell = GetPlayAreaCell(pObject->playGrid.x, pObject->playGrid.y);
+	if (pCell->type!=CELL_ENEMY)
+		return;
+	game_object* pCollider = GetObjectFromIndex(pCell->objIndex);
+	if ((pObject->playGrid.x==pCollider->playGrid.x) &&
+		(pObject->playGrid.y==pCollider->playGrid.y))
+	{
+		pObject->object.vtable->Collide(pObject, levelManager.player);
+	}
 }
 
 //---------------------------------------------------------
@@ -48,36 +78,63 @@ void AnimateComponent(animation* pAnim)
 }
 
 //---------------------------------------------------------
-void RenderComponent(transform* pTrans, animation* pAnim)
+void RenderComponent(game_object* pObject)
 {
-	u8 animIndex = pAnim->frameIndex+pAnim->baseIndex;
-    if (animIndex != pAnim->lastIndex)
+	u16 animIndex = (pObject->anim.frameIndex+pObject->anim.baseIndex)*pObject->anim.sprite.patternCount;
+    if (animIndex != pObject->anim.lastIndex)
     {
-        pAnim->lastIndex = animIndex;
-        u8 page = (animIndex>>3)+pAnim->sprite.page;
+        pObject->anim.lastIndex = animIndex;
+		u8 page;
+        u8 *pPattern;
+		u16 xferSize;
+		if (pObject->flags.is4bit)
+		{
+			// There's something fishy here. I'm not quite sure why I have to download 256 bytes
+			// for a 4 bit sprite.
+        	page = (animIndex>>5)+pObject->anim.sprite.page;
+			pPattern = (u8 *)SWAP_BANK_0+(u16)(animIndex&0x1f)*16*16;
+			xferSize = ((u16)pObject->anim.sprite.patternCount)*(16*16);
+		}
+		else
+		{
+        	page = (animIndex>>5)+pObject->anim.sprite.page;
+ 			pPattern = (u8 *)SWAP_BANK_0+(u16)(animIndex&0x1f)*16*16;
+			xferSize = ((u16)pObject->anim.sprite.patternCount)*(16*16);
+		}
         nextreg(MMU_SLOT_6, page);
-        u8 *pPattern = (u8 *)SWAP_BANK_0+((animIndex&7)<<10);
-        CopySprite(pPattern, pAnim->sprite.pattern, pAnim->sprite.patternCount);
+		//x_printf("%x:src:%x,p:%d,#:%d,f:%x\n", pObject, pPattern, (u16)pObject->anim.sprite.pattern, (u16)pObject->anim.sprite.patternCount, pObject->flags.value);
+
+        CopySprite(pPattern, pObject->anim.sprite.pattern, xferSize);
     }
-    nextreg(SPRITE_INDEX, pAnim->sprite.slot);
-    s16 tx = pTrans->pos.x+tileMap.position.x&I_TO_F(0xfffe);
+    s16 tx = pObject->trans.pos.x+tileMap.position.x&I_TO_F(0xfffe);
     s16 px = F_TO_I(tx);
-    s16 x = px+hud.shake.x+TILEMAP_PIX_WIDTH/2+pAnim->sprite.centerOffset.x;
+    s16 x = px+hud.shake.x+TILEMAP_PIX_WIDTH/2+pObject->anim.sprite.centerOffset.x;
 
-	s16 ty = pTrans->pos.y+tileMap.position.y;
+	s16 ty = pObject->trans.pos.y+tileMap.position.y;
     s16 py = F_TO_I(ty);
-    s16 y = py+hud.shake.y+TILEMAP_PIX_HEIGHT/2+pAnim->sprite.centerOffset.y;
+    s16 y = py+hud.shake.y+TILEMAP_PIX_HEIGHT/2+pObject->anim.sprite.centerOffset.y;
 
-    if ((x < -32) || (x >= 320) || (y < -32) || (y >= 256))
+	// This weirdity is on purpose. It checks for >320, as well as <-32 in one comparison
+	// due to the sign being ignored.
+	if ((u16)(x-32)>LAYER_2_WIDTH || (u16)(y-32)>LAYER_2_HEIGHT)
     {
         // Hide the sprite if clipped
-        nextreg(SPRITE_ATTR_3, 0);
+    	HideSprite(pObject->anim.sprite.slot);
         return;
     }
-    nextreg(SPRITE_ATTR_0, x&0xff);
-    nextreg(SPRITE_ATTR_1, y);
-    nextreg(SPRITE_ATTR_2, (x>>8)&1);
-    nextreg(SPRITE_ATTR_3, 0xc0);
-    nextreg(SPRITE_ATTR_4, (y>>8)&1);
 
+	sprite_config config=
+	{
+		pObject->anim.sprite.pattern,
+		x,
+		y,
+		(pObject->anim.sprite.palette<<4)|((x>>8)&SPRITE_ATTR_2_X8),
+		SPRITE_ATTR_3_VISIBLE|SPRITE_ATTR_3_ENABLE_ATTR_4,
+		(y>>8)&SPRITE_ATTR_4_Y8
+	};
+
+	if (pObject->anim.flags.is4bit) config.attr4 |= SPRITE_ATTR_4_4BIT;
+
+	SetupSprite(pObject->anim.sprite.slot, &config);
 }
+

@@ -63,7 +63,7 @@ enum sprite_attributes
 	SPRITE_ATTR_4_Y8=0x01,
 	SPRITE_ATTR_4_4BIT=0x80,
 	SPRITE_ATTR_3_VISIBLE=0x80,
-	SPRITE_ATTR_3_ENABLE_4=0x40,
+	SPRITE_ATTR_3_ENABLE_ATTR_4=0x40,
 };
 
 enum next_ports
@@ -121,7 +121,8 @@ enum pad_buttons
 
 enum general_constants
 {
-	MAX_SPRITES = 128,
+	MAX_SPRITE_SLOTS = 128,
+	MAX_SPRITE_PATTERNS = 64,
 };
 
 enum dma_modes

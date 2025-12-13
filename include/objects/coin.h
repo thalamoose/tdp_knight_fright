@@ -6,8 +6,10 @@ enum
 	COIN_NORMAL,
 	COIN_SUPER,
 };
+#define COIN_PALETTE 8
 
-u8 AddCoin(u8 type, s8 x, s8 y);
+game_object* CreateCoinObject(s8 x, s8 y);
+
 void RemoveCoin(u8 coinIndex);
 
 #endif
