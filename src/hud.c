@@ -16,6 +16,7 @@ void UpdateHudCount(s16 x, s16 y, u8* bcdDigits, u8* bcdShown);
 #define TILE_COUNT_Y 4
 #define COIN_COUNT_X 23
 #define COIN_COUNT_Y 4
+
 //---------------------------------------------------------
 void InitializeHud(void)
 {
@@ -23,6 +24,7 @@ void InitializeHud(void)
 	ResetHud();
 }
 
+//---------------------------------------------------------
 void ResetHud(void)
 {
 	CopyBackgroundBitmap(BACKDROP_PAGE);
@@ -38,6 +40,7 @@ void ResetHud(void)
 	UpdateHudCount(TILE_COUNT_X, TILE_COUNT_Y, hud.tilesBCD, hud.tilesDigitsShown);
 	UpdateHudCount(COIN_COUNT_X, COIN_COUNT_Y, hud.coinsBCD, hud.coinsDigitsShown);
 }
+
 //---------------------------------------------------------
 void CopyBackgroundBitmap(u8 srcPage)
 {
@@ -63,13 +66,6 @@ void BeginShake(u8 duration, u8 amplitude)
 	hud.shakeDuration = duration;
 	hud.shakeDecayRate = (duration * 4) / amplitude;
 }
-
-coord testSpline[4] =
-	{
-		{I_TO_F(50), I_TO_F(50)},
-		{I_TO_F(100), I_TO_F(100)},
-		{I_TO_F(150), I_TO_F(0)},
-		{I_TO_F(200), I_TO_F(100)}};
 
 //---------------------------------------------------------
 void UpdateTransition(void)
@@ -163,11 +159,11 @@ void DrawHudDigit(u8 *bitmap, u8 value)
 {
 	u8 *digitData = &asset_GameDigits[value*10*4]; // 10 pixels high, 8 pixels wide (packed)
 
-	for (u8 y = 0; y < 10; y++)
+	for (u8 y=0; y<10; y++)
 	{
 		u8 *pLine = bitmap;
 		
-		for (u8 x = 0; x < 4; x++)
+		for (u8 x=0; x<4; x++)
 		{
 			u8 digitLine = *digitData++;
 			*pLine = (digitLine >> 4) | 0xd0;
@@ -218,7 +214,7 @@ bool IncrementHudTileCount(void)
 		BeginShake(20, 3);
 		return true;
 	}
-	hud.pulseColourIndex = 0xe0 + (segment * 2);
+	hud.pulseColourIndex = 0xe0+(segment*2);
 	hud.pulseTarget[0] = hud.activeColour[0];
 	hud.pulseTarget[1] = hud.activeColour[1];
 	hud.pulseColour[0] = 0x0fc; // Bright yellow, in next format.
@@ -232,7 +228,7 @@ bool IncrementHudTileCount(void)
 void ResetHudTiles(void)
 {
 	u8 colour = 0xe0;
-	while (colour != 0xf0)
+	while (colour!=0xf0)
 	{
 		SetColour(PALETTE_LAYER_2_PRIMARY, colour++, hud.inactiveColour[0]);
 		SetColour(PALETTE_LAYER_2_PRIMARY, colour++, hud.inactiveColour[1]);

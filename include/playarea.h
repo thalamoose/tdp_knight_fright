@@ -37,11 +37,11 @@ typedef struct s_play_area_template
 
 void deprecatedInitializePlayArea(const play_area_template *pTemplate);
 
-play_cell *GetPlayAreaCell(s8 x, s8 y);
+play_cell *GetPlayAreaCell(const coord_s8* mapPosition);
 void ClearPlayArea(void);
 void DrawPlayArea(const play_area_template* template);
 void BuildPlayArea(const play_area_template* template);
-void RefreshPlayAreaCell(s8 x, s8 y, u8 palette);
+void RefreshPlayAreaCell(const coord_s8* mapPosition, u8 palette);
 void SnapToPlayAreaGrid(game_object* pObject);
 
 extern play_area playArea;

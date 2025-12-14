@@ -35,7 +35,7 @@ void CheckObjectToPlayerCollision(game_object* pObject)
 // Did player collide with object?
 void CheckPlayerToObjectCollision(game_object* pObject)
 {
-	play_cell* pCell = GetPlayAreaCell(pObject->playGrid.x, pObject->playGrid.y);
+	play_cell* pCell = GetPlayAreaCell(&pObject->playGrid);
 	if (pCell->type!=CELL_ENEMY)
 		return;
 	game_object* pCollider = GetObjectFromIndex(pCell->objIndex);

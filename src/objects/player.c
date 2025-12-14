@@ -109,12 +109,12 @@ void BeginPulsePalette(void)
     // A palette pulse was in progress, so cancel it.
     if (global.pulseColour != global.pulseTarget)
     {
-        RefreshPlayAreaCell(global.pulseCoord.x, global.pulseCoord.y, 0);
+        RefreshPlayAreaCell(&global.pulseCoord, 0);
     }
     global.pulseColour = 0x1ff;
     global.pulseTarget = asset_TilemapPalette[4];
     global.pulseCoord = levelManager.player->playGrid;
-    RefreshPlayAreaCell(global.pulseCoord.x, global.pulseCoord.y, 1);
+    RefreshPlayAreaCell( &global.pulseCoord, 1);
     SetColour(PALETTE_TILE_PRIMARY, 16+4, global.pulseColour);
 }
 
@@ -128,7 +128,7 @@ void PulsePalette(void)
     SetColour(PALETTE_TILE_PRIMARY, 16+4, global.pulseColour);
     if (global.pulseColour == global.pulseTarget)
     {
-        RefreshPlayAreaCell(global.pulseCoord.x, global.pulseCoord.y, 0);
+        RefreshPlayAreaCell(&global.pulseCoord, 0);
     }
 }
 
@@ -156,7 +156,7 @@ void HandlePickup(game_object* pObject)
         py += I_TO_F(TILEMAP_PIX_HEIGHT/2)+tileMap.position.y;
         AddParticle(px, py, vx, vy, age, colour, width, 0);
     }
-    play_cell* pCell = GetPlayAreaCell(pObject->playGrid.x, pObject->playGrid.y);
+    play_cell* pCell = GetPlayAreaCell(&pObject->playGrid);
     game_object* pCollider = GetObjectFromIndex(pCell->objIndex);
     BlowupObject(pCollider);
     pCell->objIndex = 0;
@@ -221,7 +221,8 @@ void HandleControllerInput(game_object* pObject, u8 spriteBase, u8 buttons)
     }
     if (pAnimConfig)
     {
-        play_cell* pCell = GetPlayAreaCell(nx, ny);
+        coord_s8 mapPosition={nx,ny};
+        play_cell* pCell = GetPlayAreaCell(&mapPosition);
         if (pCell->type!=CELL_OBSTACLE)
         {
             pObject->playGrid.x = nx;
@@ -241,7 +242,7 @@ void CollidePlayer(game_object* pPlayer, const game_object* pCollider)
     if (hud.transitionIsRunning)
         return;
     //x_printf("Coord:(%d,%d), content:%c\n", player->playGrid.x, player->playGrid.y, *(u8 *)pCell);
-    play_cell* pCell = GetPlayAreaCell(pPlayer->playGrid.x, pPlayer->playGrid.y);
+    play_cell* pCell = GetPlayAreaCell(&pPlayer->playGrid);
     switch (pCell->type)
     {
         case CELL_HOLE:
@@ -341,7 +342,7 @@ void MovePlayer(game_object* player)
         }
         SnapToPlayAreaGrid(player);
         player->trans.gravity = FIXED_POINT_HALF;
-        play_cell *pCell = GetPlayAreaCell(player->playGrid.x, player->playGrid.y);
+        play_cell *pCell = GetPlayAreaCell(&player->playGrid);
         if (pCell)
         {
             game_object* pCollider = GetObjectFromIndex(pCell->objIndex);

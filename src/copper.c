@@ -4,6 +4,7 @@
 #include "defines.h"
 #include "utilities.h"
 
+#if 0
 struct
 {
 	u8 playerPriorityLine;
@@ -42,3 +43,5 @@ void SetPlayerPriorityLine(u8 line)
 {
 	copper.playerPriorityLine = line;
 }
+
+#endif
