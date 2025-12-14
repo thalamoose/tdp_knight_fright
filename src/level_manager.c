@@ -105,6 +105,7 @@ void PlaceHole(play_cell* pCell)
 //---------------------------------------------------------
 void PlaceSpike(const coord_s8* mapPosition)
 {
+	x_printf( "SPIKE:%d,%d\n", (s16)mapPosition->x, (s16)mapPosition->y);
 	UNUSED(mapPosition);
 }
 
@@ -112,6 +113,7 @@ void PlaceSpike(const coord_s8* mapPosition)
 void PlaceObstacle(const coord_s8* mapPosition)
 {
 	UNUSED(mapPosition);
+	x_printf( "OBSTACLE:%d,%d\n", (s16)mapPosition->x, (s16)mapPosition->y);
 }
 
 //---------------------------------------------------------
@@ -119,6 +121,7 @@ void PlaceRandomEnemy(const coord_s8* mapPosition, bool drop)
 {
 	s8 enemyType = levelManager.enabledEnemies[random8()%levelManager.enabledEnemiesCount];
 	
+	x_printf( "ENEMY:%d,%d\n", (s16)mapPosition->x, (s16)mapPosition->y);
 	CreateEnemy(enemyType, mapPosition, drop);
 }
 //---------------------------------------------------------

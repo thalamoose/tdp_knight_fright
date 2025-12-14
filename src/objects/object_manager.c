@@ -52,7 +52,6 @@ void RenderObjects(void)
 //---------------------------------------------------------
 game_object* CreateObject(const object_vtable* vtable, const coord_s8* mapPosition, u16 param)
 {
-	UNUSED(param);
 	u8 index = objectManager.objectIndex;
 	game_object* pGameObj = &objectManager.objects[index];
 
