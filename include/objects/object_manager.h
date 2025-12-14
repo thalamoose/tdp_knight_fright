@@ -21,7 +21,7 @@ void ResetObjects(void);
 void UpdateObjects(void);
 void RenderObjects(void);
 
-game_object* CreateObject(const object_vtable* vtable, s8 px, s8 py);
+game_object* CreateObject(const object_vtable* vtable, const coord_s8* mapPosition, u16 param);
 void BlowupObject(game_object* pObject);
 void DestroyObject(game_object* obj);
 game_object* GetObjectFromIndex(u8 objectIndex);

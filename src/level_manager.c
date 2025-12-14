@@ -84,9 +84,9 @@ bool CheckLevelComplete(void)
 }
 
 //---------------------------------------------------------
-u8 AddCoin(s8 x, s8 y)
+u8 AddCoin(const coord_s8* mapPosition)
 {
-	game_object* pCoin = CreateCoinObject(x, y);
+	game_object* pCoin = CreateCoinObject(mapPosition);
 	return pCoin->object.index;
 	//x_printf( "px:%d,py:%d,x:%d,y:%d\n", x, y, F_TO_I(pCoin->position.x), F_TO_I(pCoin->position.y));
 }
@@ -103,38 +103,30 @@ void PlaceHole(play_cell* pCell)
 }
 
 //---------------------------------------------------------
-void PlaceSpike(s8 x, s8 y)
+void PlaceSpike(const coord_s8* mapPosition)
 {
-	(void)(x+y);
+	UNUSED(mapPosition);
 }
 
 //---------------------------------------------------------
-void PlaceObstacle(s8 x, s8 y)
+void PlaceObstacle(const coord_s8* mapPosition)
 {
-	(void)(x+y);
+	UNUSED(mapPosition);
 }
 
 //---------------------------------------------------------
-void PlaceRandomEnemy(s8 x, s8 y, bool drop)
+void PlaceRandomEnemy(const coord_s8* mapPosition, bool drop)
 {
 	s8 enemyType = levelManager.enabledEnemies[random8()%levelManager.enabledEnemiesCount];
 	
-	game_object* enemy = CreateEnemy(enemyType, x, y);
-	if (!enemy)
-		return;
-
-	// Drop him in from the top
-	if (drop)
-	{
-
-	}
+	CreateEnemy(enemyType, mapPosition, drop);
 }
 //---------------------------------------------------------
-void CheckForCoin(play_cell* pCell, s8 x, s8 y)
+void CheckForCoin(play_cell* pCell, coord_s8* mapPosition)
 {
 	if (pCell->type==CELL_COIN)
 	{
-		pCell->objIndex = AddCoin(x, y);
+		pCell->objIndex = AddCoin(mapPosition);
 		pCell->type = CELL_TILE;
 	}
 }
@@ -176,7 +168,8 @@ void RandomEnemyDrop(u8 maxNumEntries, u8 spawnRate)
 		return;
 	if ((x==levelManager.player->trans.pos.x) && (y==levelManager.player->trans.pos.y))
 		return;
-	PlaceRandomEnemy(x, y, true);
+	coord_s8 position = {x, y};
+	PlaceRandomEnemy(&position, true);
 	levelManager.enemyDropDelay = spawnRate*gameManager.ticksPerSecond;
 }
 
@@ -224,15 +217,16 @@ void AddObstacles(const play_area_template* template, u8 nObstacles)
 				upperRange += levelManager.config.numCoins+levelManager.config.numHoles+levelManager.config.numObstacles;
 				upperRange += levelManager.currentMaxEnemies+levelManager.config.numSpikes;
 				u8 rand = random8()%upperRange;
+				coord_s8 mapPosition={cx,cy};
 				if (rand>0 && rand<=levelManager.config.numCoins)
 				{
-					AddCoin(cx, cy);
+					AddCoin(&mapPosition);
 					levelManager.config.numCoins--;
 				}
 				else if ((rand>levelManager.config.numHoles+levelManager.config.numCoins+levelManager.config.numObstacles+levelManager.config.maxNumEnemies) && 
 						 (rand<=levelManager.config.numHoles+levelManager.config.numCoins+levelManager.config.numObstacles+levelManager.config.maxNumEnemies+levelManager.config.numSpikes))
 				{
-					PlaceSpike(x, y);
+					PlaceSpike(&mapPosition);
 					levelManager.config.numSpikes--;
 				}
 				else
@@ -246,13 +240,13 @@ void AddObstacles(const play_area_template* template, u8 nObstacles)
 						else if ((rand>levelManager.config.numHoles+levelManager.config.numCoins) && 
 								 (rand <= levelManager.config.numHoles+levelManager.config.numCoins+levelManager.config.numObstacles))
 						{
-							PlaceObstacle(x, y);
+							PlaceObstacle(&mapPosition);
 							levelManager.config.numObstacles--;
 						}
 						else if ((rand>levelManager.config.numHoles+levelManager.config.numCoins) &&
 								 (rand<=levelManager.config.numHoles+levelManager.config.numCoins+levelManager.config.numObstacles+levelManager.config.maxNumEnemies))
 						{
-							PlaceRandomEnemy(x, y, true);
+							PlaceRandomEnemy(&mapPosition, true);
 							levelManager.config.maxNumEnemies--;
 						}
 					}

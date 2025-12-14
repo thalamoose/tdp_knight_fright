@@ -45,6 +45,7 @@ ASSETS= $(OUT)/sprites.bin $(OUT)/player.bin \
 		$(OUT)/bear.bin $(OUT)/bighopper.bin \
 		$(OUT)/coin.bin $(OUT)/colorchanger.bin \
 		$(OUT)/follower.bin $(OUT)/spike.bin \
+		$(OUT)/obstacles.bin \
 		$(OUT)/kfback.bin $(OUT)/tiles.bin \
 		$(OUT)/shape_01.map $(OUT)/shape_02.map $(OUT)/charset.bin \
 		$(OUT)/numbers.bin \
@@ -81,11 +82,6 @@ $(OUT)/bighopper.bin: assets/bighopper.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
 	$(SEGMENT) $@ $@.s 72
-
-$(OUT)/coin.bin: assets/coin.png makefile
-	$(ECHO) Slicing $<...
-	$(SLICER) --size=16,16 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 46
 
 $(OUT)/colorchanger.bin: assets/colorchanger.png makefile
 	$(ECHO) Slicing $<...
@@ -126,6 +122,17 @@ $(OUT)/%.map: assets/tiles.png assets/%.png
 $(OUT)/charset.bin: assets/charset.png assets/charset.bin
 	$(ECHO) Mapping $<...
 	$(SLICER) $< $@ --tile
+
+$(OUT)/coin.bin: assets/coin.png makefile
+	$(ECHO) Slicing $<...
+	$(SLICER) --size=16,16 --sprite $< $@ --palette=$(@:.bin=.pal)
+	$(SEGMENT) $@ $@.s 46
+
+$(OUT)/obstacles.bin: assets/obstacles.png makefile
+	$(ECHO) Slicing $<...
+	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
+	$(SEGMENT) $@ $@.s 48
+
 
 executable: $(OUT) src/zpragma.inc $(ASSETS) $(EXECUTABLE) $(SYMBOLS)
 

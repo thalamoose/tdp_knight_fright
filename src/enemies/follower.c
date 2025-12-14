@@ -3,9 +3,11 @@
 #include "objects/object_manager.h"
 #include "enemies/follower.h"
 
-void CreateFollower(game_object* pObject, s8 px, s8 py)
+void CreateFollower(game_object* pObject, const coord_s8* mapPosition, u16 param)
 {
-	(void)(pObject+px+py);
+	UNUSED(pObject);
+	UNUSED(mapPosition);
+	UNUSED(param);
 }
 
 bool UpdateFollower(game_object* pObject)

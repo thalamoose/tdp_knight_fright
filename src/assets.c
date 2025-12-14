@@ -30,6 +30,7 @@ __asm
 	include "build/assets/kfback.bin.s"
 	include "build/assets/spike.bin.s"
 	include "build/assets/coin.bin.s"
+	include "build/assets/obstacles.bin.s"
 
 	;
 	; This is for miscellaneous small assets

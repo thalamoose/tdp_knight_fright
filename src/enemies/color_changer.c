@@ -4,34 +4,36 @@
 #include "enemies/enemy_controller.h"
 #include "enemies/color_changer.h"
 
-void CreateColorChanger(game_object* pObject, s8 px, s8 py)
+void CreateColorChanger(game_object* pObject, const coord_s8* mapPosition, u16 param)
 {
-	(void)(pObject+px+py);
+	UNUSED(pObject);
+	UNUSED(mapPosition);
+	UNUSED(param);
 }
 
 bool UpdateColorChanger(game_object* pObject)
 {
-	(void)pObject;
+	UNUSED(pObject);
 	return true;
 }
 
 void RenderColorChanger(game_object* pObject)
 {
-	(void)pObject;
+	UNUSED(pObject);
 }
 
 void DestroyColorChanger(game_object* pObject)
 {
-	(void)pObject;
+	UNUSED(pObject);
 }
 
 void BlowupColorChanger(game_object* pObject)
 {
-	(void)pObject;
+	UNUSED(pObject);
 }
 
 void CollideColorChanger(game_object* pObject, const game_object* pCollider)
 {
-	(void)pObject;
-	(void)pCollider;
+	UNUSED(pObject);
+	UNUSED(pCollider);
 }

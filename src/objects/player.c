@@ -53,8 +53,9 @@ const sprite_config playerSpriteConfig[4]=
 };
 
 //---------------------------------------------------------
-void CreatePlayer(game_object* pPlayer, s8 px, s8 py)
+void CreatePlayer(game_object* pPlayer, const coord_s8* mapPosition, u16 param)
 {
+    UNUSED(param);
     SetPlayerAnimIdle(pPlayer, &idleConfig);
     //
     // Set up sprites 64..67, so that only the minimum needs to be set up below.
@@ -76,8 +77,7 @@ void CreatePlayer(game_object* pPlayer, s8 px, s8 py)
     // Copies transparent color to the register.
     nextreg(MMU_SLOT_6, PLAYER_ANIM_PAGE);
     nextreg(TRANS_SPRITE_INDEX, *(u8 *)SWAP_BANK_0);
-    pPlayer->playGrid.x = px;
-    pPlayer->playGrid.y = py;
+    pPlayer->playGrid = *mapPosition;
     ResetPlayer(pPlayer);
 }
 
@@ -305,7 +305,7 @@ object_vtable playerVirtualTable =
 //---------------------------------------------------------
 game_object* CreatePlayerObject(void)
 {
-    return CreateObject(&playerVirtualTable, playArea.start.x, playArea.start.y);
+    return CreateObject(&playerVirtualTable, &playArea.start, 0);
 }
 
 //---------------------------------------------------------

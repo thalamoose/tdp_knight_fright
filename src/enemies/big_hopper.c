@@ -4,33 +4,36 @@
 #include "enemies/enemy_controller.h"
 #include "enemies/big_hopper.h"
 
-void CreateBigHopper(game_object* pObject, s8 px, s8 py)
+void CreateBigHopper(game_object* pObject, const coord_s8* mapPosition, u16 param)
 {
-	(void)(pObject+px+py);
+	UNUSED(pObject);
+	UNUSED(mapPosition);
+	UNUSED(param);
 }
 
 bool UpdateBigHopper(game_object* pObject)
 {
-	(void)pObject;
+	UNUSED(pObject);
 	return true;
 }
 
 void RenderBigHopper(game_object* pObject)
 {
-	(void)pObject;
+	UNUSED(pObject);
 }
 
 void DestroyBigHopper(game_object* pObject)
 {
-	(void)pObject;
+	UNUSED(pObject);
 }
+
 void BlowupBigHopper(game_object* pObject)
 {
-	(void)pObject;
+	UNUSED(pObject);
 }
 
 void CollideBigHopper(game_object* pObject, const game_object* pCollider)
 {
-	(void)pObject;
-	(void)pCollider;
+	UNUSED(pObject);
+	UNUSED(pCollider);
 }

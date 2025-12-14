@@ -14,14 +14,14 @@
 #include "game_manager.h"
 
 //---------------------------------------------------------
-void CreateCoin(game_object* pCoin, s8 x, s8 y)
+void CreateCoin(game_object* pCoin, const coord_s8* mapPosition, u16 param)
 {
+	UNUSED(param);
 	u8 type=(gameManager.useSuperCoins)?COIN_SUPER:COIN_NORMAL;
 	pCoin->flags.active = true;
 	pCoin->flags.tilemapLocked = true;
 	pCoin->flags.is4bit = true;
-	pCoin->playGrid.x = x;
-	pCoin->playGrid.y = y;
+	pCoin->playGrid = *mapPosition;
 	pCoin->anim.sprite.pattern = AllocSpritePattern();
 	pCoin->anim.sprite.patternCount = 1;
 	pCoin->anim.sprite.palette = COIN_PALETTE+type;
@@ -39,7 +39,7 @@ void CreateCoin(game_object* pCoin, s8 x, s8 y)
 	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
 	CopyPalettePartial(asset_CoinPalette, PALETTE_SPRITE_PRIMARY, pCoin->anim.sprite.palette*16, 16);
 
-	play_cell* pCell = GetPlayAreaCell(x, y);
+	play_cell* pCell = GetPlayAreaCell(mapPosition->x, mapPosition->y);
 	pCell->type = CELL_COIN;
 	pCell->objIndex = pCoin->object.index;
 }
@@ -56,7 +56,6 @@ bool UpdateCoin(game_object* pCoin)
 //---------------------------------------------------------
 void DestroyCoin(game_object* pCoin)
 {
-	(void)pCoin;
 	HideSprite(pCoin->anim.sprite.slot);
 }
 
@@ -86,9 +85,9 @@ const object_vtable coinVirtualTable =
 };
 
 //---------------------------------------------------------
-game_object* CreateCoinObject(s8 x, s8 y)
+game_object* CreateCoinObject(const coord_s8* mapPosition)
 {
-	return CreateObject(&coinVirtualTable, x, y);
+	return CreateObject(&coinVirtualTable, mapPosition, 0);
 }
 
 //---------------------------------------------------------

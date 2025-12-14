@@ -37,5 +37,6 @@ typedef struct s_coord_u8
 	u8 y;
 } coord_u8;
 
+#define UNUSED(x) ((void)(x))
 
 #endif

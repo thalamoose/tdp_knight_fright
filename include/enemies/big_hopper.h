@@ -1,4 +1,4 @@
-void CreateBigHopper(game_object* pObject, s8 px, s8 py);
+void CreateBigHopper(game_object* pObject, const coord_s8* mapPosition, u16 param);
 bool UpdateBigHopper(game_object* pObject);
 void RenderBigHopper(game_object* pObject);
 void DestroyBigHopper(game_object* pObject);

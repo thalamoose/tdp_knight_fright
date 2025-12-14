@@ -50,8 +50,9 @@ void RenderObjects(void)
 }
 
 //---------------------------------------------------------
-game_object* CreateObject(const object_vtable* vtable, s8 px, s8 py)
+game_object* CreateObject(const object_vtable* vtable, const coord_s8* mapPosition, u16 param)
 {
+	UNUSED(param);
 	u8 index = objectManager.objectIndex;
 	game_object* pGameObj = &objectManager.objects[index];
 
@@ -76,13 +77,12 @@ game_object* CreateObject(const object_vtable* vtable, s8 px, s8 py)
 	// storage space at the end.
 	pGameObj->object.vtable = vtable;
 	pGameObj->object.index = index;
-	pGameObj->playGrid.x = px;
-	pGameObj->playGrid.y = py;
+	pGameObj->playGrid = *mapPosition;
 	SnapToPlayAreaGrid(pGameObj);
 	pGameObj->flags.value = 0;
 	pGameObj->flags.active = true;
 	pGameObj->object.index = index;
-	if (pGameObj->object.vtable->Create) pGameObj->object.vtable->Create(pGameObj, px, py);
+	if (pGameObj->object.vtable->Create) pGameObj->object.vtable->Create(pGameObj, mapPosition, param);
 	return pGameObj;
 }
 

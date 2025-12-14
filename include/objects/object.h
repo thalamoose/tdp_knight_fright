@@ -23,7 +23,7 @@ enum object_type
 
 typedef struct s_play_cell play_cell;
 
-typedef void(object_create_fn)(game_object* obj, s8 px, s8 py);
+typedef void(object_create_fn)(game_object* obj, const coord_s8* mapPosition, u16 param);
 typedef bool(object_update_fn)(game_object* obj);
 typedef void(object_render_fn)(game_object* obj);
 typedef void(object_destroy_fn)(game_object* obj);

@@ -8,7 +8,7 @@ enum
 };
 #define COIN_PALETTE 8
 
-game_object* CreateCoinObject(s8 x, s8 y);
+game_object* CreateCoinObject(const coord_s8* mapPosition);
 
 void RemoveCoin(u8 coinIndex);
 

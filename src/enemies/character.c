@@ -4,9 +4,11 @@
 #include "enemies/enemy_controller.h"
 #include "enemies/character.h"
 
-void CreateCharacter(game_object* pObject, s8 px, s8 py)
+void CreateCharacter(game_object* pObject, const coord_s8* mapPosition, u16 param)
 {
-	(void)(pObject+px+py);
+	UNUSED(pObject);
+	UNUSED(mapPosition);
+	UNUSED(param);
 }
 
 bool UpdateCharacter(game_object* pObject)
