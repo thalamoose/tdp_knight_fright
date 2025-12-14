@@ -89,14 +89,16 @@ void RefreshBlock(const coord_s8* mapPosition, s8 palette)
 	tilemap_cell *pTilemap=GetTilemapCell(tx, ty);
 	const coord_s8 blockmapPos = {playArea.position.x+x, playArea.position.y+y};
 	const play_cell *pCell = GetPlayAreaCell(&blockmapPos);
-	s8 dark=pCell->isDark;
-	s8 bl=CalcIndex(pCell-1);
-	s8 tr=CalcIndex(pCell+1);
-	s8 tl=CalcIndex(pCell-PLAY_AREA_CELLS_WIDTH);
-	s8 br=CalcIndex(pCell+PLAY_AREA_CELLS_WIDTH);
+	paste_params params;
+	params.palette = palette;
+	params.dark = pCell->isDark;
+	params.bl = CalcIndex(pCell-1);
+	params.tr = CalcIndex(pCell+1);
+	params.tl = CalcIndex(pCell-PLAY_AREA_CELLS_WIDTH);
+	params.br = CalcIndex(pCell+PLAY_AREA_CELLS_WIDTH);
 	if (pCell->type!=CELL_HOLE)
 	{
-		PasteTilemapBlock(pTilemap, dark, tl, tr, bl, br, palette);
+		PasteTilemapBlock(pTilemap, &params);
 	}
 }
 
@@ -125,8 +127,8 @@ void DrawPlayArea(const play_area_template* template)
 	coord_s8 mapPosition = {0, -sy};
 	for (u8 i=0; i<height; i++, mapPosition.y++)
 	{
-		s8 x = -sx;
-		for (u8 j=0; j<width; j++, x++)
+		mapPosition.x = -sx;
+		for (u8 j=0; j<width; j++, mapPosition.x++)
 		{
 			RefreshBlock(&mapPosition, 0);
 		}

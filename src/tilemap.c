@@ -224,15 +224,15 @@ static void PasteTilemapMiddle(tilemap_cell *pTile, u8 baseBlock, u8 attr)
 }
 
 //---------------------------------------------------------
-void PasteTilemapBlock(tilemap_cell *pTile, s8 dark, s8 tl, s8 tr, s8 bl, s8 br, s8 palette)
+void PasteTilemapBlock(tilemap_cell *pTile, const paste_params* params)
 {
 	// The +1 is because block 0 is the blank block. We're leaving that for now. But we'll
 	// sort it out when the tilemap is properly laid out.
 	tileMap.lastTilemapPos.x = -1;		// Invalidate tilemap so it'll get updated
-	u8 attr=(palette << 4) | 1;
-	u8 darkOffset=dark*12+1;
-	PasteTilemapEdge(pTile, darkOffset, attr, tl, tr);
+	u8 attr=(params->palette << 4) | 1;
+	u8 darkOffset=params->dark*12+1;
+	PasteTilemapEdge(pTile, darkOffset, attr, params->tl, params->tr);
 	PasteTilemapMiddle(pTile+VIRTUAL_TILEMAP_WIDTH, darkOffset+24, attr);
 	PasteTilemapMiddle(pTile+VIRTUAL_TILEMAP_WIDTH*2, darkOffset+48, attr);
-	PasteTilemapEdge(pTile+VIRTUAL_TILEMAP_WIDTH*3, darkOffset+72, 1, bl, br);
+	PasteTilemapEdge(pTile+VIRTUAL_TILEMAP_WIDTH*3, darkOffset+72, 1, params->bl, params->br);
 }

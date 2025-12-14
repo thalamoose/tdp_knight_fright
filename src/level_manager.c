@@ -96,6 +96,7 @@ void PlaceHole(play_cell* pCell)
 {
 	if (pCell->type==CELL_TILE)
 	{
+		x_printf( "HOLE\n");
 		pCell->type=CELL_HOLE;
 		levelManager.config.numHoles--;
 		levelManager.tilesRemaining--;
