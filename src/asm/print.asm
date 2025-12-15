@@ -12,7 +12,7 @@ ATTR_LENGTH     equ ATTR_WIDTH*ATTR_HEIGHT
 ; Destroys DE,HL
 ; ----------------------------
 
-        SECTION code_user
+        SECTION PAGE_16
 
         global _x_printf, _memcpy_dma
 _x_printf:
@@ -253,7 +253,10 @@ print_char:
         push de
         ld b,8
 @char_loop:
-        ldws
+        ld a,(hl)
+        ld (de),a
+        inc hl
+        inc d
         djnz @char_loop
         pop de
         ; Update attributes
@@ -306,7 +309,7 @@ print_char:
         pop hl
         ret
 
-        SECTION data_user
+        SECTION PAGE_16
 ula_scroll_offset:
         db 0
 char_screen_x:  
@@ -314,9 +317,9 @@ char_screen_x:
 char_screen_y: 
         db 0
 
-        SECTION data_align_256
+        SECTION PAGE_16
+
         align 256
-        
 character_set:
         incbin "assets/charset.bin"
         align 64

@@ -1,6 +1,5 @@
         include "include/hardware.inc"
         include "include/memorymap.inc"
-        SECTION code_user
         global _nextreg
         global _nextreg16
         global _CopyPalette
@@ -17,6 +16,7 @@
         global _bcd_add
         global _DebugTiming
         global _GetTicksPerSecond
+        SECTION PAGE_16
 check_reset:
         xor a
         ret
@@ -279,11 +279,28 @@ _random8:
         ret                  ;10T
 
 
-        SECTION data_user
+        SECTION PAGE_16
 random_seed:
         dw 0xbaad
 random_seed_2:
         dw 0xf00d
 ; total roughly 39–48 T depending on branch timing — comfortably under 50T.
 
-        
+        global _boot_nextreg
+        SECTION code_user
+_boot_nextreg:
+        ld hl,2
+        add hl,sp
+        ld a,(hl)
+        ld bc, NEXTREG_SELECT_PORT
+        out (c),a
+        inc hl
+        ld a,(hl)
+        inc b
+        out (c),a
+        ret
+
+        global _boot_disable_interrupts
+_boot_disable_interrupts:
+        di
+        ret
