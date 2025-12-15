@@ -1,6 +1,6 @@
 
         include "include/hardware.inc"
-        SECTION PAGE_16
+        SECTION code_user
 initialize_dma:
         ret
 
@@ -60,7 +60,7 @@ _CopySprite:
         otir
         ret
 
-        SECTION PAGE_16
+        SECTION data_user
 sprcpy_dma_xfer:
         db DMA_DISABLE
         db %01111101                    ; R0-Transfer mode, A -> B, write adress + block length

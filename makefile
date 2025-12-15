@@ -14,13 +14,11 @@ ECHO = $(SILENCE)echo
 MKDIR= $(SILENCE)mkdir
 RMDIR= $(SILENCE)rmdir
 BASEFLAGS=+zxn -mz80n -m -s --list -g -Iinclude
-OPT_FLAGS=-SO0 --opt-code-speed --max-allocs-per-node3000
-CFLAGS=$(BASEFLAGS) -c --c-code-in-asm $(OPT_FLAGS) -clib=new --no-crt --nostdlib -compiler=sdcc
+OPT_FLAGS=-SO2 --opt-code-speed --max-allocs-per-node98304 --allow-unsafe-read
+CFLAGS=$(BASEFLAGS) -c --c-code-in-asm $(OPT_FLAGS) -clib=new -compiler=sdcc
 DEP_FLAGS = -MT $@ -MD -MF $(DEP_DIR)/$*.d
 CODE_PAGE = 16
-CODE_PAGE2 = 16
 SECTIONS =  --datasegPAGE_$(CODE_PAGE) --codesegPAGE_$(CODE_PAGE) --constsegPAGE_$(CODE_PAGE) --bsssegPAGE_$(CODE_PAGE)
-SECTIONS_OVERLAY =  --datasegPAGE_$(CODE_PAGE2) --codesegPAGE_$(CODE_PAGE2) --constsegPAGE_$(CODE_PAGE2) --bsssegPAGE_$(CODE_PAGE2)
 #
 # Startup file located at z88dk\libsrc\_DEVELOPMENT\target\zxn\startup\zxn_crt_31.asm
 #
@@ -142,14 +140,14 @@ $(OUT)/obstacles.bin: assets/obstacles.png makefile
 	$(SEGMENT) $@ $@.s 58
 
 
-executable: $(OUT) src/zpragma.inc mmap.inc $(ASSETS) $(EXECUTABLE) $(SYMBOLS)
+executable: $(OUT) src/zpragma.inc $(ASSETS) $(EXECUTABLE) $(SYMBOLS)
 
 $(EXECUTABLE): $(C_OBJS) $(ASM_OBJS)
 	$(ECHO) Linking $@...
 	$(CC) $(LDFLAGS) $^ -o $@ -create-app -subtype=nex > nul:
-##$(RM) build\*_PAGE_*.bin
+	$(RM) build\*_PAGE_*.bin
 
-$(C_SRC_DIR)/assets.c: $(ASSETS)  mmap.inc src/zpragma.inc
+$(C_SRC_DIR)/assets.c: $(ASSETS)
 
 $(OUT):
 	$(MKDIR) $(subst /,\,$@)
@@ -167,25 +165,19 @@ $(LST_DIR):
 
 $(C_OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c makefile
 	$(ECHO) Compiling $<...
-	$(CC) $(CFLAGS) $(SECTIONS) $(DEP_FLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(DEP_FLAGS) $< -o $@
 	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
 	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 
 $(C_OBJ_DIR)/objects/%.o : $(C_SRC_DIR)/objects/%.c makefile
 	$(ECHO) Compiling (overlay) $<...
-	$(CC) $(CFLAGS) $(SECTIONS_OVERLAY) $(DEP_FLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(SECTIONS) $(DEP_FLAGS) $< -o $@
 	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
 	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 
 $(C_OBJ_DIR)/enemies/%.o: $(C_SRC_DIR)/enemies/%.c makefile
 	$(ECHO) Compiling (overlay) $<...
-	$(CC) $(CFLAGS) $(SECTIONS_OVERLAY) $(DEP_FLAGS) $< -o $@
-	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
-	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
-
-$(C_OBJ_DIR)/main.o: $(C_SRC_DIR)/main.c makefile
-	$(ECHO) Compiling bootstrap $<...
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(SECTIONS) $(DEP_FLAGS) $< -o $@
 	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
 	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 

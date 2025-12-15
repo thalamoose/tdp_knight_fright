@@ -125,8 +125,8 @@ void DrawPlayArea(const play_area_template* template)
 	coord_s8 mapPosition = {0, -sy};
 	for (u8 i=0; i<height; i++, mapPosition.y++)
 	{
-		s8 x = -sx;
-		for (u8 j=0; j<width; j++, x++)
+		mapPosition.x = -sx;
+		for (u8 j=0; j<width; j++, mapPosition.x++)
 		{
 			RefreshBlock(&mapPosition, 0);
 		}

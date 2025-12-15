@@ -7,6 +7,7 @@
 
 //// Real IM2
 #pragma output REGISTER_SP = 0xbe00
+#pragma output CRT_ORG_BSS = 0x6000
 #pragma output CRT_ORG_CODE = 0x8000
 
 //// Disable interrupts at start and at exit
@@ -29,6 +30,5 @@
 #pragma output CRT_APPEND_MMAP = 1
 
 #pragma output CRT_ORG_PAGE_16 = 0x0100
-#pragma output CRT_ORG_PAGE_18 = 0x4000
 
 

@@ -1,4 +1,4 @@
-        SECTION PAGE_16
+        SECTION code_user
 
         global _InitializeInterrupts
         global _vSyncCounter

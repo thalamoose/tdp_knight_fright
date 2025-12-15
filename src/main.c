@@ -27,8 +27,8 @@ void main(void)
     // Remap 16K to ULA shadow.
     boot_nextreg(MMU_SLOT_0, CODE_PAGE);
     boot_nextreg(MMU_SLOT_1, CODE_PAGE+1);
-    boot_nextreg(MMU_SLOT_2, CODE_PAGE+2);
-    boot_nextreg(MMU_SLOT_3, CODE_PAGE+3);
-//    memset(_BSS_head, 0, _BSS_END_tail - _BSS_head);
+	boot_nextreg(MMU_SLOT_2, ULA_SHADOW_PAGE);
+	boot_nextreg(MMU_SLOT_3, ULA_SHADOW_PAGE+1);
+    memset(_BSS_head, 0, _BSS_END_tail - _BSS_head);
     game_main();
 }

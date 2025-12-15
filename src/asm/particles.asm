@@ -327,9 +327,10 @@ xor_particle:
         and 7
         add a
         ld hl,@index_table
-        add hl,a
+        or l
+        ld l,a
         ld c,(hl)
-        inc hl
+        inc l
         ld h,(hl)
         ld l,c
         ld c,e
@@ -357,14 +358,15 @@ xor_particle:
 @zero_pixel:
         ret
 
-        SECTION PAGE_16
-        ALIGN 32
 @index_table:
         dw @one_pixel,@two_pixel,@three_pixel,@four_pixel,@five_pixel,@six_pixel,@seven_pixel,@eight_pixel
 
-        SECTION PAGE_16
+        SECTION data_user
 particle_mmu_page:
         dw 0
 
+        SECTION bss_align_256
+        ALIGN 256
 _particles:
         ds PARTICLE_sizeof*MAX_PARTICLES
+        ALIGN 256
