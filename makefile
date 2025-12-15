@@ -14,9 +14,13 @@ ECHO = $(SILENCE)echo
 MKDIR= $(SILENCE)mkdir
 RMDIR= $(SILENCE)rmdir
 BASEFLAGS=+zxn -mz80n -m -s --list -g -Iinclude
-OPT_FLAGS=-SO2 --opt-code-speed --max-allocs-per-node98304
-CFLAGS=$(BASEFLAGS) -c --c-code-in-asm $(OPT_FLAGS) -clib=new -compiler=sdcc
+OPT_FLAGS=-SO0 --opt-code-speed --max-allocs-per-node3000
+CFLAGS=$(BASEFLAGS) -c --c-code-in-asm $(OPT_FLAGS) -clib=new --no-crt --nostdlib -compiler=sdcc
 DEP_FLAGS = -MT $@ -MD -MF $(DEP_DIR)/$*.d
+CODE_PAGE = 16
+CODE_PAGE2 = 16
+SECTIONS =  --datasegPAGE_$(CODE_PAGE) --codesegPAGE_$(CODE_PAGE) --constsegPAGE_$(CODE_PAGE) --bsssegPAGE_$(CODE_PAGE)
+SECTIONS_OVERLAY =  --datasegPAGE_$(CODE_PAGE2) --codesegPAGE_$(CODE_PAGE2) --constsegPAGE_$(CODE_PAGE2) --bsssegPAGE_$(CODE_PAGE2)
 #
 # Startup file located at z88dk\libsrc\_DEVELOPMENT\target\zxn\startup\zxn_crt_31.asm
 #
@@ -34,9 +38,14 @@ C_OBJ_DIR=build/c
 ASM_OBJ_DIR=build/asm
 DEP_DIR=build/deps
 
-C_SRCS := $(wildcard $(C_SRC_DIR)/*.c) $(wildcard $(C_SRC_DIR)/enemies/*.c) $(wildcard $(C_SRC_DIR)/objects/*.c)
+C_SRCS := $(wildcard $(C_SRC_DIR)/*.c)
+C_ENEMY_SRCS := $(wildcard $(C_SRC_DIR)/enemies/*.c)
+C_OBJECT_SRCS := $(wildcard $(C_SRC_DIR)/objects/*.c) 
 C_HDRS := $(wildcard $(C_INC_DIR)/*.h) $(wildcard $(C_INC_DIR)/enemies/*.h) $(wildcard $(C_INC_DIR)/objects/*.h)
-C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS))
+C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS)) \
+		  $(patsubst $(C_SRC_DIR)/enemies/%.c,$(C_OBJ_DIR)/enemies/%.o,$(C_ENEMY_SRCS)) \
+		  $(patsubst $(C_SRC_DIR)/objects/%.c,$(C_OBJ_DIR)/objects/%.o,$(C_OBJECT_SRCS))
+
 C_SYMS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.sym.o,$(C_SRCS))
 DEP_FILES := $(C_SRCS:src/%.c=$(DEP_DIR)/%.d)
 
@@ -70,37 +79,37 @@ all:  $(OUT) $(DEP_DIR) $(LST_DIR) $(C_OBJ_DIR) executable $(SYMBOL_FILE)
 $(OUT)/kfback.bin: assets/kfback.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 32
+	$(SEGMENT) $@ $@.s 42
 
 $(OUT)/bear.bin: assets/bear.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 64
+	$(SEGMENT) $@ $@.s 74
 
 $(OUT)/bighopper.bin: assets/bighopper.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 72
+	$(SEGMENT) $@ $@.s 82
 
 $(OUT)/colorchanger.bin: assets/colorchanger.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 80
+	$(SEGMENT) $@ $@.s 90
 
 $(OUT)/follower.bin: assets/follower.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 88
+	$(SEGMENT) $@ $@.s 98
 
 $(OUT)/player.bin: assets/player.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 96
+	$(SEGMENT) $@ $@.s 106
 
 $(OUT)/spike.bin: assets/spike.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 104
+	$(SEGMENT) $@ $@.s 114
 
 $(OUT)/sprites.bin: assets/sprites.png makefile
 	$(ECHO) Slicing $<...
@@ -125,22 +134,22 @@ $(OUT)/charset.bin: assets/charset.png assets/charset.bin
 $(OUT)/coin.bin: assets/coin.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=16,16 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 46
+	$(SEGMENT) $@ $@.s 56
 
 $(OUT)/obstacles.bin: assets/obstacles.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 48
+	$(SEGMENT) $@ $@.s 58
 
 
-executable: $(OUT) src/zpragma.inc $(ASSETS) $(EXECUTABLE) $(SYMBOLS)
+executable: $(OUT) src/zpragma.inc mmap.inc $(ASSETS) $(EXECUTABLE) $(SYMBOLS)
 
 $(EXECUTABLE): $(C_OBJS) $(ASM_OBJS)
 	$(ECHO) Linking $@...
 	$(CC) $(LDFLAGS) $^ -o $@ -create-app -subtype=nex > nul:
-	$(RM) build\*_PAGE_*.bin
+##$(RM) build\*_PAGE_*.bin
 
-$(C_SRC_DIR)/assets.c: $(ASSETS)
+$(C_SRC_DIR)/assets.c: $(ASSETS)  mmap.inc src/zpragma.inc
 
 $(OUT):
 	$(MKDIR) $(subst /,\,$@)
@@ -158,7 +167,25 @@ $(LST_DIR):
 
 $(C_OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c makefile
 	$(ECHO) Compiling $<...
-	$(CC) $(CFLAGS) $(DEP_FLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(SECTIONS) $(DEP_FLAGS) $< -o $@
+	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
+	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
+
+$(C_OBJ_DIR)/objects/%.o : $(C_SRC_DIR)/objects/%.c makefile
+	$(ECHO) Compiling (overlay) $<...
+	$(CC) $(CFLAGS) $(SECTIONS_OVERLAY) $(DEP_FLAGS) $< -o $@
+	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
+	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
+
+$(C_OBJ_DIR)/enemies/%.o: $(C_SRC_DIR)/enemies/%.c makefile
+	$(ECHO) Compiling (overlay) $<...
+	$(CC) $(CFLAGS) $(SECTIONS_OVERLAY) $(DEP_FLAGS) $< -o $@
+	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
+	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
+
+$(C_OBJ_DIR)/main.o: $(C_SRC_DIR)/main.c makefile
+	$(ECHO) Compiling bootstrap $<...
+	$(CC) $(CFLAGS) $< -o $@
 	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
 	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 

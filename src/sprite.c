@@ -8,8 +8,8 @@
 #include "globals.h"
 #include "sprite.h"
 
-u8 spriteSlot = 0;
-u8 spritePattern = 0;
+u8 spriteSlot;
+u8 spritePattern;
 
 #if !defined(__GNUC__)
 #define USE_ASSEMBLY 0

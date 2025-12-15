@@ -8,7 +8,7 @@
 ; to mask out the colour behind the banner, and clear it later
 ; by anding with %1111_1100.
 ; 
-        SECTION code_user
+        SECTION PAGE_16
 ;
 FIXED_POINT_BITS equ 6
 
@@ -327,10 +327,9 @@ xor_particle:
         and 7
         add a
         ld hl,@index_table
-        or l
-        ld l,a
+        add hl,a
         ld c,(hl)
-        inc l
+        inc hl
         ld h,(hl)
         ld l,c
         ld c,e
@@ -358,16 +357,14 @@ xor_particle:
 @zero_pixel:
         ret
 
-        SECTION data_align_32
+        SECTION PAGE_16
         ALIGN 32
 @index_table:
         dw @one_pixel,@two_pixel,@three_pixel,@four_pixel,@five_pixel,@six_pixel,@seven_pixel,@eight_pixel
 
-        SECTION data_user
+        SECTION PAGE_16
 particle_mmu_page:
         dw 0
 
-        SECTION bss_align_256
-        ALIGN 256
 _particles:
         ds PARTICLE_sizeof*MAX_PARTICLES
