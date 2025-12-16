@@ -253,10 +253,7 @@ print_char:
         push de
         ld b,8
 @char_loop:
-        ld a,(hl)
-        ld (de),a
-        inc hl
-        inc d
+        ldws
         djnz @char_loop
         pop de
         ; Update attributes

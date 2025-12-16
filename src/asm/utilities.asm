@@ -1,5 +1,6 @@
         include "include/hardware.inc"
         include "include/memorymap.inc"
+        SECTION code_user
         global _nextreg
         global _nextreg16
         global _CopyPalette
@@ -16,7 +17,6 @@
         global _bcd_add
         global _DebugTiming
         global _GetTicksPerSecond
-        SECTION code_user
 check_reset:
         xor a
         ret

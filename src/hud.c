@@ -28,7 +28,7 @@ void InitializeHud(void)
 void ResetHud(void)
 {
 	CopyBackgroundBitmap(BACKDROP_PAGE);
-	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
 	memset(&hud.coinsDigitsShown, 0xff, sizeof(hud.coinsDigitsShown));
 	memset(&hud.tilesDigitsShown, 0xff, sizeof(hud.tilesDigitsShown));
 	ResetHudTiles();
@@ -48,13 +48,13 @@ void CopyBackgroundBitmap(u8 srcPage)
 	u8 totalPages = 10;
 	for (int i = 0; i < totalPages; i++)
 	{
-		nextreg(SWAP_BANK_PAGE_0, srcPage);
-		nextreg(SWAP_BANK_PAGE_1, dstPage);
-		memcpy_dma((void*)SWAP_BANK_1, (void*)SWAP_BANK_0, 8192);
+		nextreg(SWAP_BANK_0_SLOT, srcPage);
+		nextreg(SWAP_BANK_1_SLOT, dstPage);
+		memcpy_dma((u8*)SWAP_BANK_1, (u8*)SWAP_BANK_0, 8192);
 		srcPage++;
 		dstPage++;
 	}
-	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
 	CopyPalette(asset_BackdropPalette, PALETTE_LAYER_2_PRIMARY);
 	CopyPalettePartial(asset_GameDigitsPalette, PALETTE_LAYER_2_PRIMARY, 0xd0, 16);
 }
@@ -179,7 +179,7 @@ void DrawHudDigit(u8 *bitmap, u8 value)
 void UpdateHudCount(s16 x, s16 y, u8* bcdDigits, u8* bcdShown)
 {
 	// Need access to the font.
-	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
 	for (s8 i=3; i>=0; i--)
 	{
 		if (bcdDigits[i]!=bcdShown[i])
@@ -187,13 +187,13 @@ void UpdateHudCount(s16 x, s16 y, u8* bcdDigits, u8* bcdShown)
 			s16 dx = x;
 			bcdShown[i] = bcdDigits[i];
 			u16 page= LAYER_2_PAGE+(dx>>2);
-			nextreg(SWAP_BANK_PAGE_1, page);
+			nextreg(SWAP_BANK_1_SLOT, page);
 			u8 *charBase = (u8 *)SWAP_BANK_1 + ((dx & 3)<<11) + y*10;
 			DrawHudDigit(charBase, bcdDigits[i]>>4);
 			dx++;
 			charBase = (u8 *)SWAP_BANK_1 + ((dx & 3)<<11) + y*10;
 			page= LAYER_2_PAGE+((dx)>>2);
-			nextreg(SWAP_BANK_PAGE_1, page);
+			nextreg(SWAP_BANK_1_SLOT, page);
 			DrawHudDigit(charBase, bcdDigits[i] & 0x0f);
 		}
 		x += 2;

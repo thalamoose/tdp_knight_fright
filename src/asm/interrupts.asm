@@ -5,8 +5,8 @@
 
 _InitializeInterrupts:
         di
-        ; Set up the vector table. Fixed at 0xfc00 to 0xfd01
-        ; Then copy the actual dispatch to 0xfdfd
+        ; Set up the vector table. Fixed at 0xfd00 to 0xfe01
+        ; Then copy the actual dispatch to 0xfefe
         ld hl,0xfd00
         ld a,h
         ld de,hl

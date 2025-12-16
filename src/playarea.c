@@ -89,7 +89,6 @@ void RefreshBlock(const coord_s8* mapPosition, s8 palette)
 	tilemap_cell *pTilemap=GetTilemapCell(tx, ty);
 	const coord_s8 blockmapPos = {playArea.position.x+x, playArea.position.y+y};
 	const play_cell *pCell = GetPlayAreaCell(&blockmapPos);
-
 	paste_tilemap_params params;
 
 	params.dark=pCell->isDark;
@@ -107,16 +106,16 @@ void RefreshBlock(const coord_s8* mapPosition, s8 palette)
 //---------------------------------------------------------
 void RefreshPlayAreaCell(const coord_s8* mapPosition, u8 palette)
 {
-	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
-	nextreg(SWAP_BANK_PAGE_1, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_1_SLOT, VIRTUAL_TILEMAP_PAGE);
 	RefreshBlock(mapPosition, palette);
 }
 
 //---------------------------------------------------------
 void DrawPlayArea(const play_area_template* template)
 {
-	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
-	nextreg(SWAP_BANK_PAGE_1, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_1_SLOT, VIRTUAL_TILEMAP_PAGE);
 	//
 	// Must be zero for initial full play area draw
 	//

@@ -64,7 +64,7 @@ void CreatePlayer(game_object* pPlayer, const coord_s8* mapPosition, u16 param)
     {
         SetupSprite(PLAYER_SPRITE_SLOT+i,  &playerSpriteConfig[i]);
     }
-    nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
+    nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
     CopyPalettePartial(asset_PlayerPalette, PALETTE_SPRITE_PRIMARY, 0, 64);
     // Grab whatever colour is the background colour. This will be our transparent
     // index.
@@ -75,7 +75,7 @@ void CreatePlayer(game_object* pPlayer, const coord_s8* mapPosition, u16 param)
     pPlayer->anim.sprite.centerOffset.x = PLAYER_TO_TILE_X_OFFSET;
     pPlayer->anim.sprite.centerOffset.y = PLAYER_TO_TILE_Y_OFFSET;
     // Copies transparent color to the register.
-    nextreg(SWAP_BANK_PAGE_0, PLAYER_ANIM_PAGE);
+    nextreg(SWAP_BANK_0_SLOT, PLAYER_ANIM_PAGE);
     nextreg(TRANS_SPRITE_INDEX, *(u8 *)SWAP_BANK_0);
     pPlayer->playGrid = *mapPosition;
     ResetPlayer(pPlayer);
@@ -104,8 +104,8 @@ void BlowupPlayer(game_object* pPlayer)
 //---------------------------------------------------------
 void BeginPulsePalette(void)
 {
-	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
-	nextreg(SWAP_BANK_PAGE_1, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_1_SLOT, VIRTUAL_TILEMAP_PAGE);
     // A palette pulse was in progress, so cancel it.
     if (global.pulseColour != global.pulseTarget)
     {

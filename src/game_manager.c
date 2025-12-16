@@ -28,7 +28,7 @@ void InitializeGameManager(void)
     InitializeHud();
     InitializeParticles();
     InitializeObjects();
-    //InitializeCopper();
+    InitializeCopper();
     InitializeLevelManager();
     gameManager.livesRemaining = 4;
 }
@@ -60,7 +60,7 @@ void UpdateGameManager(void)
 //---------------------------------------------------------
 void RenderGameManager(void)
 {
-    //RenderCopper(); // Must be done first, just after vsync
+    RenderCopper(); // Must be done first, just after vsync
     DebugTiming(ULA_COLOUR_MAGENTA);
     RenderTilemap();
     RenderObjects();

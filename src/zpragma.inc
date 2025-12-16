@@ -25,5 +25,3 @@
 
 # Append custom banks (defined in mmap.inc)
 //#pragma output CRT_APPEND_MMAP = 1
-
-

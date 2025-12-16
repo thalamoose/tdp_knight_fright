@@ -24,7 +24,7 @@ void main(void)
     boot_disable_interrupts();
     boot_nextreg(CLOCK_SEL, 0x03);
     boot_nextreg(PERIPHERAL_3_SETTING, 0x70);
-    // Remap 16K to ULA shadow.
+    // Remap 16K to ULA shadow. This must be done before pretty mych
 	boot_nextreg(MMU_SLOT_2, ULA_SHADOW_PAGE);
 	boot_nextreg(MMU_SLOT_3, ULA_SHADOW_PAGE+1);
     memset(_BSS_head, 0, _BSS_END_tail - _BSS_head);
