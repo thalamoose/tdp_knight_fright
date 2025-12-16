@@ -17,8 +17,6 @@ BASEFLAGS=+zxn -mz80n -m -s --list -g -Iinclude
 OPT_FLAGS=-SO2 --opt-code-speed --max-allocs-per-node98304 --allow-unsafe-read
 CFLAGS=$(BASEFLAGS) -c --c-code-in-asm $(OPT_FLAGS) -clib=new -compiler=sdcc
 DEP_FLAGS = -MT $@ -MD -MF $(DEP_DIR)/$*.d
-CODE_PAGE = 16
-SECTIONS =  --datasegPAGE_$(CODE_PAGE) --codesegPAGE_$(CODE_PAGE) --constsegPAGE_$(CODE_PAGE) --bsssegPAGE_$(CODE_PAGE)
 #
 # Startup file located at z88dk\libsrc\_DEVELOPMENT\target\zxn\startup\zxn_crt_31.asm
 #
@@ -36,14 +34,9 @@ C_OBJ_DIR=build/c
 ASM_OBJ_DIR=build/asm
 DEP_DIR=build/deps
 
-C_SRCS := $(wildcard $(C_SRC_DIR)/*.c)
-C_ENEMY_SRCS := $(wildcard $(C_SRC_DIR)/enemies/*.c)
-C_OBJECT_SRCS := $(wildcard $(C_SRC_DIR)/objects/*.c) 
+C_SRCS := $(wildcard $(C_SRC_DIR)/*.c) $(wildcard $(C_SRC_DIR)/enemies/*.c) $(wildcard $(C_SRC_DIR)/objects/*.c)
 C_HDRS := $(wildcard $(C_INC_DIR)/*.h) $(wildcard $(C_INC_DIR)/enemies/*.h) $(wildcard $(C_INC_DIR)/objects/*.h)
-C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS)) \
-		  $(patsubst $(C_SRC_DIR)/enemies/%.c,$(C_OBJ_DIR)/enemies/%.o,$(C_ENEMY_SRCS)) \
-		  $(patsubst $(C_SRC_DIR)/objects/%.c,$(C_OBJ_DIR)/objects/%.o,$(C_OBJECT_SRCS))
-
+C_OBJS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.o,$(C_SRCS))
 C_SYMS := $(patsubst $(C_SRC_DIR)/%.c,$(C_OBJ_DIR)/%.sym.o,$(C_SRCS))
 DEP_FILES := $(C_SRCS:src/%.c=$(DEP_DIR)/%.d)
 
@@ -77,37 +70,37 @@ all:  $(OUT) $(DEP_DIR) $(LST_DIR) $(C_OBJ_DIR) executable $(SYMBOL_FILE)
 $(OUT)/kfback.bin: assets/kfback.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 42
+	$(SEGMENT) $@ $@.s 32
 
 $(OUT)/bear.bin: assets/bear.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 74
+	$(SEGMENT) $@ $@.s 64
 
 $(OUT)/bighopper.bin: assets/bighopper.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 82
+	$(SEGMENT) $@ $@.s 72
 
 $(OUT)/colorchanger.bin: assets/colorchanger.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 90
+	$(SEGMENT) $@ $@.s 80
 
 $(OUT)/follower.bin: assets/follower.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 98
+	$(SEGMENT) $@ $@.s 88
 
 $(OUT)/player.bin: assets/player.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 106
+	$(SEGMENT) $@ $@.s 96
 
 $(OUT)/spike.bin: assets/spike.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 114
+	$(SEGMENT) $@ $@.s 104
 
 $(OUT)/sprites.bin: assets/sprites.png makefile
 	$(ECHO) Slicing $<...
@@ -132,12 +125,12 @@ $(OUT)/charset.bin: assets/charset.png assets/charset.bin
 $(OUT)/coin.bin: assets/coin.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=16,16 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 56
+	$(SEGMENT) $@ $@.s 46
 
 $(OUT)/obstacles.bin: assets/obstacles.png makefile
 	$(ECHO) Slicing $<...
 	$(SLICER) --size=32,32 --sprite $< $@ --palette=$(@:.bin=.pal)
-	$(SEGMENT) $@ $@.s 58
+	$(SEGMENT) $@ $@.s 48
 
 
 executable: $(OUT) src/zpragma.inc $(ASSETS) $(EXECUTABLE) $(SYMBOLS)
@@ -166,18 +159,6 @@ $(LST_DIR):
 $(C_OBJ_DIR)/%.o: $(C_SRC_DIR)/%.c makefile
 	$(ECHO) Compiling $<...
 	$(CC) $(CFLAGS) $(DEP_FLAGS) $< -o $@
-	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
-	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
-
-$(C_OBJ_DIR)/objects/%.o : $(C_SRC_DIR)/objects/%.c makefile
-	$(ECHO) Compiling (overlay) $<...
-	$(CC) $(CFLAGS) $(SECTIONS) $(DEP_FLAGS) $< -o $@
-	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
-	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
-
-$(C_OBJ_DIR)/enemies/%.o: $(C_SRC_DIR)/enemies/%.c makefile
-	$(ECHO) Compiling (overlay) $<...
-	$(CC) $(CFLAGS) $(SECTIONS) $(DEP_FLAGS) $< -o $@
 	$(MV) $(subst /,\,$<.lis) $(subst /,\,build/lst/) >nul:
 	$(MV) $(subst /,\,$<.sym) $(subst /,\,build/lst/) >nul:
 
