@@ -279,8 +279,8 @@ void NewLevel(void)
 	{
 		levelNum = 12+random8()%6;
 	}
-	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
-	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_PAGE_1, VIRTUAL_TILEMAP_PAGE);
 	const level_template* levelTemplate = &levelData[levelNum];
 	levelManager.config = levelTemplate->config;
 	ClearPlayArea();

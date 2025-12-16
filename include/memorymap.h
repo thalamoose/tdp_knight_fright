@@ -17,7 +17,9 @@
 #define FOLLOWER_ANIM_PAGE 	98
 #define PLAYER_ANIM_PAGE 	106
 #define SPIKE_ANIM_PAGE 	114
-#define STACK_TOP     	(void*)0xc000
-#define SWAP_BANK_0     (u8*)0xc000
-#define SWAP_BANK_1     (u8*)0xe000
+#define STACK_TOP     	(void*)0x0
+#define SWAP_BANK_0     (u8*)0x0000
+#define SWAP_BANK_1     (u8*)0x2000
+#define SWAP_BANK_PAGE_0 MMU_SLOT_0
+#define SWAP_BANK_PAGE_1 MMU_SLOT_1
 

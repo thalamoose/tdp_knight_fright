@@ -37,7 +37,7 @@ u8 AddParticle(s16 x, s16 y, s16 vx, s16 vy, s8 life, s8 colour, s8 width, s8 fl
 			pParticle = &particles[0];
 		}
 	} while (index != global.particleIndex);
-	if (pParticle->prevPage)
+	if (pParticle->prevPage!=0xff)
 	{
 		RemoveParticle(pParticle);
 	}
@@ -50,7 +50,7 @@ u8 AddParticle(s16 x, s16 y, s16 vx, s16 vy, s8 life, s8 colour, s8 width, s8 fl
 	pParticle->colour = colour;
 	pParticle->width = width;
 	pParticle->prevColour = colour;
-	pParticle->prevPage = 0;
+	pParticle->prevPage = 0xff;
 	pParticle->prevAddress = 0;
 	pParticle->flags = PARTICLE_ACTIVE;
 	global.particleIndex = (index + 1) & (MAX_PARTICLES - 1);

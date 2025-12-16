@@ -8,14 +8,13 @@
 ; to mask out the colour behind the banner, and clear it later
 ; by anding with %1111_1100.
 ; 
-        SECTION PAGE_16
 ;
 FIXED_POINT_BITS equ 6
 
 FIXED_POINT_ONE equ (1<<FIXED_POINT_BITS)
 FIXED_POINT_HALF equ (FIXED_POINT_ONE/2)
 FIXED_POINT_SPEED_BITS equ 4
-
+        SECTION code_user        
 DEFVARS 0
 {
         PARTICLE_VX             ds.w 1                    ; These have to be in a specific order to make the particle update fast.
@@ -144,7 +143,7 @@ remove_particle:
         ld b,(ix+PARTICLE_prev_colour)
         ld c,(ix+PARTICLE_width)
         call xor_particle
-        ld (ix+PARTICLE_prev_page),0
+        ld (ix+PARTICLE_prev_page),0xff
 @no_restore:
         ret
 
@@ -160,7 +159,7 @@ _RenderParticles:
         ld b,MAX_PARTICLES
         ld c,0
         ld de,PARTICLE_sizeof
-        xor a
+        ld a,0xff
         ld (particle_mmu_page),a
 @render_loop:
         bit PARTICLE_ACTIVE,(ix+PARTICLE_flags)
@@ -318,9 +317,9 @@ xor_particle:
         jr z,@same_slot
         ld a,l
         ld (particle_mmu_page),a
-        nextreg MMU_SLOT_6,a
+        nextreg SWAP_BANK_PAGE_0,a
         inc a
-        nextreg MMU_SLOT_7,a
+        nextreg SWAP_BANK_PAGE_1,a
 @same_slot:
         ld a,c
         dec a
@@ -358,14 +357,16 @@ xor_particle:
 @zero_pixel:
         ret
 
+        SECTION data_user_align_16
+        align 16
 @index_table:
         dw @one_pixel,@two_pixel,@three_pixel,@four_pixel,@five_pixel,@six_pixel,@seven_pixel,@eight_pixel
 
         SECTION data_user
 particle_mmu_page:
-        dw 0
+        dw -1
 
-        SECTION bss_align_256
+        SECTION bss_user_align_256
         ALIGN 256
 _particles:
         ds PARTICLE_sizeof*MAX_PARTICLES

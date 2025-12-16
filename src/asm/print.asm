@@ -12,7 +12,7 @@ ATTR_LENGTH     equ ATTR_WIDTH*ATTR_HEIGHT
 ; Destroys DE,HL
 ; ----------------------------
 
-        SECTION PAGE_16
+        SECTION code_user
 
         global _x_printf, _memcpy_dma
 _x_printf:
@@ -309,7 +309,7 @@ print_char:
         pop hl
         ret
 
-        SECTION PAGE_16
+        SECTION data_user
 ula_scroll_offset:
         db 0
 char_screen_x:  
@@ -317,7 +317,7 @@ char_screen_x:
 char_screen_y: 
         db 0
 
-        SECTION PAGE_16
+        SECTION data_user_align_256
 
         align 256
 character_set:

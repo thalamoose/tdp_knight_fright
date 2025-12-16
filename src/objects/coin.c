@@ -36,7 +36,7 @@ void CreateCoin(game_object* pCoin, const coord_s8* mapPosition, u16 param)
 	pCoin->anim.frameIndex = pCoin->object.index%8;
 	pCoin->anim.animSpeed = 2+(pCoin->object.index&1);
 	pCoin->anim.animDelay = pCoin->object.index%4+1;
-	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
 	CopyPalettePartial(asset_CoinPalette, PALETTE_SPRITE_PRIMARY, pCoin->anim.sprite.palette*16, 16);
 
 	play_cell* pCell = GetPlayAreaCell(mapPosition);

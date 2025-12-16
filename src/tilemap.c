@@ -27,8 +27,8 @@ void InitializeTilemap(void)
 	//
 	// Copy tilemap character data to tilemap area
 	//
-	nextreg(MMU_SLOT_6, TILES_PAGE);
-	nextreg(MMU_SLOT_7, TILEMAP_CHARS_PAGE);
+	nextreg(SWAP_BANK_PAGE_0, TILES_PAGE);
+	nextreg(SWAP_BANK_PAGE_1, TILEMAP_CHARS_PAGE);
 	// Copy tile bitmap data
 	memcpy_dma(SWAP_BANK_1, SWAP_BANK_0, 0x2000);
 	//
@@ -38,13 +38,13 @@ void InitializeTilemap(void)
 	// Make the first character 0
 	memset(SWAP_BANK_1, 0, 32);
 
-	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
 	// Copy slot 0 palette to slot 1, this will be used for pulsing
 	// colours on a block switch.
 	memcpy_dma(asset_TilemapPalette+16, asset_TilemapPalette, 16*sizeof(u16));
 	CopyPalette(asset_TilemapPalette, PALETTE_TILE_PRIMARY);
 
-	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_PAGE_1, VIRTUAL_TILEMAP_PAGE);
 	ClearTilemap();
 
 	// Tilemap templates are in the same bank as the palette
@@ -184,8 +184,8 @@ void RenderTilemap(void)
 	nextreg(TILEMAP_CLIP_WINDOW, rClip>>1);
 	nextreg(TILEMAP_CLIP_WINDOW, tClip);
 	nextreg(TILEMAP_CLIP_WINDOW, bClip);
-	nextreg(MMU_SLOT_6, TILEMAP_PAGE);
-	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_PAGE_0, TILEMAP_PAGE);
+	nextreg(SWAP_BANK_PAGE_1, VIRTUAL_TILEMAP_PAGE);
 	s16 tmapx=(sx>>3)+4;
 	s16 tmapy=(sy>>3)+8;
 	tilemap_cell* pCell = ((tilemap_cell*)SWAP_BANK_1)+tmapx+(tmapy*VIRTUAL_TILEMAP_WIDTH);

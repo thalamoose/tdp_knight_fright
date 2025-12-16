@@ -36,7 +36,7 @@ __asm
 	; This is for miscellaneous small assets
 	;
 	SECTION PAGE_52
-	org 0xc000
+	org 0x0000
 _asset_MapShape_01:
 	include "build/assets/shape_01.map"
 _asset_MapShape_02:
@@ -229,11 +229,11 @@ _asset_GameDigits:
 	;// to have it within it's own page.
 	;
 	SECTION PAGE_53
-	org 0xc000
+	org 0x0000
 _asset_TileData:
 	incbin "build/assets/tiles.bin"
 	SECTION PAGE_55
-	org 0xc000
+	org 0x0000
 _asset_SpriteData:
 	incbin "build/assets/sprites.bin"
 	__endasm;

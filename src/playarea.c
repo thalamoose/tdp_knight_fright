@@ -103,16 +103,16 @@ void RefreshBlock(const coord_s8* mapPosition, s8 palette)
 //---------------------------------------------------------
 void RefreshPlayAreaCell(const coord_s8* mapPosition, u8 palette)
 {
-	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
-	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_PAGE_1, VIRTUAL_TILEMAP_PAGE);
 	RefreshBlock(mapPosition, palette);
 }
 
 //---------------------------------------------------------
 void DrawPlayArea(const play_area_template* template)
 {
-	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
-	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_PAGE_1, VIRTUAL_TILEMAP_PAGE);
 	//
 	// Must be zero for initial full play area draw
 	//

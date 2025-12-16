@@ -16,7 +16,7 @@
         global _bcd_add
         global _DebugTiming
         global _GetTicksPerSecond
-        SECTION PAGE_16
+        SECTION code_user
 check_reset:
         xor a
         ret
@@ -279,7 +279,7 @@ _random8:
         ret                  ;10T
 
 
-        SECTION PAGE_16
+        SECTION data_user
 random_seed:
         dw 0xbaad
 random_seed_2:
