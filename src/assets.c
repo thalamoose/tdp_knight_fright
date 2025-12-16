@@ -2,10 +2,6 @@
 #include "assets.h"
 #include "memorymap.h"
 
-void LoadInitialAssets(void)
-{
-}
-
 void allAssets(void)
 {
 #if !defined(__GNUC__)

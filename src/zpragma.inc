@@ -27,7 +27,7 @@
 #pragma output CLIB_STDIO_HEAP_SIZE = 0
 
 # Append custom banks (defined in mmap.inc)
-#pragma output CRT_APPEND_MMAP = 1
+//#pragma output CRT_APPEND_MMAP = 1
 
 #pragma output CRT_ORG_PAGE_16 = 0x0100
 
