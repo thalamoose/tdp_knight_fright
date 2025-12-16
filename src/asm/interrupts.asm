@@ -7,16 +7,16 @@ _InitializeInterrupts:
         di
         ; Set up the vector table. Fixed at 0xfc00 to 0xfd01
         ; Then copy the actual dispatch to 0xfdfd
-        ld hl,0xbe00
+        ld hl,0xfd00
         ld a,h
         ld de,hl
         ld bc,256
-        ld (hl),0xbf
+        ld (hl),0xfe
         inc de
         ldir
 
         ld hl,interrupt_trampoline
-        ld de,0xbfbf
+        ld de,0xfefe
         ld bc, 3
         ldir
         ld i,a

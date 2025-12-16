@@ -3,7 +3,7 @@
 
 
 //// Real IM2
-#pragma output REGISTER_SP = 0xbe00
+#pragma output REGISTER_SP = 0xfd00
 #pragma output CRT_ORG_BSS = 0x6000
 #pragma output CRT_ORG_CODE = 0x8000
 

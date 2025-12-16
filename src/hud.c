@@ -50,7 +50,7 @@ void CopyBackgroundBitmap(u8 srcPage)
 	{
 		nextreg(SWAP_BANK_PAGE_0, srcPage);
 		nextreg(SWAP_BANK_PAGE_1, dstPage);
-		memcpy_dma(SWAP_BANK_1, SWAP_BANK_0, 8192);
+		memcpy_dma((void*)SWAP_BANK_1, (void*)SWAP_BANK_0, 8192);
 		srcPage++;
 		dstPage++;
 	}

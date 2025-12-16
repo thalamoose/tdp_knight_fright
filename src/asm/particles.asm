@@ -137,7 +137,7 @@ _RemoveParticle:
 
 remove_particle:
         ld a,(ix+PARTICLE_prev_page)
-        and a
+        cp 0xff
         jr z,@no_restore
         ld de,(ix+PARTICLE_prev_address)
         ld b,(ix+PARTICLE_prev_colour)
@@ -163,8 +163,7 @@ _RenderParticles:
         ld (particle_mmu_page),a
 @render_loop:
         bit PARTICLE_ACTIVE,(ix+PARTICLE_flags)
-        jr z,@not_active
-        call render_particle
+        call nz,render_particle
         inc c
 @not_active:
         add ix,de
@@ -357,7 +356,7 @@ xor_particle:
 @zero_pixel:
         ret
 
-        SECTION data_user_align_16
+        SECTION data_align_16
         align 16
 @index_table:
         dw @one_pixel,@two_pixel,@three_pixel,@four_pixel,@five_pixel,@six_pixel,@seven_pixel,@eight_pixel
@@ -366,7 +365,7 @@ xor_particle:
 particle_mmu_page:
         dw -1
 
-        SECTION bss_user_align_256
+        SECTION bss_align_256
         ALIGN 256
 _particles:
         ds PARTICLE_sizeof*MAX_PARTICLES

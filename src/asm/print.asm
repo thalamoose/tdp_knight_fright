@@ -317,7 +317,7 @@ char_screen_x:
 char_screen_y: 
         db 0
 
-        SECTION data_user_align_256
+        SECTION data_align_256
 
         align 256
 character_set:

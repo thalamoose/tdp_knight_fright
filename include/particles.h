@@ -10,11 +10,11 @@ typedef struct s_particle
 	s16 y;
 	s8 life;
 	s16 prevAddress;
-	s8 prevPage;
-	s8 prevColour;
-	s8 colour;
-	s8 width;
-	s8 flags;
+	u8 prevPage;
+	u8 prevColour;
+	u8 colour;
+	u8 width;
+	u8 flags;
 } particle;
 
 enum
@@ -26,7 +26,7 @@ void InitializeParticles(void);
 void ResetParticles(void);
 u8 UpdateParticles(particle *particles);
 void RenderParticles(particle *particles);
-u8 AddParticle(s16 x, s16 y, s16 vx, s16 vy, s8 life, s8 colour, s8 width, s8 flags);
+u8 AddParticle(const particle* pTemplate);
 void RemoveParticle(particle *pParticle);
 extern particle particles[];
 #endif

@@ -33,18 +33,17 @@ void BuildPlayArea(const play_area_template *pTemplate)
 {
 	s8 px = -pTemplate->size.x/2;
 	s8 py = -pTemplate->size.y/2;
-	const u8 *pData=pTemplate->data;
-	play_cell *pCell=NULL;
+	const u8* pData = pTemplate->data;
 
 	levelManager.tilesRemaining = 0;
 	for (u8 y=0; y<pTemplate->size.y; y++)
 	{
 		coord_s8 mapPosition = {px, py+y};
 		
-		pCell=GetPlayAreaCell(&mapPosition);
-		for (u8 x=0; x<pTemplate->size.x; x++, pCell++, pData++)
+		play_cell* pCell = GetPlayAreaCell(&mapPosition);
+		for (u8 x=0; x<pTemplate->size.x; x++)
 		{
-			u8 type = *pData;
+			u8 type = *pData++;
 			switch(type)
 			{
 				case 0:		// A hole
@@ -62,6 +61,7 @@ void BuildPlayArea(const play_area_template *pTemplate)
 					pCell->type = CELL_HOLE;
 					break;
 			}
+			pCell++;
 		}
 	}
 }
@@ -89,14 +89,18 @@ void RefreshBlock(const coord_s8* mapPosition, s8 palette)
 	tilemap_cell *pTilemap=GetTilemapCell(tx, ty);
 	const coord_s8 blockmapPos = {playArea.position.x+x, playArea.position.y+y};
 	const play_cell *pCell = GetPlayAreaCell(&blockmapPos);
-	s8 dark=pCell->isDark;
-	s8 bl=CalcIndex(pCell-1);
-	s8 tr=CalcIndex(pCell+1);
-	s8 tl=CalcIndex(pCell-PLAY_AREA_CELLS_WIDTH);
-	s8 br=CalcIndex(pCell+PLAY_AREA_CELLS_WIDTH);
+
+	paste_tilemap_params params;
+
+	params.dark=pCell->isDark;
+	params.bl = CalcIndex(pCell-1);
+	params.tr = CalcIndex(pCell+1);
+	params.tl = CalcIndex(pCell-PLAY_AREA_CELLS_WIDTH);
+	params.br = CalcIndex(pCell+PLAY_AREA_CELLS_WIDTH);
+	params.palette = palette;
 	if (pCell->type!=CELL_HOLE)
 	{
-		PasteTilemapBlock(pTilemap, dark, tl, tr, bl, br, palette);
+		PasteTilemapBlock(pTilemap, &params);
 	}
 }
 
@@ -123,13 +127,15 @@ void DrawPlayArea(const play_area_template* template)
 	s8 sx = (s8)width/2;
 	s8 sy = (s8)height/2;
 	coord_s8 mapPosition = {0, -sy};
-	for (u8 i=0; i<height; i++, mapPosition.y++)
+	for (u8 i=0; i<height; i++)
 	{
 		mapPosition.x = -sx;
-		for (u8 j=0; j<width; j++, mapPosition.x++)
+		for (u8 j=0; j<width; j++)
 		{
 			RefreshBlock(&mapPosition, 0);
+			mapPosition.x++;
 		}
+		mapPosition.y++;
 	}
 }
 

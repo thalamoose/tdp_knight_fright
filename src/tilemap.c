@@ -30,13 +30,13 @@ void InitializeTilemap(void)
 	nextreg(SWAP_BANK_PAGE_0, TILES_PAGE);
 	nextreg(SWAP_BANK_PAGE_1, TILEMAP_CHARS_PAGE);
 	// Copy tile bitmap data
-	memcpy_dma(SWAP_BANK_1, SWAP_BANK_0, 0x2000);
+	memcpy_dma((void*)SWAP_BANK_1, (void*)SWAP_BANK_0, 0x2000);
 	//
 	// This is copying characters 1...255 to 0...254 (test purposes). We need character 0 to be blank.
 	//
-	memcpy_dma(SWAP_BANK_1+32, SWAP_BANK_0, 0x1fe0);
+	memcpy_dma((u8*)SWAP_BANK_1+32, (u8*)SWAP_BANK_0, 0x1fe0);
 	// Make the first character 0
-	memset(SWAP_BANK_1, 0, 32);
+	memset((u8*)SWAP_BANK_1, 0, 32);
 
 	nextreg(SWAP_BANK_PAGE_0, MISC_DATA_PAGE);
 	// Copy slot 0 palette to slot 1, this will be used for pulsing
@@ -48,12 +48,12 @@ void InitializeTilemap(void)
 	ClearTilemap();
 
 	// Tilemap templates are in the same bank as the palette
-	playArea.position.x=0;
-	playArea.position.y=0;
-	tileMap.position.x=0;
-	tileMap.position.y=0;
-	tileMap.lastTilemapPos.x=-1;
-	tileMap.lastTilemapPos.y=-1;
+	playArea.position.x = 0;
+	playArea.position.y = 0;
+	tileMap.position.x = 0;
+	tileMap.position.y = 0;
+	tileMap.lastTilemapPos.x = -1;
+	tileMap.lastTilemapPos.y = -1;
 	SetTilemapMoveTarget();
 	// Just clip the entire tilemap. It'll get reset after the first update.
 	nextreg(TILEMAP_CLIP_WINDOW, 255);
@@ -72,9 +72,9 @@ void ResetTilemap(void)
 //---------------------------------------------------------
 void ClearTilemap(void)
 {
-	u8 *pTileTable=SWAP_BANK_1;
-	pTileTable[0]=0x00;
-	pTileTable[1]=0x01;
+	u8 *pTileTable = (u8*)SWAP_BANK_1;
+	pTileTable[0] = 0x00;
+	pTileTable[1] = 0x01;
 	// Since I know this copies forward, I can copy the first 2 bytes
 	// to the rest with a DMA memcpy. It's a lot faster.
 	u16 szTilemap = VIRTUAL_TILEMAP_WIDTH*VIRTUAL_TILEMAP_HEIGHT*sizeof(tilemap_cell);
@@ -224,15 +224,15 @@ static void PasteTilemapMiddle(tilemap_cell *pTile, u8 baseBlock, u8 attr)
 }
 
 //---------------------------------------------------------
-void PasteTilemapBlock(tilemap_cell *pTile, s8 dark, s8 tl, s8 tr, s8 bl, s8 br, s8 palette)
+void PasteTilemapBlock(tilemap_cell *pTile, const paste_tilemap_params* params)
 {
 	// The +1 is because block 0 is the blank block. We're leaving that for now. But we'll
 	// sort it out when the tilemap is properly laid out.
 	tileMap.lastTilemapPos.x = -1;		// Invalidate tilemap so it'll get updated
-	u8 attr=(palette << 4) | 1;
-	u8 darkOffset=dark*12+1;
-	PasteTilemapEdge(pTile, darkOffset, attr, tl, tr);
+	u8 attr=(params->palette << 4) | 1;
+	u8 darkOffset=params->dark*12+1;
+	PasteTilemapEdge(pTile, darkOffset, attr, params->tl, params->tr);
 	PasteTilemapMiddle(pTile+VIRTUAL_TILEMAP_WIDTH, darkOffset+24, attr);
 	PasteTilemapMiddle(pTile+VIRTUAL_TILEMAP_WIDTH*2, darkOffset+48, attr);
-	PasteTilemapEdge(pTile+VIRTUAL_TILEMAP_WIDTH*3, darkOffset+72, 1, bl, br);
+	PasteTilemapEdge(pTile+VIRTUAL_TILEMAP_WIDTH*3, darkOffset+72, 1, params->bl, params->br);
 }
