@@ -279,8 +279,8 @@ void NewLevel(void)
 	{
 		levelNum = 12+random8()%6;
 	}
-	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
-	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_1_SLOT, VIRTUAL_TILEMAP_PAGE);
 	const level_template* levelTemplate = &levelData[levelNum];
 	levelManager.config = levelTemplate->config;
 	ClearPlayArea();
@@ -301,7 +301,7 @@ void ClearEnemies(void)
 	for (u8 i=0;i<MAX_ENEMIES; i++, objList++)
 	{
 		game_object* enemy = objList;
-		if (enemy->flags.active)
+		if (enemy->flags & FLAG_ACTIVE)
 		{
 			play_cell* pCell = GetPlayAreaCell(&enemy->playGrid);
 			if (pCell->type==CELL_ENEMY)
@@ -317,11 +317,11 @@ void BlowupEnemies(void)
 	for (u8 i=0;i<MAX_ENEMIES; i++, objList++)
 	{
 		game_object* enemy = objList;
-		if (enemy->flags.active)
+		if (enemy->flags & FLAG_ACTIVE)
 		{
 			play_cell* pCell = GetPlayAreaCell(&enemy->playGrid);
 			if (pCell->type==CELL_ENEMY)
-				if (enemy->object.vtable->Blowup) enemy->object.vtable->Blowup(enemy);
+				BlowupObject(enemy);
 		}
 	}
 	}

@@ -3,7 +3,7 @@ SCREEN_WIDTH    equ 256
 SCREEN_HEIGHT   equ 192
 ATTR_WIDTH      equ SCREEN_WIDTH/8
 ATTR_HEIGHT     equ SCREEN_HEIGHT/8
-SCREEN_BASE     equ $4000
+SCREEN_BASE     equ $0000
 SCREEN_LENGTH   equ SCREEN_WIDTH*SCREEN_HEIGHT/8
 ATTR_BASE       equ SCREEN_BASE+SCREEN_LENGTH
 ATTR_LENGTH     equ ATTR_WIDTH*ATTR_HEIGHT
@@ -253,7 +253,10 @@ print_char:
         push de
         ld b,8
 @char_loop:
-        ldws
+        ld a,(hl)
+        ld (de),a
+        inc hl
+        inc d
         djnz @char_loop
         pop de
         ; Update attributes
@@ -261,7 +264,7 @@ print_char:
         rrca
         rrca
         rrca
-        or %01011000
+        or %00011000
         ld d,a
         ld a,%01000111
         ld (de),a
@@ -314,9 +317,5 @@ char_screen_x:
 char_screen_y: 
         db 0
 
-        SECTION data_align_256
-        align 256
-        
 character_set:
         incbin "assets/charset.bin"
-        align 64

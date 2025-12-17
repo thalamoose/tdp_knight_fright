@@ -87,7 +87,7 @@ void RenderComponent(game_object* pObject)
 		u8 page;
         u8 *pPattern;
 		u16 xferSize;
-		if (pObject->flags.is4bit)
+		if (pObject->flags & FLAG_IS_4_BIT)
 		{
 			// There's something fishy here. I'm not quite sure why I have to download 256 bytes
 			// for a 4 bit sprite.
@@ -101,7 +101,7 @@ void RenderComponent(game_object* pObject)
  			pPattern = (u8 *)SWAP_BANK_0+(u16)(animIndex&0x1f)*16*16;
 			xferSize = ((u16)pObject->anim.sprite.patternCount)*(16*16);
 		}
-        nextreg(MMU_SLOT_6, page);
+        nextreg(SWAP_BANK_0_SLOT, page);
 		//x_printf("%x:src:%x,p:%d,#:%d,f:%x\n", pObject, pPattern, (u16)pObject->anim.sprite.pattern, (u16)pObject->anim.sprite.patternCount, pObject->flags.value);
 
         CopySprite(pPattern, pObject->anim.sprite.pattern, xferSize);

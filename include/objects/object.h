@@ -40,6 +40,15 @@ typedef struct s_object_vtable
 	object_blowup_fn* Blowup;
 } object_vtable;
 
+enum
+{
+	FLAG_ACTIVE = (1<<0),
+	FLAG_PINGPONG = (1<<1),
+	FLAG_IS_4_BIT = (1<<2),
+	FLAG_DIRECTION = (1<<3),
+	FLAG_TILEMAP_LOCKED = (1<<4)
+};
+
 typedef struct s_game_object
 {
 	struct
@@ -48,18 +57,7 @@ typedef struct s_game_object
 		const object_vtable* vtable;
 	} object;
 	
-	union
-	{
-		u8 value;
-		struct 
-		{
-			bool active:1;
-			bool pingpong:1;
-			bool is4bit:1;
-			bool direction:1;
-			bool tilemapLocked:1;
-		};
-	} flags;
+	u8 flags;
 	transform trans;
 	animation anim;
 	u8 moveSteps;

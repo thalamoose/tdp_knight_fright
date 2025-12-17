@@ -26,9 +26,10 @@ void InitializeSystem(void)
     nextreg(CLOCK_SEL, 0x03);
     nextreg(PERIPHERAL_3_SETTING, 0x70);
     // Remap 16K to ULA shadow.
-    nextreg(MMU_SLOT_2, ULA_SHADOW_PAGE);
-    nextreg(MMU_SLOT_3, ULA_SHADOW_PAGE + 1);
-    memset(_BSS_head, 0, _BSS_END_tail - _BSS_head);
+    nextreg(MMU_SLOT_0, ULA_SHADOW_PAGE);
+    nextreg(MMU_SLOT_1, ULA_SHADOW_PAGE+1);
+    //memset(_BSS_head, 0, _BSS_END_tail - _BSS_head);
+    memset((void*)0x0000, 0, 0x4000);
     InitializeInterrupts();
     ClearScreen();
     InitializeRender();

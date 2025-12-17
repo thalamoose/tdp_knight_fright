@@ -82,37 +82,39 @@ void SnapToPlayAreaGrid(game_object* pObject)
 //---------------------------------------------------------
 void RefreshBlock(const coord_s8* mapPosition, s8 palette)
 {
-	s8 x=mapPosition->x;
-	s8 y=mapPosition->y;
-	s8 tx=(x+y)*2;
-	s8 ty=(y-x)*3;
-	tilemap_cell *pTilemap=GetTilemapCell(tx, ty);
+	s8 x = mapPosition->x;
+	s8 y = mapPosition->y;
+	s8 tx = (x+y)*2;
+	s8 ty = (y-x)*3;
+	tilemap_cell *pTilemap = GetTilemapCell(tx, ty);
 	const coord_s8 blockmapPos = {playArea.position.x+x, playArea.position.y+y};
 	const play_cell *pCell = GetPlayAreaCell(&blockmapPos);
-	s8 dark=pCell->isDark;
-	s8 bl=CalcIndex(pCell-1);
-	s8 tr=CalcIndex(pCell+1);
-	s8 tl=CalcIndex(pCell-PLAY_AREA_CELLS_WIDTH);
-	s8 br=CalcIndex(pCell+PLAY_AREA_CELLS_WIDTH);
+	tilemap_paste_params params;
+	params.dark = pCell->isDark;
+	params.bl = CalcIndex(pCell-1);
+	params.tr = CalcIndex(pCell+1);
+	params.tl = CalcIndex(pCell-PLAY_AREA_CELLS_WIDTH);
+	params.br = CalcIndex(pCell+PLAY_AREA_CELLS_WIDTH);
+	params.palette = palette;
 	if (pCell->type!=CELL_HOLE)
 	{
-		PasteTilemapBlock(pTilemap, dark, tl, tr, bl, br, palette);
+		PasteTilemapBlock(pTilemap, &params);
 	}
 }
 
 //---------------------------------------------------------
 void RefreshPlayAreaCell(const coord_s8* mapPosition, u8 palette)
 {
-	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
-	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_1_SLOT, VIRTUAL_TILEMAP_PAGE);
 	RefreshBlock(mapPosition, palette);
 }
 
 //---------------------------------------------------------
 void DrawPlayArea(const play_area_template* template)
 {
-	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
-	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_1_SLOT, VIRTUAL_TILEMAP_PAGE);
 	//
 	// Must be zero for initial full play area draw
 	//
