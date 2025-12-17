@@ -23,7 +23,7 @@
 
 //// do not create a heap for stdio (cannot open files)
 #pragma output CLIB_STDIO_HEAP_SIZE = 0
-
+~
 # Append custom banks (defined in mmap.inc)
-#pragma output CRT_APPEND_MMAP = 1
+//#pragma output CRT_APPEND_MMAP = 1
 

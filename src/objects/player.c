@@ -142,19 +142,21 @@ void HandlePickup(game_object* pObject)
     config.vx = 0;
     config.vy = 0;
     SetPlayerAnimIdle(pObject, &config);
-    u8 vxlz = 0, vxgz = 0, vylz = 0, vygz = 0;
-    for (int i = 0; i < 32; i++)
+    for (int i=0; i<32; i++)
     {
-        s16 px = pObject->trans.pos.x+I_TO_F(16)+((s16)random8()<<3);
-        s16 py = pObject->trans.pos.y+I_TO_F(-16)+((s16)random8()<<3);
-        s16 vx = random8();
-        s16 vy = random8();
-        s8 width = random8()&3+1;
-        s8 colour = random8() | 0xf0;
-        s8 age = (random8()&31)+24;
-        px += I_TO_F(TILEMAP_PIX_WIDTH/2)+tileMap.position.x;
-        py += I_TO_F(TILEMAP_PIX_HEIGHT/2)+tileMap.position.y;
-        AddParticle(px, py, vx, vy, age, colour, width, 0);
+        particle params;
+        params.x = pObject->trans.pos.x+I_TO_F(16)+((s16)random8()<<3);
+        params.y = pObject->trans.pos.y+I_TO_F(-16)+((s16)random8()<<3);
+        params.x += I_TO_F(TILEMAP_PIX_WIDTH/2)+tileMap.position.x;
+        params.y += I_TO_F(TILEMAP_PIX_HEIGHT/2)+tileMap.position.y;
+        params.vx = random8();
+        params.vy = random8();
+        params.width = random8()&3+1;
+        params.colour = random8() | 0xf0;
+        params.life = (random8()&31)+24;
+        params.flags = 0;
+		params.prevPage = 0xff;
+        AddParticle(&params);
     }
     play_cell* pCell = GetPlayAreaCell(&pObject->playGrid);
     game_object* pCollider = GetObjectFromIndex(pCell->objIndex);

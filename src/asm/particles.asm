@@ -138,13 +138,13 @@ _RemoveParticle:
 
 remove_particle:
         ld a,(ix+PARTICLE_prev_page)
-        and a
+        cp 0xff
         jr z,@no_restore
         ld de,(ix+PARTICLE_prev_address)
         ld b,(ix+PARTICLE_prev_colour)
         ld c,(ix+PARTICLE_width)
         call xor_particle
-        ld (ix+PARTICLE_prev_page),0
+        ld (ix+PARTICLE_prev_page),0xff
 @no_restore:
         ret
 

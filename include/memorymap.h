@@ -1,3 +1,17 @@
+//---------------------------------------------------------
+// Memory Map:
+// 0x0000:0x1fff - swap bank 0
+// 0x2000:0x3fff - swap bank 1
+// 0x4000:0x5b00 - ULA layer (from 2nd ULA layer)
+// 0x6000:0x7fff - BSS
+// 0x8000:0xfbff - Code space
+// 0xfc00:0xfcff - Stack
+// 0xfd00:0xfe01 - Interrupt vector table (to 0xfefe)
+// 0xfe02:0xfefd - Unused
+// 0xfefe:0xff01 - Interrupt dispatch
+// 0xff01:0xffff - Unused
+//---------------------------------------------------------
+
 #define ASM_CODE_PAGE		4
 #define TILEMAP_CHARS_PAGE	10
 #define TILEMAP_PAGE		11
