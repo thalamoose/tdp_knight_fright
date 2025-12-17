@@ -39,7 +39,7 @@ void CreateCoin(game_object* pCoin, const coord_s8* mapPosition, u16 param)
 	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
 	CopyPalettePartial(asset_CoinPalette, PALETTE_SPRITE_PRIMARY, pCoin->anim.sprite.palette*16, 16);
 
-	play_cell* pCell = GetPlayAreaCell(mapPosition->x, mapPosition->y);
+	play_cell* pCell = GetPlayAreaCell(mapPosition);
 	pCell->type = CELL_COIN;
 	pCell->objIndex = pCoin->object.index;
 }

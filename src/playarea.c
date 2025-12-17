@@ -31,15 +31,17 @@ s8 CalcIndex(const play_cell *pCell)
 //---------------------------------------------------------
 void BuildPlayArea(const play_area_template *pTemplate)
 {
-	s8 px=-pTemplate->size.x/2;
-	s8 py=-pTemplate->size.y/2;
+	s8 px = -pTemplate->size.x/2;
+	s8 py = -pTemplate->size.y/2;
 	const u8 *pData=pTemplate->data;
 	play_cell *pCell=NULL;
 
 	levelManager.tilesRemaining = 0;
 	for (u8 y=0; y<pTemplate->size.y; y++)
 	{
-		pCell=GetPlayAreaCell(px, py+y);
+		coord_s8 mapPosition = {px, py+y};
+		
+		pCell=GetPlayAreaCell(&mapPosition);
 		for (u8 x=0; x<pTemplate->size.x; x++, pCell++, pData++)
 		{
 			u8 type = *pData;
@@ -78,12 +80,15 @@ void SnapToPlayAreaGrid(game_object* pObject)
 }
 
 //---------------------------------------------------------
-void RefreshBlock(s8 x, s8 y, s8 palette)
+void RefreshBlock(const coord_s8* mapPosition, s8 palette)
 {
-	s16 tx=(x+y)*2;
-	s16 ty=(y-x)*3;
+	s8 x=mapPosition->x;
+	s8 y=mapPosition->y;
+	s8 tx=(x+y)*2;
+	s8 ty=(y-x)*3;
 	tilemap_cell *pTilemap=GetTilemapCell(tx, ty);
-	const play_cell *pCell=GetPlayAreaCell(playArea.position.x+x, playArea.position.y+y);
+	const coord_s8 blockmapPos = {playArea.position.x+x, playArea.position.y+y};
+	const play_cell *pCell = GetPlayAreaCell(&blockmapPos);
 	s8 dark=pCell->isDark;
 	s8 bl=CalcIndex(pCell-1);
 	s8 tr=CalcIndex(pCell+1);
@@ -96,11 +101,11 @@ void RefreshBlock(s8 x, s8 y, s8 palette)
 }
 
 //---------------------------------------------------------
-void RefreshPlayAreaCell(s8 x, s8 y, u8 palette)
+void RefreshPlayAreaCell(const coord_s8* mapPosition, u8 palette)
 {
 	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
 	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
-	RefreshBlock(x, y, palette);
+	RefreshBlock(mapPosition, palette);
 }
 
 //---------------------------------------------------------
@@ -117,22 +122,22 @@ void DrawPlayArea(const play_area_template* template)
 	u8 height = template->size.y;
 	s8 sx = (s8)width/2;
 	s8 sy = (s8)height/2;
-	s8 y = -sy;
-	for (u8 i=0; i<height; i++, y++)
+	coord_s8 mapPosition = {0, -sy};
+	for (u8 i=0; i<height; i++, mapPosition.y++)
 	{
-		s8 x = -sx;
-		for (u8 j=0; j<width; j++, x++)
+		mapPosition.x = -sx;
+		for (u8 j=0; j<width; j++, mapPosition.x++)
 		{
-			RefreshBlock(x, y, 0);
+			RefreshBlock(&mapPosition, 0);
 		}
 	}
 }
 
 //---------------------------------------------------------
-play_cell *GetPlayAreaCell(s8 x, s8 y)
+play_cell *GetPlayAreaCell(const coord_s8* position)
 {
-	x=x+PLAY_AREA_CELLS_WIDTH/2;
-	y=y+PLAY_AREA_CELLS_HEIGHT/2;
+	s8 x = position->x+PLAY_AREA_CELLS_WIDTH/2;
+	s8 y = position->y+PLAY_AREA_CELLS_HEIGHT/2;
 
 	//x_printf("x:%d,y:%d,cell:0x%x,t:%x\n",(s16)x, (s16)y, &playArea.cells[y][x], (s16)playArea.cells[y][x].type);
 	return &playArea.cells[y][x];

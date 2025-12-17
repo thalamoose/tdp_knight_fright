@@ -95,7 +95,8 @@ void BlowupObject(game_object* pObject)
 //---------------------------------------------------------
 void DestroyObject(game_object* pObject)
 {
-	if (pObject->object.vtable->Destroy) pObject->object.vtable->Destroy(pObject);
+	if (pObject->object.vtable->Destroy) 
+		pObject->object.vtable->Destroy(pObject);
 	pObject->flags.active = false;
 	// Very likely to get reused on the next object create.
 	objectManager.objectIndex = pObject->object.index;

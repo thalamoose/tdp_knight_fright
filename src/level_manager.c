@@ -166,7 +166,8 @@ void RandomEnemyDrop(u8 maxNumEntries, u8 spawnRate)
 	s8 x = (random8()%playArea.activeSize.x)-playArea.activeSize.x/2;
 	s8 y = (random8()%playArea.activeSize.y)-playArea.activeSize.y/2;
 
-	const play_cell* pCell = GetPlayAreaCell(x, y);
+	const coord_s8 mapPos = {x, y};
+	const play_cell* pCell = GetPlayAreaCell(&mapPos);
 	if (CheckPathBlocked(pCell) || CheckForEnemy(pCell))
 		return;
 	if ((x==levelManager.player->trans.pos.x) && (y==levelManager.player->trans.pos.y))
@@ -177,18 +178,26 @@ void RandomEnemyDrop(u8 maxNumEntries, u8 spawnRate)
 }
 
 #define CELL_OFFSET(x,y) ((x)+((y)*PLAY_AREA_CELLS_WIDTH))
+static const s16 offsetTable[]=
+{
+	CELL_OFFSET(-1,-1),
+	CELL_OFFSET(-1, 1),
+	CELL_OFFSET(0, 1),
+	CELL_OFFSET(0,-1),
+	CELL_OFFSET(1, 0),
+	CELL_OFFSET(1, 1),
+	CELL_OFFSET(1,-1),
+};
 //---------------------------------------------------------
 bool CanPlaceObstacleOrHole(play_cell* pCell)
 {
 	u8 borderingObstacles = 0;
-	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(-1, 0));
-	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(-1,-1));
-	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(-1, 1));
-	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(0, 1));
-	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(0,-1));
-	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(1, 0));
-	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(1, 1));
-	borderingObstacles += CheckPathBlocked(pCell+CELL_OFFSET(1, -1));
+	const u16* pOffset = offsetTable;
+	
+	for(u8 i=0; i<7; i++, pOffset++)
+	{
+		borderingObstacles += CheckPathBlocked(pCell+*pOffset);
+	}
 	return (borderingObstacles<=1)?true:false;
 }
 
@@ -211,7 +220,9 @@ void AddObstacles(const play_area_template* template, u8 nObstacles)
 	for (u8 y = 0; y<sy; cy++, y++)
 	{
 		s8 cx = -sx/2;
-		play_cell* pCell = GetPlayAreaCell(cx, cy);
+
+		const coord_s8 mapPos = {cx, cy};
+		play_cell* pCell = GetPlayAreaCell(&mapPos);
 		for (u8 x = 0; x<sx; x++, cx++, pCell++)
 		{
 			if ((x!=0) && (y!=0) && (pCell->type!=CELL_HOLE) && (pCell->type!=CELL_OBSTACLE) && !((cx==spawnx) && (cy==spawny)))
@@ -292,7 +303,7 @@ void ClearEnemies(void)
 		game_object* enemy = objList;
 		if (enemy->flags.active)
 		{
-			play_cell* pCell = GetPlayAreaCell(enemy->playGrid.x, enemy->playGrid.y);
+			play_cell* pCell = GetPlayAreaCell(&enemy->playGrid);
 			if (pCell->type==CELL_ENEMY)
 				DestroyObject(enemy);
 		}
@@ -308,7 +319,7 @@ void BlowupEnemies(void)
 		game_object* enemy = objList;
 		if (enemy->flags.active)
 		{
-			play_cell* pCell = GetPlayAreaCell(enemy->playGrid.x, enemy->playGrid.y);
+			play_cell* pCell = GetPlayAreaCell(&enemy->playGrid);
 			if (pCell->type==CELL_ENEMY)
 				if (enemy->object.vtable->Blowup) enemy->object.vtable->Blowup(enemy);
 		}
@@ -337,9 +348,9 @@ void RemoveEnemy(s8 x, s8 y)
 }
 
 //---------------------------------------------------------
-void PositionEnemy(s8 x, s8 y, u8 enemyIndex)
+void PositionEnemy(const coord_s8* mapPosition, u8 enemyIndex)
 {
-	play_cell* pCell = GetPlayAreaCell(x, y);
+	play_cell* pCell = GetPlayAreaCell(mapPosition);
 	if (pCell)
 	{
 		pCell->type = CELL_ENEMY;
