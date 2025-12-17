@@ -24,7 +24,7 @@ void UpdateObjects(void)
 	game_object* pObject = objectManager.objects;
 	for (u8 i=0; i<MAX_OBJECTS; i++, pObject++)
 	{
-		if (pObject->flags.active)
+		if (pObject->flags & FLAG_ACTIVE)
 		{
 			bool isStillRunning = pObject->object.vtable->Update(pObject);
 			if (!isStillRunning)
@@ -41,7 +41,7 @@ void RenderObjects(void)
 	game_object* pObject = objectManager.objects;
 	for (u8 i=0; i<MAX_OBJECTS; i++, pObject++)
 	{
-		if (pObject->flags.active)
+		if (pObject->flags & FLAG_ACTIVE)
 		{
 			if (pObject->object.vtable->Render)
 				pObject->object.vtable->Render(pObject);
@@ -55,7 +55,7 @@ game_object* CreateObject(const object_vtable* vtable, const coord_s8* mapPositi
 	u8 index = objectManager.objectIndex;
 	game_object* pGameObj = &objectManager.objects[index];
 
-	while (pGameObj->flags.active)
+	while (pGameObj->flags & FLAG_ACTIVE)
 	{
 		pGameObj++;
 		index = (index+1)%MAX_OBJECTS;
@@ -78,8 +78,7 @@ game_object* CreateObject(const object_vtable* vtable, const coord_s8* mapPositi
 	pGameObj->object.index = index;
 	pGameObj->playGrid = *mapPosition;
 	SnapToPlayAreaGrid(pGameObj);
-	pGameObj->flags.value = 0;
-	pGameObj->flags.active = true;
+	pGameObj->flags = FLAG_ACTIVE;
 	pGameObj->object.index = index;
 	if (pGameObj->object.vtable->Create) pGameObj->object.vtable->Create(pGameObj, mapPosition, param);
 	return pGameObj;
@@ -97,7 +96,7 @@ void DestroyObject(game_object* pObject)
 {
 	if (pObject->object.vtable->Destroy) 
 		pObject->object.vtable->Destroy(pObject);
-	pObject->flags.active = false;
+	pObject->flags = 0;
 	// Very likely to get reused on the next object create.
 	objectManager.objectIndex = pObject->object.index;
 }

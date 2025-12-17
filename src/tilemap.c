@@ -27,33 +27,33 @@ void InitializeTilemap(void)
 	//
 	// Copy tilemap character data to tilemap area
 	//
-	nextreg(MMU_SLOT_6, TILES_PAGE);
-	nextreg(MMU_SLOT_7, TILEMAP_CHARS_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, TILES_PAGE);
+	nextreg(SWAP_BANK_1_SLOT, TILEMAP_CHARS_PAGE);
 	// Copy tile bitmap data
-	memcpy_dma(SWAP_BANK_1, SWAP_BANK_0, 0x2000);
+	memcpy_dma((u8*)SWAP_BANK_1, (u8*)SWAP_BANK_0, 0x2000);
 	//
 	// This is copying characters 1...255 to 0...254 (test purposes). We need character 0 to be blank.
 	//
-	memcpy_dma(SWAP_BANK_1+32, SWAP_BANK_0, 0x1fe0);
+	memcpy_dma((u8*)SWAP_BANK_1+32, (u8*)SWAP_BANK_0, 0x1fe0);
 	// Make the first character 0
-	memset(SWAP_BANK_1, 0, 32);
+	memset((u8*)SWAP_BANK_1, 0, 32);
 
-	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
 	// Copy slot 0 palette to slot 1, this will be used for pulsing
 	// colours on a block switch.
 	memcpy_dma(asset_TilemapPalette+16, asset_TilemapPalette, 16*sizeof(u16));
 	CopyPalette(asset_TilemapPalette, PALETTE_TILE_PRIMARY);
 
-	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_1_SLOT, VIRTUAL_TILEMAP_PAGE);
 	ClearTilemap();
 
 	// Tilemap templates are in the same bank as the palette
-	playArea.position.x=0;
-	playArea.position.y=0;
-	tileMap.position.x=0;
-	tileMap.position.y=0;
-	tileMap.lastTilemapPos.x=-1;
-	tileMap.lastTilemapPos.y=-1;
+	playArea.position.x = 0;
+	playArea.position.y = 0;
+	tileMap.position.x = 0;
+	tileMap.position.y = 0;
+	tileMap.lastTilemapPos.x = -1;
+	tileMap.lastTilemapPos.y = -1;
 	SetTilemapMoveTarget();
 	// Just clip the entire tilemap. It'll get reset after the first update.
 	nextreg(TILEMAP_CLIP_WINDOW, 255);
@@ -72,9 +72,9 @@ void ResetTilemap(void)
 //---------------------------------------------------------
 void ClearTilemap(void)
 {
-	u8 *pTileTable=SWAP_BANK_1;
-	pTileTable[0]=0x00;
-	pTileTable[1]=0x01;
+	u8 *pTileTable = (u8*)SWAP_BANK_1;
+	pTileTable[0] = 0x00;
+	pTileTable[1] = 0x01;
 	// Since I know this copies forward, I can copy the first 2 bytes
 	// to the rest with a DMA memcpy. It's a lot faster.
 	u16 szTilemap = VIRTUAL_TILEMAP_WIDTH*VIRTUAL_TILEMAP_HEIGHT*sizeof(tilemap_cell);
@@ -184,8 +184,8 @@ void RenderTilemap(void)
 	nextreg(TILEMAP_CLIP_WINDOW, rClip>>1);
 	nextreg(TILEMAP_CLIP_WINDOW, tClip);
 	nextreg(TILEMAP_CLIP_WINDOW, bClip);
-	nextreg(MMU_SLOT_6, TILEMAP_PAGE);
-	nextreg(MMU_SLOT_7, VIRTUAL_TILEMAP_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, TILEMAP_PAGE);
+	nextreg(SWAP_BANK_1_SLOT, VIRTUAL_TILEMAP_PAGE);
 	s16 tmapx=(sx>>3)+4;
 	s16 tmapy=(sy>>3)+8;
 	tilemap_cell* pCell = ((tilemap_cell*)SWAP_BANK_1)+tmapx+(tmapy*VIRTUAL_TILEMAP_WIDTH);

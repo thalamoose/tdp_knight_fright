@@ -18,9 +18,7 @@ void CreateCoin(game_object* pCoin, const coord_s8* mapPosition, u16 param)
 {
 	UNUSED(param);
 	u8 type=(gameManager.useSuperCoins)?COIN_SUPER:COIN_NORMAL;
-	pCoin->flags.active = true;
-	pCoin->flags.tilemapLocked = true;
-	pCoin->flags.is4bit = true;
+	pCoin->flags = FLAG_ACTIVE|FLAG_TILEMAP_LOCKED|FLAG_IS_4_BIT;
 	pCoin->playGrid = *mapPosition;
 	pCoin->anim.sprite.pattern = AllocSpritePattern();
 	pCoin->anim.sprite.patternCount = 1;
@@ -36,7 +34,7 @@ void CreateCoin(game_object* pCoin, const coord_s8* mapPosition, u16 param)
 	pCoin->anim.frameIndex = pCoin->object.index%8;
 	pCoin->anim.animSpeed = 2+(pCoin->object.index&1);
 	pCoin->anim.animDelay = pCoin->object.index%4+1;
-	nextreg(MMU_SLOT_6, MISC_DATA_PAGE);
+	nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
 	CopyPalettePartial(asset_CoinPalette, PALETTE_SPRITE_PRIMARY, pCoin->anim.sprite.palette*16, 16);
 
 	play_cell* pCell = GetPlayAreaCell(mapPosition);

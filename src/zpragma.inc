@@ -1,18 +1,12 @@
-
-#pragma output REGISTER_SP = 0xbfff
-
-
 //My zpragma.inc file contains this:
 
 
 //// Real IM2
-#pragma output REGISTER_SP = 0x8180
+#pragma output REGISTER_SP = 0xfd00
 #pragma output CRT_ORG_CODE = 0x8000
 
-
-
-
-#pragma output CRT_ORG_BSS = 0x6000
+#pragma output CRT_ORG_BSS = 0xf000
+#pragma output CRT_ORG_PAGE_16 = 0x2000
 
 //// Disable interrupts at start and at exit
 #pragma output CRT_ENABLE_EIDI = 0x11
@@ -25,10 +19,11 @@
 #pragma output CLIB_MALLOC_HEAP_SIZE = 0
 
 //// BAlloc tables
-#pragma output CLIB_BALLOC_TABLE_SIZE = 32		// INCREASE if MEMPOOL increases!!!
+#pragma output CLIB_BALLOC_TABLE_SIZE = 0		// INCREASE if MEMPOOL increases!!!
 
 //// do not create a heap for stdio (cannot open files)
 #pragma output CLIB_STDIO_HEAP_SIZE = 0
-
+~
 # Append custom banks (defined in mmap.inc)
 //#pragma output CRT_APPEND_MMAP = 1
+

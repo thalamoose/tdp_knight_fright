@@ -138,13 +138,13 @@ _RemoveParticle:
 
 remove_particle:
         ld a,(ix+PARTICLE_prev_page)
-        and a
+        cp 0xff
         jr z,@no_restore
         ld de,(ix+PARTICLE_prev_address)
         ld b,(ix+PARTICLE_prev_colour)
         ld c,(ix+PARTICLE_width)
         call xor_particle
-        ld (ix+PARTICLE_prev_page),0
+        ld (ix+PARTICLE_prev_page),0xff
 @no_restore:
         ret
 
@@ -318,19 +318,18 @@ xor_particle:
         jr z,@same_slot
         ld a,l
         ld (particle_mmu_page),a
-        nextreg MMU_SLOT_6,a
+        nextreg SWAP_BANK_PAGE_0,a
         inc a
-        nextreg MMU_SLOT_7,a
+        nextreg SWAP_BANK_PAGE_1,a
 @same_slot:
         ld a,c
         dec a
         and 7
         add a
         ld hl,@index_table
-        or l
-        ld l,a
+        add hl,a
         ld c,(hl)
-        inc l
+        inc hl
         ld h,(hl)
         ld l,c
         ld c,e
@@ -358,8 +357,6 @@ xor_particle:
 @zero_pixel:
         ret
 
-        SECTION data_align_32
-        ALIGN 32
 @index_table:
         dw @one_pixel,@two_pixel,@three_pixel,@four_pixel,@five_pixel,@six_pixel,@seven_pixel,@eight_pixel
 
@@ -367,7 +364,6 @@ xor_particle:
 particle_mmu_page:
         dw 0
 
-        SECTION bss_align_256
-        ALIGN 256
+        SECTION PAGE_16
 _particles:
         ds PARTICLE_sizeof*MAX_PARTICLES

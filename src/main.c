@@ -11,63 +11,23 @@
 #include "hud.h"
 #include "game_manager.h"
 
-globals global;
-
-extern void InitializeInterrupts(void);
-extern void ClearScreen(void);
-
-extern u8 _BSS_head[];
-extern u8 _BSS_END_tail[];
+extern u8 _PAGE_16_head[];
+extern u8 _PAGE_16_tail[];
 extern u8 _DATA_END_tail[];
 
+extern void game_main(void);
+extern void boot_disable_interrupts(void);
 //---------------------------------------------------------
-void InitializeSystem(void)
+void main(void)
 {
     nextreg(CLOCK_SEL, 0x03);
     nextreg(PERIPHERAL_3_SETTING, 0x70);
-    // Remap 16K to ULA shadow.
-    nextreg(MMU_SLOT_2, ULA_SHADOW_PAGE);
-    nextreg(MMU_SLOT_3, ULA_SHADOW_PAGE + 1);
-    memset(_BSS_head, 0, _BSS_END_tail - _BSS_head);
-    InitializeInterrupts();
-    ClearScreen();
-    InitializeRender();
-    x_printf("Booting Knight Fright...\n");
-    x_printf("Built: %s, %s\n", __TIME__, __DATE__);
-    x_printf("VARS: 0x%x.\n", _BSS_END_tail);
+    // Remap 16K to ULA shadow. This must be done before pretty mych
+	nextreg(MMU_SLOT_0, ULA_SHADOW_PAGE);
+	nextreg(MMU_SLOT_1, ULA_SHADOW_PAGE+1);
+    memset(_PAGE_16_head, 0, _PAGE_16_tail-_PAGE_16_head);
+    x_printf("VARS: 0x%x.\n", _PAGE_16_tail);
     x_printf("CODE: 0x%x\n", _DATA_END_tail);
-    x_printf("Globals: 0x%x bytes.\n", sizeof(globals));
-}
 
-//---------------------------------------------------------
-//---------------------------------------------------------
-u8 c=0;
-int main(void)
-{
-    InitializeSystem();
-    LoadInitialAssets();
-    InitializeGameManager();
-    while (true)
-    {
-        ResetGameManager();
-        // Game mode is derived from these two flags.
-        // Begin game   - intro transitions     - gameIsRunning = true,  transitionIsRunning = true
-        // Play game    - main body of game     - gameIsRunning = true,  transitionIsRunning = false
-        // Game complete- exit game transition  - gameIsRunning = false, transitionIsRunninf = true
-        while (gameManager.isRunning || hud.transitionIsRunning)
-        {
-            UpdateGameManager();
-            DebugTiming(ULA_COLOUR_BLACK);
-            c++;
-            if (c>50)
-            {
-                c=0;
-                x_printf("\n");
-            }
-            WaitVSync();
-            DebugTiming(ULA_COLOUR_CYAN);
-            RenderGameManager();
-            DebugTiming(ULA_COLOUR_YELLOW);
-        }
-    }
+    game_main();
 }
