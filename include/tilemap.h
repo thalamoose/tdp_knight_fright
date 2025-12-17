@@ -23,13 +23,22 @@ typedef struct s_tilemap_cell
 	u8 attr;
 } tilemap_cell;
 
+typedef struct s_paste_params
+{
+	s8 dark;
+	s8 tl;
+	s8 tr;
+	s8 bl;
+	s8 br;
+	s8 palette;
+} tilemap_paste_params;
+
 void InitializeTilemap(void);
 void ResetTilemap(void);
 void UpdateTilemap(void);
 void RenderTilemap(void);
 void ClearTilemap(void);
-void PasteTilemapBlock(tilemap_cell *pTile, s8 dark, s8 tl, s8 tr, s8 bl, s8 br, s8 palette);
-void PasteEmptyTilemapBlock(tilemap_cell *pTile, s8 tl, s8 tr, s8 bl, s8 br, s8 palette);
+void PasteTilemapBlock(tilemap_cell *pTile, const tilemap_paste_params* params);
 void SetTilemapMoveTarget(void);
 tilemap_cell *GetTilemapCell(s8 x, s8 y);
 
