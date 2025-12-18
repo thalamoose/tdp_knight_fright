@@ -65,4 +65,15 @@ typedef struct s_game_object
     coord_s8 playGrid;
 } game_object;
 
+typedef struct s_anim_configs
+{
+    u8 baseIndex;
+    u8 direction;
+    s16 vx;
+    s16 vy;
+} anim_config;
+
+void SetObjectAnimIdle(game_object* pObject, const anim_config* pConfig);
+void SetObjectAnimRun(game_object* pObject, const anim_config* pConfig);
+
 #endif

@@ -57,8 +57,9 @@ object_vtable enemyVirtualTable[]=
 };
 
 //---------------------------------------------------------
-game_object* CreateEnemy(u8 type, const coord_s8* mapPosition, u16 param)
+game_object* CreateEnemyObject(u8 type, const coord_s8* mapPosition, u16 param)
 {
+	type = 0; //*DEBUG*
 	return CreateObject(&enemyVirtualTable[type], mapPosition, param);
 }
 

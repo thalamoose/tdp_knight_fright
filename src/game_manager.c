@@ -50,8 +50,11 @@ void ResetGameManager(void)
 //---------------------------------------------------------
 void UpdateGameManager(void)
 {
+    DebugTiming(ULA_COLOUR_MAGENTA);
     UpdateLevelManager();
+    DebugTiming(ULA_COLOUR_CYAN);
     UpdateObjects();
+    DebugTiming(ULA_COLOUR_RED);
     UpdateTilemap();
 	gameManager.particlesActive = UpdateParticles(&particles[0]);
     UpdateAudio();

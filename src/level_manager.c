@@ -53,7 +53,7 @@ void NewLevel(void)
 	levelManager.config = levelTemplate->config;
 	ClearPlayArea();
 	BuildPlayArea(levelTemplate->template);
-	AddObstacles(levelTemplate->template, 2);
+	AddObstacles(levelTemplate->template);
 	DrawPlayArea(levelTemplate->template);
 	playArea.start = levelTemplate->template->start;
 	playArea.position = playArea.start;

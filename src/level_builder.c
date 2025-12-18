@@ -88,6 +88,8 @@ void PlaceSpike(const coord_s8* mapPosition)
 {
 	x_printf( "SPIKE:%d,%d\n", (s16)mapPosition->x, (s16)mapPosition->y);
 	UNUSED(mapPosition);
+	levelManager.config.numHoles--;
+	levelManager.tilesRemaining--;
 }
 
 //---------------------------------------------------------
@@ -97,6 +99,8 @@ void PlaceObstacle(const coord_s8* mapPosition)
 
 	game_object* pObstacle = CreateObstacleObject(mapPosition, shapeIndex);
 	x_printf( "OBSTACLE:%d,%d,t:%c 0x%x\n", (s16)mapPosition->x, (s16)mapPosition->y, shapeIndex, pObstacle);
+	levelManager.config.numHoles--;
+	levelManager.tilesRemaining--;
 }
 
 //---------------------------------------------------------
@@ -104,8 +108,8 @@ void PlaceRandomEnemy(const coord_s8* mapPosition, bool drop)
 {
 	s8 enemyType = levelManager.enabledEnemies[random8()%levelManager.enabledEnemiesCount];
 	
-	x_printf( "ENEMY:%d,%d\n", (s16)mapPosition->x, (s16)mapPosition->y);
-	CreateEnemy(enemyType, mapPosition, drop);
+	game_object* pEnemy = CreateEnemyObject(enemyType, mapPosition, drop);
+	x_printf( "ENEMY:%d,%d, 0x%x\n", (s16)mapPosition->x, (s16)mapPosition->y, pEnemy);
 }
 //---------------------------------------------------------
 void CheckForCoin(play_cell* pCell, coord_s8* mapPosition)
@@ -185,9 +189,8 @@ bool CanPlaceObstacleOrHole(play_cell* pCell)
 }
 
 //---------------------------------------------------------
-void AddObstacles(const play_area_template* template, u8 nObstacles)
+void AddObstacles(const play_area_template* template)
 {
-	(void)nObstacles;
 		// Create an array of enabled enemy types. This allows us to randomly pick a type later.
 	u8 enemyTypes = levelManager.config.enabledEnemies;
 	for (u8 i=0; i<8 && enemyTypes; i++)
@@ -243,8 +246,7 @@ void AddObstacles(const play_area_template* template, u8 nObstacles)
 						else if ((rand>levelManager.config.numHoles+levelManager.config.numCoins) &&
 								 (rand<=levelManager.config.numHoles+levelManager.config.numCoins+levelManager.config.numObstacles+levelManager.config.maxNumEnemies))
 						{
-							PlaceObstacle(&mapPosition);
-							//PlaceRandomEnemy(&mapPosition, true);
+							PlaceRandomEnemy(&mapPosition, true);
 							levelManager.config.maxNumEnemies--;
 						}
 					}

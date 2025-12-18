@@ -138,3 +138,24 @@ void RenderComponent(game_object* pObject)
 	SetupSprite(pObject->anim.sprite.slot[0], &config);
 }
 
+//---------------------------------------------------------
+void SetObjectAnimIdle(game_object* pObj, const anim_config* config)
+{
+    pObj->trans.vel.x = config->vx;
+    pObj->trans.vel.y = config->vy;
+    pObj->anim.frameIndex = 0;
+    pObj->anim.baseIndex = config->baseIndex;
+    pObj->anim.lastIndex = 0xff;
+    pObj->anim.animDelay = 4;
+    pObj->anim.animSpeed = 4;
+    pObj->anim.totalFrames = 8;
+}
+
+//---------------------------------------------------------
+void SetObjectAnimRun(game_object* pObj, const anim_config* pConfig )
+{
+    pObj->moveSteps = 16;
+    pObj->direction = pConfig->direction;
+    SetObjectAnimIdle(pObj, pConfig);
+}
+

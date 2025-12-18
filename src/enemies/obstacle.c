@@ -15,10 +15,10 @@
 
 const sprite_config obstacleSpriteConfig[4]=
 {
-    {PLAYER_SPRITE_PATTERN,    0,  0, 0, 0x40, 0x00},
-    {PLAYER_SPRITE_PATTERN+1, 16,  0, 0, 0xc0, 0x60},
-    {PLAYER_SPRITE_PATTERN+2,  0, 16, 0, 0xc0, 0x60},
-    {PLAYER_SPRITE_PATTERN+3, 16, 16, 0, 0xc0, 0x60}
+    {0,  0,  0, 0, 0x40, 0x00},
+    {0, 16,  0, 0, 0xc0, 0x60},
+    {0,  0, 16, 0, 0xc0, 0x60},
+    {0, 16, 16, 0, 0xc0, 0x60}
 };
 
 //---------------------------------------------------------

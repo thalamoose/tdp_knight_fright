@@ -4,16 +4,6 @@
 #include "object_manager.h"
 
 
-typedef struct s_anim_configs
-{
-    u8 baseIndex;
-    u8 direction;
-    s16 vx;
-    s16 vy;
-} anim_config;
-
-void SetPlayerAnimIdle(game_object* pObject, const anim_config* pConfig);
-void SetPlayerAnimRun(game_object* pObject, const anim_config* pConfig);
 void ResetPlayer(game_object* pObject);
 void HandleControllerInput(game_object* pObj, u8 spriteBase, u8 buttons);
 game_object* CreatePlayerObject(void);

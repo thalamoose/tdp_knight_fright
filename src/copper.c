@@ -28,8 +28,8 @@ void RenderCopper(void)
 		nextreg(COPPER_CONTROL_L, 0);
 		nextreg(COPPER_CONTROL_H, 0xc0);
 		nextreg16(COPPER_DATA, CU_WAIT(0, copper.playerPriorityLine));
-		nextreg16(COPPER_DATA, CU_MOVE(SPRITE_INDEX, PLAYER_SPRITE_SLOT));
-		nextreg16(COPPER_DATA, CU_MOVE(SPRITE_INDEX, PLAYER_SPRITE_SLOT));
+		nextreg16(COPPER_DATA, CU_MOVE(SPRITE_INDEX, 100));
+		nextreg16(COPPER_DATA, CU_MOVE(SPRITE_INDEX, 128));
 		nextreg16(COPPER_DATA, CU_STOP());
 	}
 	else

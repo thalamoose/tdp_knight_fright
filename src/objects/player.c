@@ -23,57 +23,41 @@ void MovePlayer(game_object* pPlayer);
 
 anim_config idleConfig = {PLAYERSPR_IDLE_ANIM, 0, 0};
 
-//---------------------------------------------------------
-void SetPlayerAnimIdle(game_object* pObj, const anim_config* config)
-{
-    pObj->trans.vel.x = config->vx;
-    pObj->trans.vel.y = config->vy;
-    pObj->anim.frameIndex = 0;
-    pObj->anim.baseIndex = config->baseIndex;
-    pObj->anim.lastIndex = 0xff;
-    pObj->anim.animDelay = 4;
-    pObj->anim.animSpeed = 4;
-    pObj->anim.totalFrames = 8;
-}
-
-//---------------------------------------------------------
-void SetPlayerAnimRun(game_object* pObj, const anim_config* pConfig )
-{
-    pObj->moveSteps = 16;
-    pObj->direction = pConfig->direction;
-    SetPlayerAnimIdle(pObj, pConfig);
-}
-
 const sprite_config playerSpriteConfig[4]=
 {
-    {PLAYER_SPRITE_PATTERN,    0,  0, 0, 0x40, 0x00},
-    {PLAYER_SPRITE_PATTERN+1, 16,  0, 0, 0xc0, 0x60},
-    {PLAYER_SPRITE_PATTERN+2,  0, 16, 0, 0xc0, 0x60},
-    {PLAYER_SPRITE_PATTERN+3, 16, 16, 0, 0xc0, 0x60}
+    {0,  0,  0, 0, 0x40, 0x00},
+    {0, 16,  0, 0, 0xc0, 0x60},
+    {0,  0, 16, 0, 0xc0, 0x60},
+    {0, 16, 16, 0, 0xc0, 0x60}
 };
 
 //---------------------------------------------------------
 void CreatePlayer(game_object* pPlayer, const coord_s8* mapPosition, u16 param)
 {
     UNUSED(param);
-    SetPlayerAnimIdle(pPlayer, &idleConfig);
+    SetObjectAnimIdle(pPlayer, &idleConfig);
     //
     // Set up sprites 64..67, so that only the minimum needs to be set up below.
     //
-    for (u8 i=0; i<4; i++)
-    {
-        SetupSprite(PLAYER_SPRITE_SLOT+i,  &playerSpriteConfig[i]);
-    }
     nextreg(SWAP_BANK_0_SLOT, MISC_DATA_PAGE);
     CopyPalettePartial(asset_PlayerPalette, PALETTE_SPRITE_PRIMARY, 0, 64);
     // Grab whatever colour is the background colour. This will be our transparent
     // index.
     pPlayer->anim.sprite.page = PLAYER_ANIM_PAGE;
-    pPlayer->anim.sprite.slot[0] = PLAYER_SPRITE_SLOT;
-    pPlayer->anim.sprite.pattern[0] = PLAYER_SPRITE_PATTERN;
     pPlayer->anim.sprite.patternCount = 4;
     pPlayer->anim.sprite.centerOffset.x = PLAYER_TO_TILE_X_OFFSET;
     pPlayer->anim.sprite.centerOffset.y = PLAYER_TO_TILE_Y_OFFSET;
+
+	for (u8 i=0; i<pPlayer->anim.sprite.patternCount; i++)
+	{
+		sprite_config spriteConfig = playerSpriteConfig[i];
+		pPlayer->anim.sprite.slot[i] = AllocSpriteSlot();
+		pPlayer->anim.sprite.pattern[i] = AllocSpritePattern();
+		spriteConfig.pattern = pPlayer->anim.sprite.pattern[i];
+		spriteConfig.attr2 |= pPlayer->anim.sprite.palette<<4;
+        SetupSprite(pPlayer->anim.sprite.slot[i],  &spriteConfig);
+	}
+
     // Copies transparent color to the register.
     nextreg(SWAP_BANK_0_SLOT, PLAYER_ANIM_PAGE);
     nextreg(TRANS_SPRITE_INDEX, *(u8 *)SWAP_BANK_0);
@@ -141,7 +125,7 @@ void HandlePickup(game_object* pObject)
     config.direction = pObject->direction;
     config.vx = 0;
     config.vy = 0;
-    SetPlayerAnimIdle(pObject, &config);
+    SetObjectAnimIdle(pObject, &config);
     for (int i=0; i<32; i++)
     {
         particle params;
@@ -171,7 +155,7 @@ void HandleDeath(game_object* pObject, bool fallThrough)
 {
     (void)fallThrough;
     deathAnimConfig.direction = pObject->direction;
-    SetPlayerAnimIdle(pObject, &deathAnimConfig);
+    SetObjectAnimRun(pObject, &deathAnimConfig);
     pObject->moveSteps = 64;
     pObject->trans.gravity = FIXED_POINT_HALF/2;
 }
@@ -229,7 +213,7 @@ void HandleControllerInput(game_object* pObject, u8 spriteBase, u8 buttons)
         {
             pObject->playGrid.x = nx;
             pObject->playGrid.y = ny;
-            SetPlayerAnimRun(pObject, pAnimConfig);
+            SetObjectAnimRun(pObject, pAnimConfig);
         }
     }
     if (buttons&JOYPAD_R_DOWN)
@@ -288,7 +272,7 @@ void CollidePlayer(game_object* pPlayer, const game_object* pCollider)
             config.baseIndex = PLAYERSPR_IDLE_ANIM+pPlayer->direction*8;
             config.vx = 0;
             config.vy = 0;
-            SetPlayerAnimIdle(pPlayer, &config);
+            SetObjectAnimIdle(pPlayer, &config);
             break;
         }
     }
