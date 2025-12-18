@@ -80,7 +80,8 @@ game_object* CreateObject(const object_vtable* vtable, const coord_s8* mapPositi
 	SnapToPlayAreaGrid(pGameObj);
 	pGameObj->flags = FLAG_ACTIVE;
 	pGameObj->object.index = index;
-	if (pGameObj->object.vtable->Create) pGameObj->object.vtable->Create(pGameObj, mapPosition, param);
+	if (pGameObj->object.vtable->Create) 
+		pGameObj->object.vtable->Create(pGameObj, mapPosition, param);
 	return pGameObj;
 }
 

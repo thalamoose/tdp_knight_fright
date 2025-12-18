@@ -14,3 +14,5 @@ extern u8 asset_GameDigits[];
 extern u8 asset_GameDigitsPalette[];
 extern u16 asset_CoinPalette[];
 extern u8 asset_CoinData[];
+extern u16 asset_ObstaclePalette[];
+extern u8 asset_ObstacleData[];

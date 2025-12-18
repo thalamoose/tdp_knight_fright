@@ -11,8 +11,8 @@ typedef struct s_transform
 
 typedef struct s_sprite
 {
-	u8 slot;
-	u8 pattern;
+	u8 slot[4];
+	u8 pattern[4];
 	u8 patternCount;
 	u8 palette;
 	u8 page;

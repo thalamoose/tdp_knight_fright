@@ -14,7 +14,7 @@ ECHO = $(SILENCE)echo
 MKDIR= $(SILENCE)mkdir
 RMDIR= $(SILENCE)rmdir
 BASEFLAGS=+zxn -mz80n -m -s --list -g -Iinclude
-OPT_FLAGS=-SO2 --opt-code-speed --max-allocs-per-node32768 --allow-unsafe-read
+OPT_FLAGS=-SO1 --max-allocs-per-node8192 --allow-unsafe-read
 CFLAGS=$(BASEFLAGS) -c --c-code-in-asm $(OPT_FLAGS) -clib=new -compiler=sdcc --bsssegPAGE_16
 DEP_FLAGS = -MT $@ -MD -MF $(DEP_DIR)/$*.d
 #

@@ -104,7 +104,7 @@ void RenderComponent(game_object* pObject)
         nextreg(SWAP_BANK_0_SLOT, page);
 		//x_printf("%x:src:%x,p:%d,#:%d,f:%x\n", pObject, pPattern, (u16)pObject->anim.sprite.pattern, (u16)pObject->anim.sprite.patternCount, pObject->flags.value);
 
-        CopySprite(pPattern, pObject->anim.sprite.pattern, xferSize);
+        CopySprite(pPattern, pObject->anim.sprite.pattern[0], xferSize);
     }
     s16 tx = pObject->trans.pos.x+tileMap.position.x&I_TO_F(0xfffe);
     s16 px = F_TO_I(tx);
@@ -119,13 +119,13 @@ void RenderComponent(game_object* pObject)
 	if ((u16)(x-32)>LAYER_2_WIDTH || (u16)(y-32)>LAYER_2_HEIGHT)
     {
         // Hide the sprite if clipped
-    	HideSprite(pObject->anim.sprite.slot);
+    	HideSprite(pObject->anim.sprite.slot[0]);
         return;
     }
 
 	sprite_config config=
 	{
-		pObject->anim.sprite.pattern,
+		pObject->anim.sprite.pattern[0],
 		x,
 		y,
 		(pObject->anim.sprite.palette<<4)|((x>>8)&SPRITE_ATTR_2_X8),
@@ -135,6 +135,6 @@ void RenderComponent(game_object* pObject)
 
 	if (pObject->anim.flags.is4bit) config.attr4 |= SPRITE_ATTR_4_4BIT;
 
-	SetupSprite(pObject->anim.sprite.slot, &config);
+	SetupSprite(pObject->anim.sprite.slot[0], &config);
 }
 

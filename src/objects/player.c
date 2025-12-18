@@ -69,8 +69,8 @@ void CreatePlayer(game_object* pPlayer, const coord_s8* mapPosition, u16 param)
     // Grab whatever colour is the background colour. This will be our transparent
     // index.
     pPlayer->anim.sprite.page = PLAYER_ANIM_PAGE;
-    pPlayer->anim.sprite.slot = PLAYER_SPRITE_SLOT;
-    pPlayer->anim.sprite.pattern = PLAYER_SPRITE_PATTERN;
+    pPlayer->anim.sprite.slot[0] = PLAYER_SPRITE_SLOT;
+    pPlayer->anim.sprite.pattern[0] = PLAYER_SPRITE_PATTERN;
     pPlayer->anim.sprite.patternCount = 4;
     pPlayer->anim.sprite.centerOffset.x = PLAYER_TO_TILE_X_OFFSET;
     pPlayer->anim.sprite.centerOffset.y = PLAYER_TO_TILE_Y_OFFSET;

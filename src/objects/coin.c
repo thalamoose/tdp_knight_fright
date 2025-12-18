@@ -20,11 +20,11 @@ void CreateCoin(game_object* pCoin, const coord_s8* mapPosition, u16 param)
 	u8 type=(gameManager.useSuperCoins)?COIN_SUPER:COIN_NORMAL;
 	pCoin->flags = FLAG_ACTIVE|FLAG_TILEMAP_LOCKED|FLAG_IS_4_BIT;
 	pCoin->playGrid = *mapPosition;
-	pCoin->anim.sprite.pattern = AllocSpritePattern();
+	pCoin->anim.sprite.pattern[0] = AllocSpritePattern();
 	pCoin->anim.sprite.patternCount = 1;
 	pCoin->anim.sprite.palette = COIN_PALETTE+type;
 	pCoin->anim.sprite.page = PICKUPS_PAGE;
-	pCoin->anim.sprite.slot = AllocSpriteSlot();
+	pCoin->anim.sprite.slot[0] = AllocSpriteSlot();
 	pCoin->anim.sprite.centerOffset.x = 10;
 	pCoin->anim.sprite.centerOffset.y = -6;
 
@@ -54,7 +54,7 @@ bool UpdateCoin(game_object* pCoin)
 //---------------------------------------------------------
 void DestroyCoin(game_object* pCoin)
 {
-	HideSprite(pCoin->anim.sprite.slot);
+	HideSprite(pCoin->anim.sprite.slot[0]);
 }
 
 //---------------------------------------------------------

@@ -15,6 +15,7 @@ __asm
 	global _asset_TilemapPalette, _asset_TileData
 	global _asset_GameDigitsPalette, _asset_GameDigits
 	global _asset_PickupPalette, _asset_PickupData
+	global _asset_ObstaclePalette
 	global _asset_MapShape_01,_asset_MapShape_02
 	global _asset_PlayArea_1,_asset_PlayArea_1_2,_asset_PlayArea_1_3
 	global _asset_PlayArea_2,_asset_PlayArea_2_2,_asset_PlayArea_2_4
@@ -214,6 +215,8 @@ _asset_SpritePalette:
 	incbin "build/assets/sprites.pal"
 _asset_CoinPalette:
 	incbin "build/assets/coin.pal"
+_asset_ObstaclePalette:
+	incbin "build/assets/obstacles.pal"
 _asset_TilemapPalette:
 	incbin "build/assets/tiles.pal"
 _tmpe:
