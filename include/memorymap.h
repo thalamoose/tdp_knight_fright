@@ -1,9 +1,9 @@
 //---------------------------------------------------------
 // Memory Map:
-// 0x0000:0x1fff - swap bank 0
-// 0x2000:0x3fff - swap bank 1
-// 0x4000:0x5b00 - ULA layer (from 2nd ULA layer)
-// 0x6000:0x7fff - BSS
+// 0x0000:0x1b00 - ULA layer (from 2nd ULA layer)
+// 0x2000:0x3fff - BSS
+// 0x4000:0x5fff - swap bank 0
+// 0x6000:0x7fff - swap bank 1
 // 0x8000:0xfbff - Code space
 // 0xfc00:0xfcff - Stack
 // 0xfd00:0xfe01 - Interrupt vector table (to 0xfefe)

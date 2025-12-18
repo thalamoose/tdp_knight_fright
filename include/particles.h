@@ -10,7 +10,7 @@ typedef struct s_particle
 	s16 y;
 	s8 life;
 	s16 prevAddress;
-	s8 prevPage;
+	u8 prevPage;
 	s8 prevColour;
 	s8 colour;
 	s8 width;
