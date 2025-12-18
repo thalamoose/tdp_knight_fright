@@ -1,5 +1,7 @@
 #include "kftypes.h"
 #include "defines.h"
+#include "sprite.h"
+#include "objects/object.h"
 #include "playarea.h"
 #include "game_manager.h"
 #include "globals.h"
@@ -11,11 +13,10 @@
 #include "audio.h"
 #include "sprite.h"
 #include "particles.h"
-#include "objects/components.h"
 #include "objects/object_manager.h"
 #include "objects/coin.h"
 #include "objects/player.h"
-#include "enemies/enemy_controller.h"
+#include "objects/character_controller.h"
 #include "level_manager.h"
 
 game_manager gameManager;

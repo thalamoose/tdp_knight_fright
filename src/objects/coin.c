@@ -8,7 +8,6 @@
 #include "sprite.h"
 #include "objects/object.h"
 #include "objects/object_manager.h"
-#include "objects/components.h"
 #include "objects/coin.h"
 #include "hud.h"
 #include "game_manager.h"

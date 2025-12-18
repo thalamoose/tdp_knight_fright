@@ -1,7 +1,7 @@
 #include "kftypes.h"
 #include "defines.h"
 #include "objects/object_manager.h"
-#include "enemies/enemy_controller.h"
+#include "objects/character_controller.h"
 #include "enemies/color_changer.h"
 
 void CreateColorChanger(game_object* pObject, const coord_s8* mapPosition, u16 param)

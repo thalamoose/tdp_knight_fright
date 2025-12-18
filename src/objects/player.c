@@ -4,7 +4,7 @@
 #include "memorymap.h"
 #include "utilities.h"
 #include "objects/player.h"
-#include "objects/components.h"
+#include "objects/character_controller.h"
 #include "sprite.h"
 #include "input.h"
 #include "globals.h"
@@ -31,6 +31,7 @@ const sprite_config playerSpriteConfig[4]=
     {0, 16, 16, 0, 0xc0, 0x60}
 };
 
+const coord_s8 playerAnimOffset = {PLAYER_TO_TILE_X_OFFSET, PLAYER_TO_TILE_Y_OFFSET};
 //---------------------------------------------------------
 void CreatePlayer(game_object* pPlayer, const coord_s8* mapPosition, u16 param)
 {
@@ -43,20 +44,8 @@ void CreatePlayer(game_object* pPlayer, const coord_s8* mapPosition, u16 param)
     CopyPalettePartial(asset_PlayerPalette, PALETTE_SPRITE_PRIMARY, 0, 64);
     // Grab whatever colour is the background colour. This will be our transparent
     // index.
-    pPlayer->anim.sprite.page = PLAYER_ANIM_PAGE;
-    pPlayer->anim.sprite.patternCount = 4;
-    pPlayer->anim.sprite.centerOffset.x = PLAYER_TO_TILE_X_OFFSET;
-    pPlayer->anim.sprite.centerOffset.y = PLAYER_TO_TILE_Y_OFFSET;
 
-	for (u8 i=0; i<pPlayer->anim.sprite.patternCount; i++)
-	{
-		sprite_config spriteConfig = playerSpriteConfig[i];
-		pPlayer->anim.sprite.slot[i] = AllocSpriteSlot();
-		pPlayer->anim.sprite.pattern[i] = AllocSpritePattern();
-		spriteConfig.pattern = pPlayer->anim.sprite.pattern[i];
-		spriteConfig.attr2 |= pPlayer->anim.sprite.palette<<4;
-        SetupSprite(pPlayer->anim.sprite.slot[i],  &spriteConfig);
-	}
+    InitializeAnimComponent(&pPlayer->anim, &playerAnimOffset, PLAYER_ANIM_PAGE, 4, playerSpriteConfig);
 
     // Copies transparent color to the register.
     nextreg(SWAP_BANK_0_SLOT, PLAYER_ANIM_PAGE);
@@ -160,68 +149,6 @@ void HandleDeath(game_object* pObject, bool fallThrough)
     pObject->trans.gravity = FIXED_POINT_HALF/2;
 }
 
-
-anim_config playerMoves[4]=
-{
-    {PLAYERSPR_L+PLAYERSPR_RUN_ANIM, PLAYERDIR_TL,-FIXED_POINT_ONE, -FIXED_POINT_ONE*2},
-    {PLAYERSPR_R+PLAYERSPR_RUN_ANIM, PLAYERDIR_BR, FIXED_POINT_ONE, -FIXED_POINT_ONE*5},
-    {PLAYERSPR_U+PLAYERSPR_RUN_ANIM, PLAYERDIR_TR,-FIXED_POINT_ONE, -FIXED_POINT_ONE*5},
-    {PLAYERSPR_D+PLAYERSPR_RUN_ANIM, PLAYERDIR_BL, FIXED_POINT_ONE, -FIXED_POINT_ONE*2}
-};
-
-//---------------------------------------------------------
-void HandleControllerInput(game_object* pObject, u8 spriteBase, u8 buttons)
-{
-    if (hud.transitionIsRunning)
-        return;
-    s8 nx = pObject->playGrid.x;
-    s8 ny = pObject->playGrid.y;
-    u8 anim = 0;
-    u8 dir = 0;
-    s16 vx = 0;
-    s16 vy = 0;
-    const anim_config* pAnimConfig = NULL;
-    if (buttons&JOYPAD_L_LEFT)
-    {
-        nx--;
-        pAnimConfig = &playerMoves[0];
-    }
-    else if (buttons&JOYPAD_L_RIGHT)
-    {
-        nx++;
-        pAnimConfig = &playerMoves[1];
-    }
-    else if (buttons&JOYPAD_L_UP)
-    {
-        ny--;
-        pAnimConfig = &playerMoves[2];
-    }
-    else if (buttons&JOYPAD_L_DOWN)
-    {
-        ny++;
-        pAnimConfig = &playerMoves[3];
-        anim = spriteBase+PLAYERSPR_D+PLAYERSPR_RUN_ANIM;
-        dir = PLAYERDIR_BL;
-        vx = FIXED_POINT_ONE;
-        vy = -FIXED_POINT_ONE*2;
-    }
-    if (pAnimConfig)
-    {
-        coord_s8 mapPosition={nx,ny};
-        play_cell* pCell = GetPlayAreaCell(&mapPosition);
-        if (pCell->type!=CELL_OBSTACLE)
-        {
-            pObject->playGrid.x = nx;
-            pObject->playGrid.y = ny;
-            SetObjectAnimRun(pObject, pAnimConfig);
-        }
-    }
-    if (buttons&JOYPAD_R_DOWN)
-    {
-        levelManager.tilesRemaining = 1;
-    }
-}
-
 //---------------------------------------------------------
 void CollidePlayer(game_object* pPlayer, const game_object* pCollider)
 {
@@ -309,33 +236,9 @@ void ResetPlayer(game_object* pObject)
 
 
 //---------------------------------------------------------
-void MovePlayer(game_object* player)
+void MovePlayer(game_object* pPlayer)
 {
     PulsePalette();
-    if (player->moveSteps)
-    {
-        TransformComponent(&player->trans);
-        player->moveSteps--;
-        if (player->moveSteps != 0)
-        {
-            s16 dy = F_TO_I(player->trans.pos.y+tileMap.position.y);
-            if (dy > 256+32)
-            {
-                // We must have been in a die. Respawn now.
-                ResetPlayer(player);
-            }
-            return;
-        }
-        SnapToPlayAreaGrid(player);
-        player->trans.gravity = FIXED_POINT_HALF;
-        play_cell *pCell = GetPlayAreaCell(&player->playGrid);
-        if (pCell)
-        {
-            game_object* pCollider = GetObjectFromIndex(pCell->objIndex);
-            player->object.vtable->Collide(player, pCollider);
-        }
-        return;
-    }
-    HandleControllerInput(player, 0, ReadController());
+    MoveCharacter(pPlayer, 0, ReadController());
 }
 

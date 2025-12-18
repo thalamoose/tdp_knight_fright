@@ -3,10 +3,9 @@
 #include "defines.h"
 #include "memorymap.h"
 #include "utilities.h"
-#include "objects/components.h"
+#include "sprite.h"
 #include "objects/object_manager.h"
 #include "globals.h"
-#include "sprite.h"
 
 u8 spriteSlot = 0;
 u8 spritePattern = 0;

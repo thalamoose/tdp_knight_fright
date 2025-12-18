@@ -1,6 +1,7 @@
 #if !defined(__OBJECT_MANAGER_H)
 #define __OBJECT_MANAGER_H
 
+#include "sprite.h"
 #include "object.h"
 /*
 	All coordinates are internally held as signed 10.6 fixed point.

@@ -1,11 +1,11 @@
 #include "kftypes.h"
 #include "defines.h"
-#include "playarea.h"
 #include "utilities.h"
 #include "memorymap.h"
 #include "tilemap.h"
 #include "hardware.h"
-#include "objects/components.h"
+#include "sprite.h"
+#include "playarea.h"
 #include "objects/coin.h"
 #include "level_manager.h"
 

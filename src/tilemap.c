@@ -3,6 +3,7 @@
 #include "memorymap.h"
 #include "hardware.h"
 #include "utilities.h"
+#include "sprite.h"
 #include "tilemap.h"
 #include "assets.h"
 #include "playarea.h"

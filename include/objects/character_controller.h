@@ -9,3 +9,4 @@ enum enemy_type
 
 game_object* CreateEnemyObject(u8 type, const coord_s8* mapPosition, u16 param);
 void DestroyEnemy(game_object* enemy);
+void MoveCharacter(game_object* pObj, u8 spriteBase, u8 buttons);

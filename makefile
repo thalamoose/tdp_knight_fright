@@ -133,7 +133,7 @@ $(OUT)/obstacles.bin: assets/obstacles.png makefile
 	$(SEGMENT) $@ $@.s 48
 
 
-executable: $(OUT) src/zpragma.inc $(ASSETS) $(EXECUTABLE) $(SYMBOLS)
+executable: $(OUT) src/zpragma.inc $(ASSETS) $(EXECUTABLE)
 
 $(EXECUTABLE): $(C_OBJS) $(ASM_OBJS)
 	$(ECHO) Linking $@...
